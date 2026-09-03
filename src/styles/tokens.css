@@ -1,0 +1,113 @@
+/**
+ * Travel Planner UI - Design Tokens
+ * Conforms to .agents/skills/travel-planner-ui design system specification
+ */
+
+:root {
+  /* ──────────────── Colors ──────────────── */
+  /* Primary (Burnt Orange) */
+  --color-primary:          #E8621A;
+  --color-primary-hover:    #D4580F;
+  --color-primary-light:    #FFF0E6;
+  --color-primary-text:     #FFFFFF;
+
+  /* Secondary (Forest Green) */
+  --color-secondary:        #2D6A2E;
+  --color-secondary-light:  #E8F5E9;
+
+  /* Neutral Surfaces & Backgrounds */
+  --color-background:       #F5F0E8;   /* Warm cream page background */
+  --color-surface:          #FFFFFF;   /* Clean white card surface */
+  --color-surface-alt:      #FDF6EE;   /* Slightly tinted warm surface */
+  --color-border:           #E0DDD6;   /* Subtle divider / border */
+  --color-border-strong:    #1A1A1A;   /* Chip outlines */
+  --color-divider:          #F0ECE4;
+
+  /* Typography Colors */
+  --color-text-primary:     #1A1A1A;
+  --color-text-secondary:   #6B6B6B;
+  --color-text-tertiary:    #9E9E9E;
+  --color-text-inverse:     #FFFFFF;
+
+  /* Semantic */
+  --color-star:             #E8621A;
+  --color-heart:            #E8621A;
+  --color-success:          #2D6A2E;
+  --color-error:            #D32F2F;
+  --color-badge-bg:         rgba(232, 98, 26, 0.12);
+  --color-badge-text:       #E8621A;
+
+  /* ──────────────── Typography ──────────────── */
+  --font-family:            'Inter', 'SF Pro Display', -apple-system,
+                            BlinkMacSystemFont, 'Segoe UI', Roboto,
+                            Oxygen, Ubuntu, Cantarell, sans-serif;
+
+  /* Font sizes */
+  --text-xs:                0.75rem;   /* 12px */
+  --text-sm:                0.8125rem; /* 13px */
+  --text-base:              0.875rem;  /* 14px */
+  --text-md:                1rem;      /* 16px */
+  --text-lg:                1.125rem;  /* 18px */
+  --text-xl:                1.25rem;   /* 20px */
+  --text-2xl:               1.5rem;    /* 24px */
+  --text-3xl:               2rem;      /* 32px */
+  --text-4xl:               2.5rem;    /* 40px */
+
+  /* Font weights */
+  --font-regular:           400;
+  --font-medium:            500;
+  --font-semibold:          600;
+  --font-bold:              700;
+  --font-extrabold:         800;
+
+  /* Line heights */
+  --leading-tight:          1.2;
+  --leading-normal:         1.4;
+  --leading-relaxed:        1.6;
+
+  /* ──────────────── Spacing ──────────────── */
+  --space-1:                4px;
+  --space-2:                8px;
+  --space-3:                12px;
+  --space-4:                16px;
+  --space-5:                20px;
+  --space-6:                24px;
+  --space-8:                32px;
+  --space-10:               40px;
+  --space-12:               48px;
+  --space-16:               64px;
+
+  /* ──────────────── Border Radius ──────────────── */
+  --radius-sm:              8px;
+  --radius-md:              12px;
+  --radius-lg:              16px;
+  --radius-xl:              24px;
+  --radius-2xl:             32px;
+  --radius-pill:            9999px;
+
+  /* ──────────────── Shadows ──────────────── */
+  --shadow-card:            0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover:      0 8px 24px rgba(0, 0, 0, 0.10);
+  --shadow-header:          0 2px 12px rgba(0, 0, 0, 0.04);
+  --shadow-drawer:          -4px 0 24px rgba(0, 0, 0, 0.15);
+  --shadow-button:          0 4px 14px rgba(232, 98, 26, 0.28);
+
+  /* ──────────────── Transitions ──────────────── */
+  --transition-fast:        150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base:        250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:        400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ──────────────── Z-Index ──────────────── */
+  --z-base:                 0;
+  --z-card:                 10;
+  --z-header:               100;
+  --z-backdrop:             200;
+  --z-drawer:               210;
+  --z-modal:                300;
+
+  /* ──────────────── Layout ──────────────── */
+  --mobile-max-width:       430px;
+  --content-max-width:      1040px;
+  --page-padding:           20px;
+  --header-height:          64px;
+}

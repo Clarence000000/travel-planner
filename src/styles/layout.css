@@ -1,0 +1,228 @@
+/* ──────────────── Mobile-Only App Layout ──────────────── */
+
+.app-shell {
+  width: 100%;
+  max-width: var(--mobile-max-width);
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-background);
+  position: relative;
+  box-shadow: 0 0 36px rgba(0, 0, 0, 0.12);
+  transition: background-image var(--transition-base);
+}
+
+/* ──────────────── Dynamic Vertical Background Assets per Page ──────────────── */
+
+.app-shell[data-active-tab="itinerary"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-itinerary.png');
+  background-repeat: repeat;
+  background-size: 240px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+.app-shell[data-active-tab="chat"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-chat.png');
+  background-repeat: repeat;
+  background-size: 220px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+.app-shell[data-active-tab="assistant"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-assistant.png');
+  background-repeat: repeat;
+  background-size: 230px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+.app-shell[data-active-tab="dashboard"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-dashboard.png');
+  background-repeat: repeat;
+  background-size: 230px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+/* ──────────────── Sticky Top Header ──────────────── */
+
+.top-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background-color: rgba(245, 240, 232, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-border);
+  width: 100%;
+}
+
+.top-header__inner {
+  height: var(--header-height);
+  padding: 0 var(--page-padding);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.top-header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.top-header__logo {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--color-primary), #FF8542);
+  color: var(--color-primary-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.25);
+  flex-shrink: 0;
+}
+
+.top-header__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.top-header__subtitle {
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.top-header__title {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: 1.2;
+}
+
+.top-header__action-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-primary);
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.top-header__action-btn:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.notification-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+}
+
+/* ──────────────── Main Content ──────────────── */
+
+.main-content {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4) var(--page-padding) 0;
+}
+
+.nav-spacer {
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px) + var(--space-4));
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* ──────────────── Fixed Bottom Tab Bar ──────────────── */
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--mobile-max-width);
+  height: calc(var(--nav-height) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: var(--z-nav);
+  box-shadow: var(--shadow-nav);
+}
+
+.bottom-nav__tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 100%;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--transition-fast);
+}
+
+.bottom-nav__label {
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  letter-spacing: -0.01em;
+}
+
+.bottom-nav__tab:hover {
+  color: var(--color-text-primary);
+}
+
+.bottom-nav__tab--active {
+  color: var(--color-primary);
+}
+
+.bottom-nav__tab--active .bottom-nav__label {
+  font-weight: var(--font-bold);
+}
+
+.bottom-nav__tab--active .bottom-nav__icon {
+  transform: scale(1.1);
+}
