@@ -2,7 +2,11 @@
  * View: Per-Activity Chat Threads
  * Contextual discussions anchored strictly to individual itinerary blocks,
  * plus Wishlist scratchpad and native mini-polls.
+ *
+ * Now includes the interactive Quick Group Polls component.
  */
+
+import { createGroupPolls } from '../components/GroupPolls.js';
 
 export function createChatView() {
   const container = document.createElement('div');
@@ -40,30 +44,8 @@ export function createChatView() {
       </div>
     </div>
 
-    <!-- Native Mini-Poll Card -->
-    <div class="poll-card">
-      <div class="poll-card__header">
-        <span class="poll-card__badge">📊 Native Mini-Poll</span>
-        <span class="poll-card__status">Voting Active</span>
-      </div>
-      <h3 class="poll-card__question">Which lunch spot should we lock in?</h3>
-      <div class="poll-options">
-        <button type="button" class="poll-option poll-option--selected">
-          <div class="poll-option__row">
-            <span>A: Traditional Soba Noodles</span>
-            <span class="poll-option__percent">67% (4 votes)</span>
-          </div>
-          <div class="poll-option__bar" style="width: 67%;"></div>
-        </button>
-        <button type="button" class="poll-option">
-          <div class="poll-option__row">
-            <span>B: Tsukiji Fresh Seafood Bowl</span>
-            <span class="poll-option__percent">33% (2 votes)</span>
-          </div>
-          <div class="poll-option__bar" style="width: 33%;"></div>
-        </button>
-      </div>
-    </div>
+    <!-- Quick Group Polls injection point -->
+    <div id="group-polls-mount"></div>
 
     <!-- Chat Message Feed -->
     <div class="chat-feed" id="chat-messages-target">
@@ -71,7 +53,7 @@ export function createChatView() {
         <div class="chat-message__avatar">🍙</div>
         <div class="chat-message__bubble">
           <div class="chat-message__sender">Traveler 1</div>
-          <p class="chat-message__text">The soba place has vegetarian options which fits everyone’s diet matrix!</p>
+          <p class="chat-message__text">The soba place has vegetarian options which fits everyone's diet matrix!</p>
           <span class="chat-message__time">10:14 AM</span>
         </div>
       </div>
@@ -103,6 +85,13 @@ export function createChatView() {
       </p>
     </div>
   `;
+
+  // Mount the interactive Group Polls component
+  const pollsMount = container.querySelector('#group-polls-mount');
+  if (pollsMount) {
+    const groupPolls = createGroupPolls();
+    pollsMount.appendChild(groupPolls.element);
+  }
 
   return {
     element: container,
