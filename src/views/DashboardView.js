@@ -10,6 +10,8 @@
  * 4. Checklist Interaction – toggle items + live completion counter
  */
 
+import { openCarpoolDrawer } from '../components/CarpoolDrawer.js';
+
 // ── Activity Pipeline (fake data for demo) ──────────────────────────────
 const ACTIVITY_PIPELINE = [
   {
@@ -358,7 +360,14 @@ export function createDashboardView() {
           <strong>${activity.transit.line}</strong>
           <span>${activity.transit.route}</span>
         </div>
-      </div>`
+      </div>
+      <button type="button" class="btn btn--secondary btn--sm btn-carpool" id="btn-carpool"
+        data-from="${activity.transit.route.split('→')[0]?.trim() || 'Station A'}"
+        data-to="${activity.transit.route.split('→')[1]?.split('(')[0]?.trim() || 'Station B'}"
+        data-duration="${activity.transit.route.match(/\((.*?)\)/)?.[1] || '15 mins'}"
+        data-line="${activity.transit.line}">
+        <span>🚐 View Carpool & Seats</span>
+      </button>`
       : '';
 
     return `
@@ -487,8 +496,26 @@ export function createDashboardView() {
       });
     }
 
+    // Carpool button
+    bindCarpoolBtn();
+
     // Checklist interaction
     bindChecklist();
+  }
+
+  /** Bind carpool drawer trigger */
+  function bindCarpoolBtn() {
+    const carpoolBtn = container.querySelector('#btn-carpool');
+    if (carpoolBtn) {
+      carpoolBtn.addEventListener('click', () => {
+        openCarpoolDrawer({
+          from: carpoolBtn.dataset.from,
+          to: carpoolBtn.dataset.to,
+          duration: carpoolBtn.dataset.duration,
+          line: carpoolBtn.dataset.line,
+        });
+      });
+    }
   }
 
   /** Animate state transition: NEXT UP → ACTIVE NOW */
@@ -530,6 +557,7 @@ export function createDashboardView() {
       if (nowCard) {
         nowCard.addEventListener('dblclick', () => simulateArrival());
       }
+      bindCarpoolBtn();
 
       showToast(container, `Now visiting: ${current.title}`, 'success');
 
