@@ -104,10 +104,13 @@
   --z-backdrop:             200;
   --z-drawer:               210;
   --z-modal:                300;
+  --z-toast:                400;
+  --z-nav:                  100;
 
   /* ──────────────── Layout ──────────────── */
   --mobile-max-width:       430px;
   --content-max-width:      1040px;
   --page-padding:           20px;
   --header-height:          64px;
+  --nav-height:             64px;
 }
