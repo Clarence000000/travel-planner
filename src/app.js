@@ -11,6 +11,7 @@
 
 import { createHeader } from './components/Header.js';
 import { createBottomNav } from './components/BottomNav.js';
+import { createOnboardingModal } from './components/OnboardingModal.js';
 import { createItineraryView } from './views/ItineraryView.js';
 import { createChatView } from './views/ChatView.js';
 import { createAssistantView } from './views/AssistantView.js';
@@ -31,11 +32,24 @@ export function initApp() {
   const appShell = document.createElement('div');
   appShell.className = 'app-shell';
 
-  // 2. Sticky Top Header
-  const headerComponent = createHeader();
+  // 2. Onboarding & Data Import Modal Component
+  const onboardingModal = createOnboardingModal({
+    onComplete: () => {
+      const activeTab = getActiveTab();
+      renderView(activeTab);
+    },
+  });
+  appShell.appendChild(onboardingModal.element);
+
+  // 3. Sticky Top Header with Onboarding Trigger
+  const headerComponent = createHeader({
+    onOpenOnboarding: () => {
+      onboardingModal.open();
+    },
+  });
   appShell.appendChild(headerComponent.element);
 
-  // 3. Main Content Container for Tab Views
+  // 4. Main Content Container for Tab Views
   const mainContent = document.createElement('main');
   mainContent.className = 'main-content';
   mainContent.id = 'main-content';
@@ -110,10 +124,18 @@ export function initApp() {
     setActiveTab,
     getActiveTab,
     getNavTabs,
+    openOnboarding: () => onboardingModal.open(),
   };
 
+  // Auto-show onboarding modal on first visit
+  if (!localStorage.getItem('travel_planner_onboarded_v1')) {
+    setTimeout(() => {
+      onboardingModal.open();
+    }, 450);
+  }
+
   console.log(
-    '%c✈ Travel Planner Mobile App Initialized',
+    '%c[App] Travel Planner Mobile App Initialized',
     'color: #E8621A; font-weight: bold; font-size: 14px;'
   );
 }

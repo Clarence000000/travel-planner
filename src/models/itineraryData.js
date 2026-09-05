@@ -174,6 +174,24 @@ export const DEFAULT_ITINERARY = [
 
 const STORAGE_KEY = 'travel_planner_itinerary_v1';
 
+function sanitizeBlock(block) {
+  const clean = (str) =>
+    typeof str === 'string'
+      ? str.replace(/[\p{Extended_Pictographic}\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim()
+      : str;
+
+  return {
+    ...block,
+    title: clean(block.title),
+    requirements: Array.isArray(block.requirements)
+      ? block.requirements.map(clean).filter(Boolean)
+      : [],
+    dressCode: clean(block.dressCode),
+    fallback: clean(block.fallback),
+    notes: clean(block.notes),
+  };
+}
+
 /**
  * Load itinerary data (from localStorage if available, or default)
  */
@@ -181,12 +199,15 @@ export function getItineraryData() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed)) {
+        return parsed.map(sanitizeBlock);
+      }
     }
   } catch (e) {
     console.warn('[Itinerary] Failed to parse saved itinerary:', e);
   }
-  return JSON.parse(JSON.stringify(DEFAULT_ITINERARY));
+  return JSON.parse(JSON.stringify(DEFAULT_ITINERARY)).map(sanitizeBlock);
 }
 
 /**

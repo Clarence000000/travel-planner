@@ -222,7 +222,7 @@ export function promoteToItinerary({ title, location, category, day = 1, startTi
     location: location || title,
     transitToNextMinutes: 15,
     transitMode: 'Metro or Walking',
-    requirements: ['📍 Added from Group Wishlist'],
+    requirements: ['Added from Group Wishlist'],
     fallback: null,
     notes: notes || 'Scheduled from collaborative ideas wishlist.',
     dressCode: 'Comfortable',

@@ -190,6 +190,8 @@
   border-radius: var(--radius-pill);
   font-size: 11px;
   font-weight: var(--font-bold);
+  white-space: nowrap;
+  flex-shrink: 0;
   cursor: pointer;
   border: 1px solid transparent;
   transition: all var(--transition-fast);
@@ -225,11 +227,17 @@
   gap: 2px;
 }
 
+.timeline-card__heading > div {
+  min-width: 0;
+}
+
 .timeline-card__title {
   font-size: var(--text-base);
   font-weight: var(--font-bold);
   color: var(--color-text-primary);
   line-height: var(--leading-tight);
+  flex: 1;
+  min-width: 0;
 }
 
 .timeline-card__location {
@@ -506,21 +514,23 @@
 .btn-thread-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: var(--font-semibold);
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: var(--radius-pill);
   color: var(--color-primary);
   background-color: var(--color-primary-light);
-  padding: 3px 9px;
-  border-radius: var(--radius-pill);
   border: 1px solid rgba(232, 98, 26, 0.25);
   cursor: pointer;
+  flex-shrink: 0;
   transition: all var(--transition-fast);
 }
 
 .btn-thread-badge:hover {
   background-color: var(--color-primary);
   color: #FFFFFF;
+  transform: scale(1.05);
 }
 
 .quick-thread-backdrop {

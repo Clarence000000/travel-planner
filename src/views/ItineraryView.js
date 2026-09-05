@@ -178,10 +178,22 @@ export function createItineraryView() {
 
         // Category info
         const categoryMap = {
-          activity: { label: 'Activity' },
-          meal: { label: 'Meal' },
-          transit: { label: 'Transit' },
-          rest: { label: 'Check-in / Rest' },
+          activity: {
+            label: 'Activity',
+            icon: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="2"></circle></svg>`,
+          },
+          meal: {
+            label: 'Meal',
+            icon: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>`,
+          },
+          transit: {
+            label: 'Transit',
+            icon: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path><path d="m8 19-2 3"></path><path d="m16 19 2 3"></path></svg>`,
+          },
+          rest: {
+            label: 'Check-in / Rest',
+            icon: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+          },
         };
         const catInfo = categoryMap[block.category] || categoryMap.activity;
 
@@ -199,16 +211,15 @@ export function createItineraryView() {
               <div class="timeline-card__top">
                 <div class="timeline-card__time-badge">
                   <span>${block.startTime} – ${block.endTime}</span>
-                  <span class="category-tag">${catInfo.label}</span>
+                  <span class="category-tag">${catInfo.icon}${catInfo.label}</span>
                 </div>
 
                 <div class="timeline-card__controls">
                   <!-- Per-Activity Chat Thread Button -->
-                  <button type="button" class="btn-thread-badge" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <button type="button" class="btn-thread-badge" data-thread-btn="${block.id}" title="Open Activity Chat Thread" aria-label="Open Activity Chat Thread">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
-                    <span>Thread</span>
                   </button>
 
                   <!-- Quick Shift Up / Down Arrow buttons -->
@@ -261,12 +272,18 @@ export function createItineraryView() {
                 <div class="details-badge-row">
                   ${
                     block.requirements && block.requirements.length > 0
-                      ? `<span class="req-tag">${block.requirements[0]}</span>`
+                      ? `<span class="req-tag">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                          ${block.requirements[0]}
+                        </span>`
                       : ''
                   }
                   ${
                     block.fallback
-                      ? `<span class="req-tag" style="background: var(--color-surface-alt); color: #C2410C; border: 1px solid #FED7AA;">Fallback Plan</span>`
+                      ? `<span class="req-tag" style="background: var(--color-surface-alt); color: #C2410C; border: 1px solid #FED7AA;">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                          Fallback Plan
+                        </span>`
                       : ''
                   }
                 </div>
@@ -282,7 +299,10 @@ export function createItineraryView() {
                 block.dressCode
                   ? `
                 <div>
-                  <span class="detail-chip detail-chip--dress">Dress Code: ${block.dressCode}</span>
+                  <span class="detail-chip detail-chip--dress">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg>
+                    Dress Code: ${block.dressCode}
+                  </span>
                 </div>
               `
                   : ''
@@ -293,7 +313,7 @@ export function createItineraryView() {
                 <strong style="font-size: 11px; color: var(--color-text-primary);">Requirements & Tags:</strong>
                 <div class="details-badge-row" style="margin-top: 4px;">
                   ${(block.requirements || [])
-                    .map((r) => `<span class="detail-chip">${r}</span>`)
+                    .map((r) => `<span class="detail-chip"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><polyline points="20 6 9 17 4 12"></polyline></svg>${r}</span>`)
                     .join('')}
                 </div>
               </div>

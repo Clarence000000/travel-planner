@@ -234,7 +234,7 @@ export function openCarpoolDrawer(opts = {}) {
     if (confirmBtn) {
       confirmBtn.addEventListener('click', () => {
         if (userSeatId) {
-          showCarpoolToast(`🎉 Ride confirmed! Seat reserved.`);
+          showCarpoolToast(`Ride confirmed! Seat reserved.`);
           setTimeout(() => closeDrawer(), 1200);
         }
       });
@@ -260,7 +260,7 @@ export function openCarpoolDrawer(opts = {}) {
     const seat = seats.find((s) => s.id === seatId);
     if (!seat || seat.occupant) return;
 
-    seat.occupant = { emoji: '🧑', name: 'You' };
+    seat.occupant = { initials: 'ME', name: 'You' };
     userSeatId = seatId;
 
     // Animate the specific seat
