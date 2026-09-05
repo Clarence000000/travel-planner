@@ -87,7 +87,7 @@ export function createItineraryView() {
             <span class="itinerary-count-badge">${rawBlocks.length} Scheduled Stops</span>
           </div>
           <p class="view-subtitle">
-            Hold <strong>⠿</strong> or use arrows to shift blocks. Buffer times recalculate automatically.
+            Drag or use arrows to shift blocks. Buffer times recalculate automatically.
           </p>
         </div>
         
@@ -110,7 +110,13 @@ export function createItineraryView() {
         activeWarnings.length > 0
           ? `
         <div class="alert-banner alert-banner--warning">
-          <div class="alert-banner__icon">⚠️</div>
+          <div class="alert-banner__icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </div>
           <div class="alert-banner__content">
             <strong>Transit Buffer Alert:</strong> ${activeWarnings.length} route(s) have insufficient travel windows! Shifting blocks will recalculate times.
           </div>
@@ -122,10 +128,12 @@ export function createItineraryView() {
       <!-- Action Toolbar -->
       <div class="itinerary-actions-bar">
         <button type="button" class="btn btn--primary btn--sm" id="propose-block-btn">
-          <span>＋ Propose Activity</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Propose Activity</span>
         </button>
         <button type="button" class="btn btn--secondary btn--sm" id="reset-itinerary-btn" title="Reset to default schedule">
-          <span>↺ Reset Trip</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+          <span>Reset Trip</span>
         </button>
       </div>
 
@@ -141,9 +149,9 @@ export function createItineraryView() {
   function renderTimelineItems(blocks) {
     if (blocks.length === 0) {
       return `
-        <div style="text-align: center; padding: 40px 20px; background: rgba(255,255,255,0.85); border-radius: var(--radius-xl); border: 1px dashed var(--color-border);">
+        <div style="text-align: center; padding: 40px 20px; background: var(--color-surface); border-radius: var(--radius-xl); border: 1px dashed var(--color-border);">
           <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: 12px;">No activities scheduled for this day yet.</p>
-          <button type="button" class="btn btn--primary btn--sm" id="empty-add-btn">＋ Propose First Activity</button>
+          <button type="button" class="btn btn--primary btn--sm" id="empty-add-btn">Propose First Activity</button>
         </div>
       `;
     }
@@ -155,21 +163,24 @@ export function createItineraryView() {
 
         // Status styling and label
         let statusClass = 'status-pill-btn--proposed';
-        let statusLabel = '🟡 Proposed';
+        let statusDotClass = 'status-dot--proposed';
+        let statusLabel = 'Proposed';
         if (block.status === 'confirmed') {
           statusClass = 'status-pill-btn--confirmed';
-          statusLabel = '🟢 Confirmed';
+          statusDotClass = 'status-dot--confirmed';
+          statusLabel = 'Confirmed';
         } else if (block.status === 'tentative') {
           statusClass = 'status-pill-btn--tentative';
-          statusLabel = '🟠 Weather Permitting';
+          statusDotClass = 'status-dot--tentative';
+          statusLabel = 'Weather Permitting';
         }
 
-        // Category icon & label
+        // Category info
         const categoryMap = {
-          activity: { label: 'Activity', icon: '🎯' },
-          meal: { label: 'Meal', icon: '🍜' },
-          transit: { label: 'Transit', icon: '🚇' },
-          rest: { label: 'Check-in / Rest', icon: '🏨' },
+          activity: { label: 'Activity' },
+          meal: { label: 'Meal' },
+          transit: { label: 'Transit' },
+          rest: { label: 'Check-in / Rest' },
         };
         const catInfo = categoryMap[block.category] || categoryMap.activity;
 
@@ -187,30 +198,41 @@ export function createItineraryView() {
               <div class="timeline-card__top">
                 <div class="timeline-card__time-badge">
                   <span>${block.startTime} – ${block.endTime}</span>
-                  <span class="category-tag">${catInfo.icon} ${catInfo.label}</span>
+                  <span class="category-tag">${catInfo.label}</span>
                 </div>
 
                 <div class="timeline-card__controls">
                   <!-- Per-Activity Chat Thread Button -->
                   <button type="button" class="btn-thread-badge" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
-                    <span>💬 Thread</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Thread</span>
                   </button>
 
                   <!-- Quick Shift Up / Down Arrow buttons -->
                   ${
                     index > 0
-                      ? `<button type="button" class="shift-arrow-btn shift-up-btn" data-id="${block.id}" title="Move earlier">▲</button>`
+                      ? `<button type="button" class="shift-arrow-btn shift-up-btn" data-id="${block.id}" title="Move earlier" aria-label="Move earlier">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                        </button>`
                       : ''
                   }
                   ${
                     index < blocks.length - 1
-                      ? `<button type="button" class="shift-arrow-btn shift-down-btn" data-id="${block.id}" title="Move later">▼</button>`
+                      ? `<button type="button" class="shift-arrow-btn shift-down-btn" data-id="${block.id}" title="Move later" aria-label="Move later">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>`
                       : ''
                   }
 
                   <!-- Touch & Mouse Grip Handle -->
                   <div class="drag-grip" title="Hold & drag to reorder" data-id="${block.id}" aria-label="Drag handle">
-                    ⠿
+                    <svg width="10" height="14" viewBox="0 0 16 20" fill="currentColor" opacity="0.6">
+                      <circle cx="5" cy="4" r="1.5"/><circle cx="11" cy="4" r="1.5"/>
+                      <circle cx="5" cy="10" r="1.5"/><circle cx="11" cy="10" r="1.5"/>
+                      <circle cx="5" cy="16" r="1.5"/><circle cx="11" cy="16" r="1.5"/>
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -220,10 +242,17 @@ export function createItineraryView() {
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
                   <h3 class="timeline-card__title">${block.title}</h3>
                   <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to change status lifecycle">
-                    ${statusLabel}
+                    <span class="status-dot ${statusDotClass}"></span>
+                    <span>${statusLabel}</span>
                   </button>
                 </div>
-                <p class="timeline-card__location">📍 ${block.location}</p>
+                <p class="timeline-card__location">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -1px; margin-right: 4px; color: var(--color-text-secondary);">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                  </svg>
+                  ${block.location}
+                </p>
               </div>
 
               <!-- Toggle Row -->
@@ -236,12 +265,12 @@ export function createItineraryView() {
                   }
                   ${
                     block.fallback
-                      ? `<span class="req-tag" style="background:#FFF7ED; color:#9A3412;">☂ Has Fallback</span>`
+                      ? `<span class="req-tag" style="background: var(--color-surface-alt); color: #C2410C; border: 1px solid #FED7AA;">Fallback Plan</span>`
                       : ''
                   }
                 </div>
                 <button type="button" class="timeline-card__expand-btn" data-toggle-details="${block.id}">
-                  ${isExpanded ? 'Hide Details ▲' : 'Details ▾'}
+                  ${isExpanded ? 'Hide Details' : 'Details'}
                 </button>
               </div>
             </div>
@@ -252,7 +281,7 @@ export function createItineraryView() {
                 block.dressCode
                   ? `
                 <div>
-                  <span class="detail-chip detail-chip--dress">👔 Dress Code: ${block.dressCode}</span>
+                  <span class="detail-chip detail-chip--dress">Dress Code: ${block.dressCode}</span>
                 </div>
               `
                   : ''
@@ -273,7 +302,7 @@ export function createItineraryView() {
                 block.fallback
                   ? `
                 <div class="fallback-box">
-                  <span class="fallback-box__label">☂ Built-in Fallback Plan:</span>
+                  <span class="fallback-box__label">Built-in Fallback Plan:</span>
                   <span>${block.fallback}</span>
                 </div>
               `
@@ -294,14 +323,21 @@ export function createItineraryView() {
               ? `
             <div class="transit-connector ${buffer.isDeficit ? 'transit-connector--warning' : ''}">
               <div class="transit-connector__info">
-                <span>${buffer.isDeficit ? '⚠️' : '↳'}</span>
+                ${
+                  buffer.isDeficit
+                    ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #DC2626;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
+                    : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-text-secondary);"><polyline points="9 18 15 12 9 6"></polyline></svg>`
+                }
                 <span class="transit-connector__badge">${Math.max(0, buffer.availableMinutes)}m buffer</span>
                 <span>• ${buffer.transitMode}</span>
               </div>
               ${
                 buffer.isDeficit
                   ? `<span class="transit-warning-pill">${buffer.requiredMinutes}m Needed</span>`
-                  : `<span style="font-size: 10px; color: var(--color-secondary);">✓ Safe Buffer</span>`
+                  : `<span style="font-size: 10px; color: var(--color-secondary); display: inline-flex; align-items: center; gap: 3px;">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      Safe Buffer
+                    </span>`
               }
             </div>
           `
@@ -572,12 +608,12 @@ export function createItineraryView() {
           <div class="chat-feed" style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
             ${
               thread.messages.length === 0
-                ? `<p style="font-size: 11px; color: var(--color-text-secondary); text-align: center; padding: 18px 0;">No messages in this activity thread yet. Start the debate below!</p>`
+                ? `<p style="font-size: 11px; color: var(--color-text-secondary); text-align: center; padding: 18px 0;">No messages in this activity thread yet. Start the discussion below!</p>`
                 : thread.messages
                     .map(
                       (m) => `
               <div class="chat-message ${m.isCurrentUser ? 'chat-message--outgoing' : 'chat-message--incoming'}">
-                ${!m.isCurrentUser ? `<div class="chat-message__avatar">${m.avatar}</div>` : ''}
+                ${!m.isCurrentUser ? `<div class="user-avatar-initials" style="width: 26px; height: 26px; font-size: 10px;">${m.avatar || m.sender.slice(0, 2).toUpperCase()}</div>` : ''}
                 <div class="chat-message__bubble">
                   ${!m.isCurrentUser ? `<div class="chat-message__sender">${m.sender}</div>` : ''}
                   <p class="chat-message__text">${m.text}</p>
@@ -602,8 +638,11 @@ export function createItineraryView() {
           </div>
 
           <div style="text-align: center; margin-top: 2px;">
-            <button type="button" class="btn btn--secondary btn--sm" id="btn-qt-go-full" style="width: 100%;">
-              💬 Open in Central Chat Hub
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-qt-go-full" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Open in Central Chat Hub</span>
             </button>
           </div>
         </div>

@@ -696,13 +696,12 @@
   justify-content: center;
 }
 
-/* ──────────────── Assistant View Elements ──────────────── */
+/* ──────────────── Assistant & Optimizer View Elements ──────────────── */
 
-.ai-box {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
+.optimizer-card {
+  background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   padding: var(--space-4);
   box-shadow: var(--shadow-card);
   display: flex;
@@ -710,53 +709,97 @@
   gap: var(--space-3);
 }
 
-.ai-box__header {
+.optimizer-card__header {
   display: flex;
   align-items: center;
   gap: var(--space-2);
 }
 
-.ai-box__sparkle {
-  font-size: 18px;
-}
-
-.ai-box__label {
+.optimizer-card__label {
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
-  color: var(--color-primary);
+  color: var(--color-text-primary);
 }
 
-.ai-input-wrapper {
+.optimizer-input-wrapper {
   display: flex;
   gap: var(--space-2);
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: var(--color-surface-alt);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-pill);
   padding: 4px 6px 4px 14px;
 }
 
-.ai-input {
+.optimizer-input {
   flex: 1;
   border: none;
   outline: none;
   font-size: var(--text-xs);
   background: transparent;
+  color: var(--color-text-primary);
 }
 
-.ai-commands-row {
+.preset-scenarios-row {
   display: flex;
   gap: var(--space-2);
   overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
 }
 
-.command-pill {
-  font-family: monospace;
+.preset-scenarios-row::-webkit-scrollbar {
+  display: none;
+}
+
+.preset-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 11px;
-  padding: 4px 10px;
+  font-weight: var(--font-medium);
+  padding: 6px 12px;
   border-radius: var(--radius-pill);
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: var(--color-surface-alt);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.preset-chip:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.status-dot--confirmed { background-color: var(--color-secondary); }
+.status-dot--proposed { background-color: #D97706; }
+.status-dot--tentative { background-color: #EA580C; }
+
+.user-avatar-initials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
 }
 
 .pace-card, .proposal-card {

@@ -70,7 +70,7 @@ export function createChatView(initialBlockId = null) {
             Day 2 Kyoto
           </button>
           <button type="button" class="filter-chip ${hubFilter === 'polls' ? 'filter-chip--active' : ''}" data-filter="polls">
-            📊 Active Polls
+            Active Polls
           </button>
         </div>
       </div>
@@ -80,27 +80,43 @@ export function createChatView(initialBlockId = null) {
         ${filteredThreads
           .map((t) => {
             const lastMsg = t.messages.length > 0 ? t.messages[t.messages.length - 1] : null;
-            const icon = t.title.slice(0, 2).trim() || '💬';
-            const cleanTitle = t.title.replace(/^[^\w\s]+/, '').trim() || t.eventTitle;
 
             return `
             <div class="thread-item-card" data-thread-id="${t.blockId}" role="button" tabindex="0">
-              <div class="thread-item-card__icon">${icon}</div>
+              <div class="thread-item-card__icon" aria-hidden="true">
+                ${getThreadCategorySvg(t.category)}
+              </div>
               <div class="thread-item-card__content">
                 <div class="thread-item-card__top">
-                  <h3 class="thread-item-card__title">${cleanTitle}</h3>
+                  <h3 class="thread-item-card__title">${t.title}</h3>
                   <span class="thread-item-card__time">${lastMsg ? lastMsg.time : ''}</span>
                 </div>
                 <p class="thread-item-card__snippet">
-                  ${lastMsg ? `<strong>${lastMsg.sender.split(' ')[0]}:</strong> ${escapeHtml(lastMsg.text)}` : 'No messages yet. Tap to start discussion!'}
+                  ${lastMsg ? `<strong>${lastMsg.sender.split(' ')[0]}:</strong> ${escapeHtml(lastMsg.text)}` : 'No messages yet. Tap to start discussion.'}
                 </p>
                 <div class="thread-item-card__footer">
-                  <span class="thread-item-card__badge">📍 ${t.location.split(',')[0]}</span>
-                  <span class="thread-item-card__badge">👥 ${t.participantCount} travelers</span>
-                  ${t.poll ? `<span class="thread-item-card__badge thread-item-card__badge--poll">📊 Poll</span>` : ''}
+                  <span class="thread-item-card__badge">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    ${t.location.split(',')[0]}
+                  </span>
+                  <span class="thread-item-card__badge">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    ${t.participantCount} travelers
+                  </span>
+                  ${
+                    t.poll
+                      ? `
+                    <span class="thread-item-card__badge thread-item-card__badge--poll">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                      Poll
+                    </span>`
+                      : ''
+                  }
                 </div>
               </div>
-              <div class="thread-item-card__arrow">➔</div>
+              <div class="thread-item-card__arrow" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </div>
             </div>
           `;
           })
@@ -153,6 +169,7 @@ export function createChatView(initialBlockId = null) {
       blockId,
       title: 'Activity Discussion',
       eventTitle: 'Itinerary Stop',
+      category: 'activity',
       location: 'Tokyo',
       participantCount: 4,
       poll: null,
@@ -166,11 +183,15 @@ export function createChatView(initialBlockId = null) {
       <!-- Back Navigation & Thread Info Header -->
       <div class="thread-conv-header">
         <button type="button" class="btn-back-threads" id="btn-back-to-threads" aria-label="Back to all threads">
-          <span>← All Threads</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span>All Threads</span>
         </button>
         <div class="thread-conv-header__info">
           <h2 class="thread-conv-header__title">${thread.eventTitle || thread.title}</h2>
-          <span class="thread-conv-header__meta">📍 ${thread.location} • ${thread.participantCount} active travelers</span>
+          <span class="thread-conv-header__meta">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            ${thread.location} • ${thread.participantCount} travelers
+          </span>
         </div>
       </div>
 
@@ -182,13 +203,13 @@ export function createChatView(initialBlockId = null) {
         ${
           thread.messages.length === 0
             ? `<div style="text-align: center; padding: 36px 16px; color: var(--color-text-secondary); font-size: var(--text-sm);">
-                No messages yet. Send the first message below!
+                No messages yet. Send the first message below.
                </div>`
             : thread.messages
                 .map(
                   (msg) => `
               <div class="chat-message ${msg.isCurrentUser ? 'chat-message--outgoing' : 'chat-message--incoming'}">
-                ${!msg.isCurrentUser ? `<div class="chat-message__avatar">${msg.avatar}</div>` : ''}
+                ${!msg.isCurrentUser ? `<div class="user-avatar-initials">${msg.avatar || 'TR'}</div>` : ''}
                 <div class="chat-message__bubble">
                   ${!msg.isCurrentUser ? `<div class="chat-message__sender">${msg.sender}</div>` : ''}
                   <p class="chat-message__text">${escapeHtml(msg.text)}</p>
@@ -207,7 +228,7 @@ export function createChatView(initialBlockId = null) {
           type="text" 
           class="chat-input" 
           id="chat-input-field" 
-          placeholder="Message #${(thread.eventTitle || thread.title).replace(/^[^\w\s]+/, '').trim()}..." 
+          placeholder="Message #${(thread.eventTitle || thread.title).trim()}..." 
         />
         <button type="button" class="chat-send-btn" id="btn-send-chat" aria-label="Send message">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -269,7 +290,10 @@ export function createChatView(initialBlockId = null) {
     return `
       <div class="poll-card" style="margin-top: var(--space-2);">
         <div class="poll-card__header">
-          <span class="poll-card__badge">📊 Activity Consensus Poll</span>
+          <span class="poll-card__badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -2px; margin-right: 4px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+            Activity Consensus Poll
+          </span>
           <span class="poll-card__status">${totalVotes} total votes</span>
         </div>
         <h3 class="poll-card__question">${poll.question}</h3>
@@ -285,7 +309,7 @@ export function createChatView(initialBlockId = null) {
                 data-opt-id="${opt.id}"
               >
                 <div class="poll-option__row">
-                  <span>${isSelected ? '✓ ' : ''}${opt.label}</span>
+                  <span>${isSelected ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="vertical-align: -1px; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}${opt.label}</span>
                   <span class="poll-option__percent">${percent}% (${opt.votes})</span>
                 </div>
                 <div class="poll-option__bar" style="width: ${percent}%;"></div>
@@ -296,6 +320,17 @@ export function createChatView(initialBlockId = null) {
         </div>
       </div>
     `;
+  }
+
+  function getThreadCategorySvg(category) {
+    if (category === 'meal') {
+      return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #D97706;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>`;
+    }
+    if (category === 'general') {
+      return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-primary);"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+    }
+    // Default activity
+    return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-primary);"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>`;
   }
 
   function escapeHtml(str) {
