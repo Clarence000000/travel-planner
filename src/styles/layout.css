@@ -10,6 +10,59 @@
   background-color: var(--color-background);
   position: relative;
   box-shadow: 0 0 36px rgba(0, 0, 0, 0.08);
+  transition: background-image var(--transition-base);
+}
+
+/* ──────────────── Dynamic Vertical Background Assets per Page (Cat Patterns) ──────────────── */
+
+.app-shell[data-active-tab="itinerary"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-itinerary.png');
+  background-repeat: repeat;
+  background-size: 240px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+.app-shell[data-active-tab="chat"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-chat.png');
+  background-repeat: repeat;
+  background-size: 220px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+.app-shell[data-active-tab="assistant"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-assistant.png');
+  background-repeat: repeat;
+  background-size: 230px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+.app-shell[data-active-tab="ideas"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-chat.png');
+  background-repeat: repeat;
+  background-size: 230px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
+.app-shell[data-active-tab="dashboard"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-dashboard.png');
+  background-repeat: repeat;
+  background-size: 230px auto;
+  background-position: top center;
+  background-attachment: fixed;
 }
 
 /* ──────────────── Sticky Top Header ──────────────── */
