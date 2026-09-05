@@ -80,3 +80,18 @@ Open `index.html` with VS Code Live Server or any static HTTP server.
 npm install
 npm run dev
 ```
+
+---
+
+## 📝 TODO
+
+- [ ] Fix repeating tags in itinerary
+- [ ] Fix itinerary after dragging so that it changes time
+- [ ] Improve itinerary readability and flow (currently difficult to follow)
+- [ ] Allow trip planner renaming
+- [ ] Make assistant more coherent instead of random:
+  - [ ] Show imported IG reels in assistant
+  - [ ] Allow users to enter interests
+  - [ ] Classify and recommend activities from chat threads
+- [ ] Organise chat threads so they are categorised (Food, Location, Hotel, etc.) instead of just a flat list
+- [ ] Update Dashboard Day-of-Trip HUD so that it is only active on the actual day of the trip, with main focus activity only
