@@ -1,0 +1,541 @@
+/**
+ * Travel Planner - Ideas View Styles (Wishlist & Whiteboard)
+ * Conforms to travel-planner-ui design system tokens.
+ */
+
+.ideas-view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ──────────────── Segmented Control ──────────────── */
+
+.segmented-control {
+  display: flex;
+  background-color: rgba(230, 224, 215, 0.7);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  gap: 4px;
+}
+
+.segmented-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.segmented-btn--active {
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ──────────────── Wishlist Styles ──────────────── */
+
+.wishlist-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.category-filter-bar {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.category-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.filter-chip--active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+  font-weight: var(--font-semibold);
+}
+
+.wishlist-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.wishlist-card {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.wishlist-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.wishlist-card__image-wrap {
+  width: 100%;
+  height: 140px;
+  position: relative;
+  background-color: #E8E2D8;
+  overflow: hidden;
+}
+
+.wishlist-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wishlist-card__badge-row {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wishlist-card__category {
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(255, 255, 255, 0.95);
+  color: var(--color-primary);
+  backdrop-filter: blur(4px);
+}
+
+.wishlist-card__cost {
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  background-color: rgba(0, 0, 0, 0.65);
+  color: #FFFFFF;
+  backdrop-filter: blur(4px);
+}
+
+.wishlist-card__body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.wishlist-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.wishlist-card__title {
+  font-size: var(--text-base);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: var(--leading-tight);
+}
+
+.wishlist-card__desc {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+}
+
+.wishlist-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-divider);
+  font-size: 11px;
+}
+
+.wishlist-card__author {
+  color: var(--color-text-tertiary);
+}
+
+.wishlist-card__link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: var(--font-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.wishlist-card__link:hover {
+  text-decoration: underline;
+}
+
+.wishlist-card__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.btn-vote {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-vote--active {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
+/* ──────────────── Whiteboard Styles ──────────────── */
+
+.whiteboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.whiteboard-toolbar {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.whiteboard-toolbar__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+
+.color-swatch--active {
+  border-color: var(--color-text-primary);
+  transform: scale(1.15);
+}
+
+.swatch--yellow { background-color: #FEF08A; }
+.swatch--peach  { background-color: #FED7AA; }
+.swatch--mint   { background-color: #A7F3D0; }
+.swatch--sky    { background-color: #BAE6FD; }
+.swatch--purple { background-color: #E9D5FF; }
+
+.whiteboard-instructions {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Canvas Area */
+.whiteboard-canvas {
+  width: 100%;
+  min-height: 460px;
+  position: relative;
+  background-color: #F8F5EF;
+  background-image: radial-gradient(#D5CEBE 1.2px, transparent 1.2px);
+  background-size: 18px 18px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+/* Sticky Notes */
+.sticky-note {
+  position: absolute;
+  width: 165px;
+  min-height: 140px;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09), 0 1px 3px rgba(0, 0, 0, 0.05);
+  cursor: grab;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  touch-action: none;
+}
+
+.sticky-note:active {
+  cursor: grabbing;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+  z-index: 50 !important;
+  transform: rotate(1deg) scale(1.03);
+}
+
+.sticky-note--yellow {
+  background-color: #FEF08A;
+  border-top: 3px solid #FACC15;
+  color: #713F12;
+}
+
+.sticky-note--peach {
+  background-color: #FED7AA;
+  border-top: 3px solid #FB923C;
+  color: #7C2D12;
+}
+
+.sticky-note--mint {
+  background-color: #A7F3D0;
+  border-top: 3px solid #34D399;
+  color: #064E3B;
+}
+
+.sticky-note--sky {
+  background-color: #BAE6FD;
+  border-top: 3px solid #38BDF8;
+  color: #0C4A6E;
+}
+
+.sticky-note--purple {
+  background-color: #E9D5FF;
+  border-top: 3px solid #C084FC;
+  color: #581C87;
+}
+
+.sticky-note__pin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sticky-note__tag {
+  font-size: 9px;
+  font-weight: var(--font-extrabold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.75;
+}
+
+.sticky-note__delete {
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  cursor: pointer;
+  opacity: 0.5;
+  padding: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.sticky-note__delete:hover {
+  opacity: 1;
+}
+
+.sticky-note__title-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+}
+
+.sticky-note__content {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 11px;
+  font-family: inherit;
+  line-height: 1.35;
+  color: inherit;
+  width: 100%;
+}
+
+.sticky-note__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(0, 0, 0, 0.12);
+}
+
+.sticky-note__author {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.btn-note-schedule {
+  background-color: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-pill);
+  font-size: 9px;
+  font-weight: var(--font-bold);
+  padding: 2px 7px;
+  cursor: pointer;
+  color: inherit;
+  transition: all var(--transition-fast);
+}
+
+.btn-note-schedule:hover {
+  background-color: #FFFFFF;
+}
+
+/* ──────────────── Schedule Picker Modal ──────────────── */
+
+.schedule-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn var(--transition-fast) ease-out;
+}
+
+.schedule-modal {
+  width: 100%;
+  max-width: var(--mobile-max-width);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.16);
+  animation: slideUp var(--transition-base) cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.schedule-modal__title {
+  font-size: var(--text-md);
+  font-weight: var(--font-extrabold);
+  color: var(--color-text-primary);
+}
+
+.schedule-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.schedule-modal__label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+}
+
+.schedule-modal__input, .schedule-modal__select {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.schedule-modal__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+/* Toast notification */
+.toast-notice {
+  position: fixed;
+  top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  padding: 10px 18px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  pointer-events: none;
+  animation: toastFade 2.6s ease forwards;
+}
+
+@keyframes toastFade {
+  0% { opacity: 0; transform: translate(-50%, -10px); }
+  10% { opacity: 1; transform: translate(-50%, 0); }
+  85% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
+}

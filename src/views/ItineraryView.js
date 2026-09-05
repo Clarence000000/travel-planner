@@ -15,6 +15,8 @@ import {
 import { calculateItineraryBuffers } from '../utils/bufferEngine.js';
 import { createStatusModal } from '../components/itinerary/StatusModal.js';
 import { createAddBlockModal } from '../components/itinerary/AddBlockModal.js';
+import { getThreadById, addMessageToThread } from '../models/chatData.js';
+import { setActiveTab } from '../config/navigation.js';
 
 export function createItineraryView() {
   const container = document.createElement('div');
@@ -78,18 +80,10 @@ export function createItineraryView() {
     );
 
     container.innerHTML = `
-      <!-- Atmospheric Vertical Asset Banner -->
-      <div class="view-banner" style="background-image: url('./src/assets/bg-itinerary.png');">
-        <div class="view-banner__scrim">
-          <span class="view-banner__badge">🐱 Interactive Master Timeline</span>
-          <h2 class="view-banner__title">Drag-and-Drop Itinerary</h2>
-        </div>
-      </div>
-
       <div class="view-header">
         <div class="view-header__meta">
           <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="view-badge">Interactive Schedule</span>
+            <span class="view-badge">Interactive Timeline</span>
             <span class="itinerary-count-badge">${rawBlocks.length} Scheduled Stops</span>
           </div>
           <p class="view-subtitle">
@@ -138,14 +132,6 @@ export function createItineraryView() {
       <!-- Draggable Timeline Blocks Container -->
       <div class="timeline-feed" id="timeline-feed-target">
         ${renderTimelineItems(blocksWithBuffers)}
-      </div>
-
-      <!-- Sub-feature Injection Zone -->
-      <div class="slot-injection-box">
-        <span class="slot-injection-box__label">/* INTERACTIVE TIMELINE RECALCULATION ENGINE */</span>
-        <p class="slot-injection-box__text">
-          Status lifecycle triggers, buffer deficit alerts, and drag-and-drop chronological synchronization are live.
-        </p>
       </div>
     `;
 
@@ -205,6 +191,11 @@ export function createItineraryView() {
                 </div>
 
                 <div class="timeline-card__controls">
+                  <!-- Per-Activity Chat Thread Button -->
+                  <button type="button" class="btn-thread-badge" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
+                    <span>💬 Thread</span>
+                  </button>
+
                   <!-- Quick Shift Up / Down Arrow buttons -->
                   ${
                     index > 0
@@ -355,6 +346,15 @@ export function createItineraryView() {
         const blockId = btn.getAttribute('data-status-btn');
         const block = itineraryList.find((b) => b.id === blockId);
         if (block) statusModal.open(block);
+      });
+    });
+
+    // 4b. Open Per-Activity Chat Thread
+    container.querySelectorAll('[data-thread-btn]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-thread-btn');
+        openQuickThreadDrawer(blockId);
       });
     });
 
@@ -545,6 +545,102 @@ export function createItineraryView() {
       setDayBlocks(rawBlocks);
       render();
     }
+  }
+
+  function openQuickThreadDrawer(blockId) {
+    const thread = getThreadById(blockId) || {
+      blockId,
+      title: 'Activity Discussion',
+      eventTitle: 'Itinerary Stop',
+      messages: [],
+    };
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'quick-thread-backdrop';
+
+    function renderThreadContent() {
+      backdrop.innerHTML = `
+        <div class="quick-thread-sheet" role="dialog" aria-labelledby="qt-title">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-divider); padding-bottom: 8px;">
+            <div>
+              <span style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: var(--color-primary);">Per-Activity Thread</span>
+              <h3 id="qt-title" style="font-size: var(--text-sm); font-weight: bold; color: var(--color-text-primary); margin: 0;">${thread.eventTitle || thread.title}</h3>
+            </div>
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-close-qt" style="width: 28px; height: 28px; padding: 0; border-radius: 50%;">✕</button>
+          </div>
+
+          <div class="chat-feed" style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
+            ${
+              thread.messages.length === 0
+                ? `<p style="font-size: 11px; color: var(--color-text-secondary); text-align: center; padding: 18px 0;">No messages in this activity thread yet. Start the debate below!</p>`
+                : thread.messages
+                    .map(
+                      (m) => `
+              <div class="chat-message ${m.isCurrentUser ? 'chat-message--outgoing' : 'chat-message--incoming'}">
+                ${!m.isCurrentUser ? `<div class="chat-message__avatar">${m.avatar}</div>` : ''}
+                <div class="chat-message__bubble">
+                  ${!m.isCurrentUser ? `<div class="chat-message__sender">${m.sender}</div>` : ''}
+                  <p class="chat-message__text">${m.text}</p>
+                  <span class="chat-message__time">${m.time}</span>
+                </div>
+              </div>
+            `
+                    )
+                    .join('')
+            }
+          </div>
+
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input 
+              type="text" 
+              class="chat-input" 
+              id="qt-input" 
+              placeholder="Discuss this block..." 
+              style="flex: 1; padding: 8px 14px; background: var(--color-surface-alt); border-radius: var(--radius-pill); border: 1px solid var(--color-border); font-size: 12px;" 
+            />
+            <button type="button" class="btn btn--primary btn--sm" id="btn-qt-send">Send</button>
+          </div>
+
+          <div style="text-align: center; margin-top: 2px;">
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-qt-go-full" style="width: 100%;">
+              💬 Open in Central Chat Hub
+            </button>
+          </div>
+        </div>
+      `;
+
+      backdrop.querySelector('#btn-close-qt').addEventListener('click', () => backdrop.remove());
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) backdrop.remove();
+      });
+
+      const input = backdrop.querySelector('#qt-input');
+      const sendBtn = backdrop.querySelector('#btn-qt-send');
+
+      function sendMsg() {
+        const txt = input.value.trim();
+        if (!txt) return;
+        addMessageToThread(blockId, txt);
+        thread.messages = (getThreadById(blockId) || thread).messages;
+        renderThreadContent();
+      }
+
+      sendBtn.addEventListener('click', sendMsg);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendMsg();
+        }
+      });
+
+      backdrop.querySelector('#btn-qt-go-full').addEventListener('click', () => {
+        backdrop.remove();
+        setActiveTab('chat');
+      });
+    }
+
+    renderThreadContent();
+    document.body.appendChild(backdrop);
   }
 
   // Initial setup and render

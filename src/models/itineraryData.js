@@ -207,3 +207,70 @@ export function resetItineraryData() {
   localStorage.removeItem(STORAGE_KEY);
   return JSON.parse(JSON.stringify(DEFAULT_ITINERARY));
 }
+
+/**
+ * Add a new block to itinerary
+ */
+export function addItineraryBlock(block) {
+  const list = getItineraryData();
+  list.push(block);
+  saveItineraryData(list);
+  return list;
+}
+
+/**
+ * Apply automated AI schedule reshuffle
+ */
+export function applyReshuffle(strategy = 'rain-delay') {
+  let list = getItineraryData();
+
+  if (strategy === 'rain-delay') {
+    // Swap outdoor bamboo grove on Day 2 with indoor museum fallback
+    list = list.map((b) => {
+      if (b.id === 'd2-2') {
+        return {
+          ...b,
+          title: 'Kyoto Railway Museum & Crafts (Indoor Backup)',
+          location: 'Shimogyo Ward, Kyoto',
+          notes: 'Reshuffled by AI Assistant due to 3:00 PM rain forecast.',
+          status: 'confirmed',
+          fallback: 'Arashiyama Bamboo Grove (Postponed)',
+        };
+      }
+      return b;
+    });
+  } else if (strategy === 'chill-pace') {
+    // Extend meal and rest durations, add more buffer
+    list = list.map((b) => {
+      if (b.category === 'meal' || b.category === 'rest') {
+        return {
+          ...b,
+          notes: (b.notes ? b.notes + ' ' : '') + '[Chill Pace: Extended rest buffer]',
+        };
+      }
+      return b;
+    });
+  } else if (strategy === 'turbo-pace') {
+    // Tighten transit and add bonus exploration notes
+    list = list.map((b) => {
+      return {
+        ...b,
+        transitToNextMinutes: Math.max(10, b.transitToNextMinutes - 5),
+      };
+    });
+  } else if (strategy === 'delay-30m') {
+    // Shift afternoon blocks forward
+    list = list.map((b) => {
+      if (b.day === 1 && (b.id === 'd1-4' || b.id === 'd1-5')) {
+        return {
+          ...b,
+          notes: (b.notes ? b.notes + ' ' : '') + '[Shifted +30m due to traffic delay]',
+        };
+      }
+      return b;
+    });
+  }
+
+  saveItineraryData(list);
+  return list;
+}

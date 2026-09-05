@@ -1,110 +1,193 @@
 /**
  * View: Per-Activity Chat Threads
- * Contextual discussions anchored strictly to individual itinerary blocks,
- * plus Wishlist scratchpad and native mini-polls.
+ * Dedicated contextual discussions anchored to individual itinerary blocks,
+ * with real-time thread switching and interactive group mini-polls.
  */
 
-export function createChatView() {
+import {
+  getChatThreads,
+  getThreadById,
+  addMessageToThread,
+  voteInPoll,
+} from '../models/chatData.js';
+
+export function createChatView(initialBlockId = 'd1-3') {
   const container = document.createElement('div');
   container.className = 'feature-view chat-view';
 
-  container.innerHTML = `
-    <!-- /* FEATURE INJECTION POINT: PER-ACTIVITY CHAT THREADS */ -->
-    <!-- Atmospheric Vertical Asset Banner -->
-    <div class="view-banner" style="background-image: url('./src/assets/bg-chat.png');">
-      <div class="view-banner__scrim">
-        <span class="view-banner__badge">📦 Boxed Buddies Chat</span>
-        <h2 class="view-banner__title">Per-Activity Chat</h2>
-      </div>
-    </div>
+  let activeThreadId = initialBlockId;
 
-    <div class="view-header">
-      <div class="view-header__meta">
-        <span class="view-badge">Topic-Focused Messaging</span>
-        <p class="view-subtitle">Discussions stay tied to specific timeline blocks to prevent main chat chaos</p>
-      </div>
+  function render() {
+    const threads = getChatThreads();
+    let activeThread = threads.find((t) => t.blockId === activeThreadId) || threads[0];
+    activeThreadId = activeThread.blockId;
 
-      <!-- Thread Anchor Selector -->
-      <div class="thread-selector-chips" role="tablist">
-        <button class="thread-chip thread-chip--active" role="tab">📍 Asakusa Visit</button>
-        <button class="thread-chip" role="tab">🍜 Dinner @ Shibuya</button>
-        <button class="thread-chip" role="tab">💡 Wishlist Ideas</button>
-      </div>
-    </div>
+    container.innerHTML = `
+      <div class="view-header">
+        <div class="view-header__meta">
+          <span class="view-badge">Topic-Focused Messaging</span>
+          <p class="view-subtitle">Discussions stay tied to specific timeline blocks to keep meal and timing debates organized</p>
+        </div>
 
-    <!-- Active Thread Context Header -->
-    <div class="active-thread-card">
-      <div class="active-thread-card__info">
-        <span class="active-thread-card__event">Event: Rooftop Matcha & Street Food</span>
-        <span class="active-thread-card__count">3 active participants</span>
-      </div>
-    </div>
-
-    <!-- Native Mini-Poll Card -->
-    <div class="poll-card">
-      <div class="poll-card__header">
-        <span class="poll-card__badge">📊 Native Mini-Poll</span>
-        <span class="poll-card__status">Voting Active</span>
-      </div>
-      <h3 class="poll-card__question">Which lunch spot should we lock in?</h3>
-      <div class="poll-options">
-        <button type="button" class="poll-option poll-option--selected">
-          <div class="poll-option__row">
-            <span>A: Traditional Soba Noodles</span>
-            <span class="poll-option__percent">67% (4 votes)</span>
-          </div>
-          <div class="poll-option__bar" style="width: 67%;"></div>
-        </button>
-        <button type="button" class="poll-option">
-          <div class="poll-option__row">
-            <span>B: Tsukiji Fresh Seafood Bowl</span>
-            <span class="poll-option__percent">33% (2 votes)</span>
-          </div>
-          <div class="poll-option__bar" style="width: 33%;"></div>
-        </button>
-      </div>
-    </div>
-
-    <!-- Chat Message Feed -->
-    <div class="chat-feed" id="chat-messages-target">
-      <div class="chat-message chat-message--incoming">
-        <div class="chat-message__avatar">🍙</div>
-        <div class="chat-message__bubble">
-          <div class="chat-message__sender">Traveler 1</div>
-          <p class="chat-message__text">The soba place has vegetarian options which fits everyone’s diet matrix!</p>
-          <span class="chat-message__time">10:14 AM</span>
+        <!-- Thread Anchor Selector -->
+        <div class="thread-selector-chips" role="tablist">
+          ${threads
+            .map(
+              (t) => `
+            <button 
+              type="button" 
+              class="thread-chip ${t.blockId === activeThreadId ? 'thread-chip--active' : ''}" 
+              data-thread-id="${t.blockId}"
+              role="tab"
+            >
+              ${t.title}
+            </button>
+          `
+            )
+            .join('')}
         </div>
       </div>
 
-      <div class="chat-message chat-message--outgoing">
-        <div class="chat-message__bubble">
-          <p class="chat-message__text">Agreed! Let's vote Option A so the schedule auto-updates.</p>
-          <span class="chat-message__time">10:16 AM</span>
+      <!-- Active Thread Context Card -->
+      <div class="active-thread-card">
+        <div class="active-thread-card__info">
+          <span class="active-thread-card__event">${activeThread.eventTitle}</span>
+          <span class="active-thread-card__count">📍 ${activeThread.location} • ${activeThread.participantCount} active travelers</span>
         </div>
       </div>
-    </div>
 
-    <!-- Message Input Bar -->
-    <div class="chat-input-bar">
-      <input type="text" class="chat-input" placeholder="Type a message or use #poll..." />
-      <button type="button" class="chat-send-btn" aria-label="Send message">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="22" y1="2" x2="11" y2="13"></line>
-          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
-      </button>
-    </div>
+      <!-- Native Mini-Poll Card (if available for thread) -->
+      ${renderPollHTML(activeThread.poll)}
 
-    <!-- Sub-feature Injection Zone -->
-    <div class="slot-injection-box">
-      <span class="slot-injection-box__label">/* CHAT & WEBSOCKET MOUNT POINT */</span>
-      <p class="slot-injection-box__text">
-        Feature container ready for real-time messaging, thread switching, and voting sync.
-      </p>
-    </div>
-  `;
+      <!-- Chat Message Feed -->
+      <div class="chat-feed" id="chat-messages-target">
+        ${activeThread.messages
+          .map(
+            (msg) => `
+          <div class="chat-message ${msg.isCurrentUser ? 'chat-message--outgoing' : 'chat-message--incoming'}">
+            ${!msg.isCurrentUser ? `<div class="chat-message__avatar">${msg.avatar}</div>` : ''}
+            <div class="chat-message__bubble">
+              ${!msg.isCurrentUser ? `<div class="chat-message__sender">${msg.sender}</div>` : ''}
+              <p class="chat-message__text">${escapeHtml(msg.text)}</p>
+              <span class="chat-message__time">${msg.time}</span>
+            </div>
+          </div>
+        `
+          )
+          .join('')}
+      </div>
+
+      <!-- Message Input Bar -->
+      <div class="chat-input-bar">
+        <input 
+          type="text" 
+          class="chat-input" 
+          id="chat-input-field" 
+          placeholder="Message #${activeThread.eventTitle}..." 
+        />
+        <button type="button" class="chat-send-btn" id="btn-send-chat" aria-label="Send message">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    // Thread chip switching
+    container.querySelectorAll('.thread-chip').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        activeThreadId = btn.getAttribute('data-thread-id');
+        render();
+      });
+    });
+
+    // Poll voting
+    if (activeThread.poll) {
+      container.querySelectorAll('.poll-option').forEach((optBtn) => {
+        optBtn.addEventListener('click', () => {
+          const optId = optBtn.getAttribute('data-opt-id');
+          voteInPoll(activeThread.blockId, optId);
+          render();
+        });
+      });
+    }
+
+    // Message sending
+    const inputField = container.querySelector('#chat-input-field');
+    const sendBtn = container.querySelector('#btn-send-chat');
+
+    function handleSend() {
+      const text = inputField.value.trim();
+      if (!text) return;
+      addMessageToThread(activeThread.blockId, text);
+      inputField.value = '';
+      render();
+      const feed = container.querySelector('#chat-messages-target');
+      if (feed) {
+        feed.scrollTop = feed.scrollHeight;
+      }
+    }
+
+    sendBtn.addEventListener('click', handleSend);
+    inputField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+  }
+
+  function renderPollHTML(poll) {
+    if (!poll) return '';
+    const totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
+
+    return `
+      <div class="poll-card">
+        <div class="poll-card__header">
+          <span class="poll-card__badge">📊 Activity Consensus Poll</span>
+          <span class="poll-card__status">${totalVotes} total votes</span>
+        </div>
+        <h3 class="poll-card__question">${poll.question}</h3>
+        <div class="poll-options">
+          ${poll.options
+            .map((opt) => {
+              const percent = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
+              const isSelected = poll.userVote === opt.id;
+              return `
+              <button 
+                type="button" 
+                class="poll-option ${isSelected ? 'poll-option--selected' : ''}" 
+                data-opt-id="${opt.id}"
+              >
+                <div class="poll-option__row">
+                  <span>${isSelected ? '✓ ' : ''}${opt.label}</span>
+                  <span class="poll-option__percent">${percent}% (${opt.votes})</span>
+                </div>
+                <div class="poll-option__bar" style="width: ${percent}%;"></div>
+              </button>
+            `;
+            })
+            .join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // Initial render
+  render();
 
   return {
     element: container,
+    switchThread: (blockId) => {
+      activeThreadId = blockId;
+      render();
+    },
   };
 }

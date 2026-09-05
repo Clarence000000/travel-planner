@@ -45,6 +45,16 @@
   background-attachment: fixed;
 }
 
+.app-shell[data-active-tab="ideas"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-chat.png');
+  background-repeat: repeat;
+  background-size: 230px auto;
+  background-position: top center;
+  background-attachment: fixed;
+}
+
 .app-shell[data-active-tab="dashboard"] {
   background-image: 
     linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),

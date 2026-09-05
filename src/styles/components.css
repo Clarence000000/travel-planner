@@ -144,33 +144,6 @@
   line-height: var(--leading-normal);
 }
 
-/* ──────────────── Sub-Feature Injection Box ──────────────── */
-
-.slot-injection-box {
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border: 1.5px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  margin-top: var(--space-2);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-}
-
-.slot-injection-box__label {
-  font-family: monospace;
-  font-size: 11px;
-  font-weight: var(--font-bold);
-  color: var(--color-primary);
-}
-
-.slot-injection-box__text {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-relaxed);
-}
-
 /* ──────────────── Itinerary View Elements ──────────────── */
 
 .day-chip-row {

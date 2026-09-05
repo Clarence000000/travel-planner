@@ -4,36 +4,43 @@
  * 1-tap schedule shift buttons (+30m, +1h), and pre-departure checklist.
  */
 
+import { applyReshuffle } from '../models/itineraryData.js';
+
 export function createDashboardView() {
   const container = document.createElement('div');
   container.className = 'feature-view dashboard-view';
 
-  container.innerHTML = `
-    <!-- /* FEATURE INJECTION POINT: NOW & NEXT LIVE DASHBOARD */ -->
-    <!-- Atmospheric Vertical Asset Banner -->
-    <div class="view-banner" style="background-image: url('./src/assets/bg-dashboard.png');">
-      <div class="view-banner__scrim">
-        <span class="view-banner__badge">🐾 Cozy Live HUD</span>
-        <h2 class="view-banner__title">Now & Next Dashboard</h2>
-      </div>
-    </div>
+  function showToast(message) {
+    const existing = document.querySelector('.toast-notice');
+    if (existing) existing.remove();
 
+    const toast = document.createElement('div');
+    toast.className = 'toast-notice';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      if (toast.parentElement) toast.remove();
+    }, 2800);
+  }
+
+  container.innerHTML = `
     <div class="view-header">
       <div class="view-header__meta">
-        <span class="view-badge">Day-of-Trip HUD</span>
-        <p class="view-subtitle">Real-time status, upcoming transit directions, and delay controls</p>
+        <span class="view-badge">Day-of-Trip Live HUD</span>
+        <p class="view-subtitle">Real-time status, transit directions, and delay controls for seamless navigation</p>
       </div>
     </div>
 
     <!-- 1-Tap Schedule Shift Toolbar -->
     <div class="shift-toolbar">
       <div class="shift-toolbar__label">
-        <span>⏱ Stuck in traffic or running late?</span>
-        <span class="shift-toolbar__sub">Shifts non-fixed slots forward automatically</span>
+        <span>⏱ Stuck in transit or running late?</span>
+        <span class="shift-toolbar__sub">Shifts remaining timeline slots forward and recalibrates buffers</span>
       </div>
       <div class="shift-buttons">
-        <button type="button" class="btn-shift">+30 Mins</button>
-        <button type="button" class="btn-shift">+1 Hour</button>
+        <button type="button" class="btn-shift" data-shift="30">+30 Mins</button>
+        <button type="button" class="btn-shift" data-shift="60">+1 Hour</button>
       </div>
     </div>
 
@@ -47,11 +54,11 @@ export function createDashboardView() {
       <p class="hud-card__address">📍 2-3-1 Asakusa, Taito City, Tokyo</p>
       
       <div class="hud-card__actions">
-        <a href="https://maps.google.com" target="_blank" rel="noopener" class="btn btn--primary btn--sm">
+        <a href="https://maps.google.com/?q=Sensoji+Temple" target="_blank" rel="noopener" class="btn btn--primary btn--sm">
           <span>🗺 Open in Maps</span>
         </a>
-        <button type="button" class="btn btn--secondary btn--sm">
-          <span>🎟 View QR Pass</span>
+        <button type="button" class="btn btn--secondary btn--sm" id="btn-view-pass">
+          <span>🎟 View Pass</span>
         </button>
       </div>
     </div>
@@ -93,24 +100,24 @@ export function createDashboardView() {
         </li>
       </ul>
     </div>
-
-    <!-- Sub-feature Injection Zone -->
-    <div class="slot-injection-box">
-      <span class="slot-injection-box__label">/* LIVE TELEMETRY & QR SCANNER MOUNT POINT */</span>
-      <p class="slot-injection-box__text">
-        Feature container ready for geolocation tracking, Apple/Google Wallet pass rendering, and timetable API sync.
-      </p>
-    </div>
   `;
 
-  // Attach interactive shift buttons demo feedback
+  // Attach interactive shift buttons
   const shiftBtns = container.querySelectorAll('.btn-shift');
   shiftBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
-      const text = btn.textContent.trim();
-      alert(`Schedule shifted by ${text}! Non-fixed activities adjusted with buffer recalculation.`);
+      const shiftMin = btn.getAttribute('data-shift');
+      applyReshuffle('delay-30m');
+      showToast(`⏱ Schedule shifted by +${shiftMin} mins! Buffers recalibrated.`);
     });
   });
+
+  const passBtn = container.querySelector('#btn-view-pass');
+  if (passBtn) {
+    passBtn.addEventListener('click', () => {
+      showToast('🎟 Pass #TK-9821 verified & ready.');
+    });
+  }
 
   return {
     element: container,

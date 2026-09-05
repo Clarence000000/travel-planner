@@ -1,11 +1,12 @@
 /**
- * Mobile-Only Travel Planner App
- * Orchestrates sticky header, dynamic tab views, and fixed 4-tab bottom navigation.
+ * Mobile Travel Planner App
+ * Orchestrates sticky header, dynamic tab views, and 5-tab bottom navigation.
  * Tab Views:
- * 1. Itinerary (Drag-and-Drop Itinerary)
+ * 1. Itinerary (Interactive Timeline)
  * 2. Chat (Per-Activity Chat Threads)
  * 3. Assistant (AI Schedule Assistant)
- * 4. Dashboard ("Now & Next" Live Dashboard)
+ * 4. Ideas (Trip Idea Wishlist & Whiteboard)
+ * 5. Dashboard (Now & Next Live HUD)
  */
 
 import { createHeader } from './components/Header.js';
@@ -13,6 +14,7 @@ import { createBottomNav } from './components/BottomNav.js';
 import { createItineraryView } from './views/ItineraryView.js';
 import { createChatView } from './views/ChatView.js';
 import { createAssistantView } from './views/AssistantView.js';
+import { createIdeasView } from './views/IdeasView.js';
 import { createDashboardView } from './views/DashboardView.js';
 import { onTabChange, setActiveTab, getActiveTab, getNavTabs } from './config/navigation.js';
 
@@ -72,6 +74,9 @@ export function initApp() {
         break;
       case 'assistant':
         view = createAssistantView();
+        break;
+      case 'ideas':
+        view = createIdeasView();
         break;
       case 'dashboard':
         view = createDashboardView();
