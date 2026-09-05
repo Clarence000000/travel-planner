@@ -14,6 +14,7 @@ import {
   deleteWhiteboardNote,
   promoteToItinerary,
 } from '../models/wishlistData.js';
+import { enableDragScroll } from '../utils/dragScroll.js';
 
 export function createIdeasView() {
   const container = document.createElement('div');
@@ -173,6 +174,9 @@ export function createIdeasView() {
         }
       </div>
     `;
+
+    // Enable drag scrolling on category filter bar
+    enableDragScroll(wrap.querySelector('.category-filter-bar'));
 
     // Filter chip clicks
     wrap.querySelectorAll('.filter-chip').forEach((btn) => {

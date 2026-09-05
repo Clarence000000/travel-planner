@@ -19,8 +19,8 @@
 // 7-seat van: [row0: Driver, Passenger], [row1: 2 seats], [row2: 3 seats]
 const DEFAULT_SEATS = [
   // Row 0 — Front
-  { id: 'seat-driver', row: 0, label: 'Driver', isDriver: true, occupant: { initials: 'NS', name: 'Neko-san' } },
-  { id: 'seat-front', row: 0, label: 'Shotgun', isDriver: false, occupant: { initials: 'SK', name: 'Sakura' } },
+  { id: 'seat-driver', row: 0, label: 'Driver', isDriver: true, occupant: { initials: 'CL', name: 'Clarence' } },
+  { id: 'seat-front', row: 0, label: 'Shotgun', isDriver: false, occupant: { initials: 'WG', name: 'Wei Gang' } },
   // Row 1 — Middle
   { id: 'seat-mid-l', row: 1, label: 'Middle Left', isDriver: false, occupant: { initials: 'HR', name: 'Haru' } },
   { id: 'seat-mid-r', row: 1, label: 'Middle Right', isDriver: false, occupant: null },

@@ -17,6 +17,7 @@ import { createStatusModal } from '../components/itinerary/StatusModal.js';
 import { createAddBlockModal } from '../components/itinerary/AddBlockModal.js';
 import { getThreadById, addMessageToThread } from '../models/chatData.js';
 import { setActiveTab } from '../config/navigation.js';
+import { enableDragScroll } from '../utils/dragScroll.js';
 
 export function createItineraryView() {
   const container = document.createElement('div');
@@ -350,6 +351,9 @@ export function createItineraryView() {
   }
 
   function attachEvents(currentRawBlocks) {
+    // 0. Enable horizontal drag scroll on Day selector
+    enableDragScroll(container.querySelector('.day-chip-row'));
+
     // 1. Day Selector Switching
     container.querySelectorAll('.day-chip').forEach((btn) => {
       btn.addEventListener('click', () => {

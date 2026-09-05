@@ -6,8 +6,8 @@
 
 import { getItineraryData, saveItineraryData } from './itineraryData.js';
 
-const STORAGE_KEY_WISHLIST = 'travel_planner_wishlist_v1';
-const STORAGE_KEY_WHITEBOARD = 'travel_planner_whiteboard_v1';
+const STORAGE_KEY_WISHLIST = 'travel_planner_wishlist_v2';
+const STORAGE_KEY_WHITEBOARD = 'travel_planner_whiteboard_v2';
 
 const INITIAL_WISHLIST = [
   {
@@ -20,7 +20,7 @@ const INITIAL_WISHLIST = [
     estimatedCost: '¥1,000 (~$7)',
     votes: 5,
     userVoted: true,
-    addedBy: 'Tony',
+    addedBy: 'Clarence',
   },
   {
     id: 'wl-2',
@@ -32,7 +32,7 @@ const INITIAL_WISHLIST = [
     estimatedCost: '¥2,500 (~$17)',
     votes: 4,
     userVoted: false,
-    addedBy: 'Elena',
+    addedBy: 'Wei Gang',
   },
   {
     id: 'wl-3',
@@ -56,7 +56,7 @@ const INITIAL_WISHLIST = [
     estimatedCost: '¥3,000 (~$20)',
     votes: 3,
     userVoted: false,
-    addedBy: 'Tony',
+    addedBy: 'Clarence',
   },
 ];
 
@@ -68,7 +68,7 @@ const INITIAL_WHITEBOARD_NOTES = [
     color: 'yellow',
     x: 16,
     y: 24,
-    author: 'Tony',
+    author: 'Clarence',
     tag: 'Transit',
   },
   {
@@ -78,7 +78,7 @@ const INITIAL_WHITEBOARD_NOTES = [
     color: 'peach',
     x: 210,
     y: 35,
-    author: 'Elena',
+    author: 'Wei Gang',
     tag: 'Backup',
   },
   {
@@ -98,7 +98,7 @@ const INITIAL_WHITEBOARD_NOTES = [
     color: 'sky',
     x: 215,
     y: 215,
-    author: 'Tony',
+    author: 'Clarence',
     tag: 'Logistics',
   },
 ];
@@ -127,7 +127,7 @@ export function addWishlistItem(item) {
     id: 'wl-' + Date.now(),
     votes: 1,
     userVoted: true,
-    addedBy: 'Tony',
+    addedBy: 'Clarence',
     ...item,
   };
   list.unshift(newItem);
@@ -181,7 +181,7 @@ export function addWhiteboardNote(note) {
     color: note.color || 'yellow',
     x: note.x !== undefined ? note.x : 40,
     y: note.y !== undefined ? note.y : 40,
-    author: 'Tony',
+    author: 'Clarence',
     tag: note.tag || 'Idea',
   };
   notes.push(newNote);

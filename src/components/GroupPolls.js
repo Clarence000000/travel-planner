@@ -1,5 +1,5 @@
 /**
- * Component: Quick Group Polls (群投票联动日程)
+ * Component: Quick Group Polls
  * An inline, state-driven poll card that looks like an undecided schedule slot.
  * Features:
  *   1. Schedule-inline form — displays as a "pending decision" itinerary card
@@ -11,12 +11,12 @@
 
 // ── Fake Voter Avatars ──────────────────────────────────────────────────
 const VOTER_POOL = [
-  { initials: 'HR', name: 'Haru' },
-  { initials: 'MC', name: 'Mochi' },
+  { initials: 'CL', name: 'Clarence' },
+  { initials: 'WG', name: 'Wei Gang' },
   { initials: 'SK', name: 'Sakura' },
   { initials: 'YK', name: 'Yuki' },
   { initials: 'RN', name: 'Ren' },
-  { initials: 'KT', name: 'Kitsune' },
+  { initials: 'KT', name: 'Kenji' },
 ];
 
 // ── Default Poll Data ───────────────────────────────────────────────────
@@ -66,6 +66,29 @@ const DEFAULT_POLLS = [
     myVote: null,
     ended: false,
     winnerId: null,
+  },
+  {
+    id: 'poll-breakfast',
+    question: 'Day 1 Breakfast Spot',
+    subtitle: 'Day 1 • 08:30 AM Slot • Consensus Reached',
+    timeSlot: '08:30 AM – 09:30 AM',
+    options: [
+      {
+        id: 'opt-b1',
+        label: 'Tsujihan Seafood Donburi',
+        location: 'Nihonbashi, Tokyo',
+        votes: [VOTER_POOL[0], VOTER_POOL[1], VOTER_POOL[2], VOTER_POOL[4]],
+      },
+      {
+        id: 'opt-b2',
+        label: 'Bills Omotesando Hotcakes',
+        location: 'Jingumae, Shibuya',
+        votes: [VOTER_POOL[3]],
+      },
+    ],
+    myVote: 'opt-b1',
+    ended: true,
+    winnerId: 'opt-b1',
   },
 ];
 
@@ -258,13 +281,13 @@ export function createGroupPolls() {
     const poll = polls.find((p) => p.id === pollId);
     if (!poll || poll.ended) return;
 
-    const meVoter = { emoji: '🧑', name: 'You' };
+    const meVoter = { initials: 'CL', name: 'Clarence (You)' };
 
     // Remove previous vote if exists
     if (poll.myVote) {
       const prevOpt = poll.options.find((o) => o.id === poll.myVote);
       if (prevOpt) {
-        prevOpt.votes = prevOpt.votes.filter((v) => v.name !== 'You');
+        prevOpt.votes = prevOpt.votes.filter((v) => v.name !== 'Clarence (You)');
       }
     }
 
@@ -307,7 +330,7 @@ export function createGroupPolls() {
     poll.ended = true;
 
     // Show toast (emit custom event for parent to catch, or use simple built-in)
-    showPollToast(wrapper, `✅ "${sorted[0].label}" locked in as Confirmed!`);
+    showPollToast(wrapper, `"${sorted[0].label}" locked in as Confirmed!`);
 
     render();
   }

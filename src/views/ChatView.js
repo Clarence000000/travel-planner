@@ -13,6 +13,7 @@ import {
   voteInPoll,
 } from '../models/chatData.js';
 import { createGroupPolls } from '../components/GroupPolls.js';
+import { enableDragScroll } from '../utils/dragScroll.js';
 
 export function createChatView(initialBlockId = null) {
   const container = document.createElement('div');
@@ -96,19 +97,19 @@ export function createChatView(initialBlockId = null) {
                 </p>
                 <div class="thread-item-card__footer">
                   <span class="thread-item-card__badge">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                    ${t.location.split(',')[0]}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span>${t.location.split(',')[0]}</span>
                   </span>
                   <span class="thread-item-card__badge">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                    ${t.participantCount} travelers
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                    <span>${t.participantCount} travelers</span>
                   </span>
                   ${
                     t.poll
                       ? `
                     <span class="thread-item-card__badge thread-item-card__badge--poll">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 2px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                      Poll
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                      <span>Poll</span>
                     </span>`
                       : ''
                   }
@@ -126,6 +127,9 @@ export function createChatView(initialBlockId = null) {
       <!-- Quick Group Polls Section -->
       <div id="group-polls-hub-mount" style="margin-top: var(--space-3);"></div>
     `;
+
+    // Enable drag scrolling on the upper filter bar
+    enableDragScroll(hubElem.querySelector('.category-filter-bar'));
 
     // Filter button handlers
     hubElem.querySelectorAll('.filter-chip').forEach((btn) => {

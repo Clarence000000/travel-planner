@@ -6,6 +6,7 @@
 
 import { applyReshuffle } from '../models/itineraryData.js';
 import { setActiveTab } from '../config/navigation.js';
+import { enableDragScroll } from '../utils/dragScroll.js';
 
 export function createAssistantView() {
   const container = document.createElement('div');
@@ -212,6 +213,9 @@ export function createAssistantView() {
         render();
       });
     });
+
+    // Enable drag scrolling on scenario chips
+    enableDragScroll(container.querySelector('.preset-scenarios-row'));
 
     // Preset chips
     container.querySelectorAll('.preset-chip').forEach((chip) => {

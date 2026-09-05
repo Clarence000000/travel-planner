@@ -4,7 +4,7 @@
  * anchored to specific Itinerary Blocks.
  */
 
-const STORAGE_KEY = 'travel_planner_chat_v2';
+const STORAGE_KEY = 'travel_planner_chat_v3';
 
 const INITIAL_THREADS = [
   {
@@ -26,16 +26,16 @@ const INITIAL_THREADS = [
     messages: [
       {
         id: 'm1',
-        sender: 'Sarah L.',
-        avatar: 'SL',
+        sender: 'Wei Gang',
+        avatar: 'WG',
         text: 'The handmade soba place has vegan and gluten-friendly options which fits everyone!',
         time: '10:14 AM',
         isCurrentUser: false,
       },
       {
         id: 'm2',
-        sender: 'Tony (You)',
-        avatar: 'TY',
+        sender: 'Clarence (You)',
+        avatar: 'CL',
         text: "Agreed! Let's vote Option A so the schedule auto-updates the reservation time.",
         time: '10:16 AM',
         isCurrentUser: true,
@@ -61,16 +61,16 @@ const INITIAL_THREADS = [
     messages: [
       {
         id: 'm201',
-        sender: 'Elena R.',
-        avatar: 'ER',
+        sender: 'Wei Gang',
+        avatar: 'WG',
         text: 'Remember to carry 100-yen coins for fortune omikuji sticks!',
         time: '09:40 AM',
         isCurrentUser: false,
       },
       {
         id: 'm202',
-        sender: 'Tony (You)',
-        avatar: 'TY',
+        sender: 'Clarence (You)',
+        avatar: 'CL',
         text: 'Got cash ready! Meet at the Kaminarimon Thunder Gate entrance at 10:40 AM.',
         time: '09:45 AM',
         isCurrentUser: true,
@@ -96,16 +96,16 @@ const INITIAL_THREADS = [
     messages: [
       {
         id: 'm301',
-        sender: 'Sarah L.',
-        avatar: 'SL',
+        sender: 'Wei Gang',
+        avatar: 'WG',
         text: 'Heads up: floors are mirrored in the crystal room, avoid skirts or wear shorts underneath!',
         time: '11:05 AM',
         isCurrentUser: false,
       },
       {
         id: 'm302',
-        sender: 'Tony (You)',
-        avatar: 'TY',
+        sender: 'Clarence (You)',
+        avatar: 'CL',
         text: 'Good catch! Added to the slot requirements list.',
         time: '11:12 AM',
         isCurrentUser: true,
@@ -142,8 +142,8 @@ const INITIAL_THREADS = [
     messages: [
       {
         id: 'm501',
-        sender: 'Elena R.',
-        avatar: 'ER',
+        sender: 'Wei Gang',
+        avatar: 'WG',
         text: 'Welcome everyone to Tokyo! Check the Itinerary tab for Day 1 blocks.',
         time: '08:30 AM',
         isCurrentUser: false,
@@ -198,8 +198,8 @@ export function addMessageToThread(blockId, text) {
 
   const newMessage = {
     id: 'msg-' + Date.now(),
-    sender: 'Tony (You)',
-    avatar: 'TY',
+    sender: 'Clarence (You)',
+    avatar: 'CL',
     text: text.trim(),
     time: timeStr,
     isCurrentUser: true,
