@@ -831,3 +831,1182 @@
   height: 16px;
   cursor: pointer;
 }
+
+/* ──────────────── Dashboard Interactive: Toast ──────────────── */
+
+.dash-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0, 0, 0, 0.06);
+  z-index: var(--z-toast, 300);
+  opacity: 0;
+  transform: translateY(-12px) scale(0.96);
+  transition: opacity var(--transition-base), transform var(--transition-base);
+  pointer-events: none;
+}
+
+.dash-toast--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.dash-toast--exit {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+}
+
+.dash-toast--shift {
+  border-left: 3px solid #F59E0B;
+}
+
+.dash-toast--success {
+  border-left: 3px solid var(--color-secondary);
+}
+
+.dash-toast--info {
+  border-left: 3px solid var(--color-primary);
+}
+
+.dash-toast__icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.dash-toast__msg {
+  line-height: var(--leading-normal);
+}
+
+/* ──────────────── Dashboard Interactive: QR Modal ──────────────── */
+
+.qr-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(26, 26, 26, 0.0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  transition: background-color var(--transition-base), backdrop-filter var(--transition-base);
+  padding: var(--space-4);
+}
+
+.qr-modal-overlay--visible {
+  background-color: rgba(26, 26, 26, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.qr-modal-overlay--exit {
+  background-color: rgba(26, 26, 26, 0.0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+}
+
+.qr-modal {
+  width: 100%;
+  max-width: 340px;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-5);
+  transform: scale(0.9) translateY(20px);
+  opacity: 0;
+  transition: transform var(--transition-slow), opacity var(--transition-base);
+}
+
+.qr-modal-overlay--visible .qr-modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.qr-modal-overlay--exit .qr-modal {
+  transform: scale(0.92) translateY(10px);
+  opacity: 0;
+}
+
+.qr-modal__header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.qr-modal__badge {
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+}
+
+.qr-modal__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.qr-modal__close:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.qr-modal__qr-wrapper {
+  width: 200px;
+  height: 200px;
+  background-color: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.qr-modal__info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.qr-modal__title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.qr-modal__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.qr-modal__detail-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface-alt);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.qr-modal__detail-icon {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.qr-modal__close-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: var(--text-sm);
+}
+
+/* ──────────────── Dashboard Interactive: Simulate Button ──────────────── */
+
+.dash-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.btn-sim-arrival {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.btn-sim-arrival:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.2);
+}
+
+.btn-sim-arrival:active {
+  transform: scale(0.94);
+}
+
+.btn-sim-arrival__icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ──────────────── Dashboard Interactive: Card Fade Transitions ──────────────── */
+
+.hud-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+}
+
+.hud-cards--exit {
+  opacity: 0;
+  transform: translateX(-16px);
+  pointer-events: none;
+}
+
+.hud-cards--enter {
+  animation: slideInRight 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ──────────────── Dashboard Interactive: Countdown Flash ──────────────── */
+
+@keyframes countdownFlash {
+  0% { color: var(--color-text-tertiary); }
+  30% { color: var(--color-primary); transform: scale(1.12); }
+  100% { color: var(--color-text-tertiary); transform: scale(1); }
+}
+
+.countdown-flash {
+  animation: countdownFlash 0.6s ease;
+  display: inline-block;
+}
+
+/* ──────────────── Dashboard Interactive: Checklist Enhancements ──────────────── */
+
+.checklist-label--done {
+  text-decoration: line-through;
+  color: var(--color-text-tertiary);
+}
+
+.checklist-card__count--done {
+  color: var(--color-secondary) !important;
+  font-weight: var(--font-bold);
+}
+
+/* ──────────────── Dashboard Interactive: Done state for next card ──────────────── */
+
+.hud-card--done {
+  border-left-color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(255, 240, 230, 0.95) 0%, rgba(255, 255, 255, 0.92) 100%);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ──────────────── Quick Group Polls Component ──────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.group-polls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.group-polls__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.group-polls__title {
+  font-size: var(--text-md);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+}
+
+.group-polls__subtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ──────────────── Poll Card ──────────────── */
+
+.gpoll-card {
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+  animation: fadeIn var(--transition-fast) ease-in-out;
+}
+
+.gpoll-card:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.gpoll-card--confirmed {
+  border-color: var(--color-secondary);
+  border-left: 4px solid var(--color-secondary);
+  background: linear-gradient(135deg, rgba(232, 245, 233, 0.6) 0%, rgba(255, 255, 255, 0.94) 100%);
+}
+
+/* Badge Row */
+.gpoll-card__badge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.gpoll-card__schedule-badge {
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  color: var(--color-text-secondary);
+  background-color: var(--color-surface-alt);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-divider);
+}
+
+.gpoll-card__schedule-badge--confirmed {
+  background-color: var(--color-secondary-light);
+  border-color: var(--color-secondary);
+  color: var(--color-secondary);
+}
+
+.gpoll-card__status-pill {
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.gpoll-card__status-pill--voting {
+  color: #B45309;
+  background-color: #FEF3C7;
+}
+
+.gpoll-card__status-pill--confirmed {
+  color: var(--color-secondary);
+  background-color: var(--color-secondary-light);
+}
+
+/* Question */
+.gpoll-card__question {
+  font-size: var(--text-md);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: var(--leading-tight);
+}
+
+.gpoll-card__context {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  margin-top: -4px;
+}
+
+/* ──────────────── Poll Options ──────────────── */
+
+.gpoll-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.gpoll-option {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background-color: var(--color-surface-alt);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.gpoll-option:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.1);
+}
+
+.gpoll-option:active {
+  transform: scale(0.985);
+}
+
+.gpoll-option--selected {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  box-shadow: 0 2px 12px rgba(232, 98, 26, 0.15);
+}
+
+.gpoll-option--leading .gpoll-option__pct {
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+}
+
+/* Animated progress bar */
+.gpoll-option__bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: rgba(232, 98, 26, 0.08);
+  border-radius: var(--radius-lg);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 0;
+}
+
+.gpoll-option--selected .gpoll-option__bar {
+  background-color: rgba(232, 98, 26, 0.12);
+}
+
+/* Content layer */
+.gpoll-option__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.gpoll-option__label-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.gpoll-option__emoji {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.gpoll-option__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gpoll-option__name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.gpoll-option__location {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+}
+
+.gpoll-option__stats {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.gpoll-option__pct {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  min-width: 32px;
+  text-align: right;
+  transition: color var(--transition-fast);
+}
+
+/* Check mark */
+.gpoll-option__check {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 12px;
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  z-index: 2;
+  background-color: rgba(255, 255, 255, 0.9);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ──────────────── Avatar Stack ──────────────── */
+
+.gpoll-avatar-stack {
+  display: flex;
+  flex-direction: row-reverse;
+}
+
+.gpoll-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  border: 2px solid white;
+  margin-left: -8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform var(--transition-fast);
+}
+
+.gpoll-avatar:last-child {
+  margin-left: 0;
+}
+
+.gpoll-avatar:hover {
+  transform: scale(1.15);
+  z-index: 10 !important;
+}
+
+/* ──────────────── Action Bar ──────────────── */
+
+.gpoll-card__actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-divider);
+  gap: var(--space-2);
+}
+
+.gpoll-card__vote-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gpoll-card__total-votes {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+}
+
+.gpoll-card__my-vote {
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  color: var(--color-secondary);
+}
+
+.gpoll-card__tap-hint {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+}
+
+.gpoll-end-btn {
+  flex-shrink: 0;
+}
+
+.gpoll-end-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ──────────────── Confirmed Card Body ──────────────── */
+
+.gpoll-confirmed-body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.gpoll-confirmed-emoji {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.gpoll-confirmed-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.gpoll-confirmed-title {
+  font-size: var(--text-md);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+}
+
+.gpoll-confirmed-location {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+.gpoll-confirmed-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-divider);
+}
+
+.gpoll-confirmed-result {
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  color: var(--color-secondary);
+}
+
+.gpoll-avatar-stack--confirmed .gpoll-avatar {
+  border-color: var(--color-secondary-light);
+}
+
+/* ──────────────── Poll Toast ──────────────── */
+
+.gpoll-toast {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-xl);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-secondary);
+  background-color: rgba(232, 245, 233, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--color-secondary);
+  box-shadow: 0 4px 24px rgba(45, 106, 46, 0.12);
+  opacity: 0;
+  transform: translateY(-10px) scale(0.96);
+  transition: opacity var(--transition-base), transform var(--transition-base);
+  pointer-events: none;
+}
+
+.gpoll-toast--visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.gpoll-toast--exit {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.97);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ──────────────── Carpool & Transit Planner Drawer ──────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+/* Trigger button in NEXT card */
+.btn-carpool {
+  margin-top: var(--space-2);
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── Overlay & Backdrop ────────────────────────────────────────────────── */
+
+.carpool-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-modal);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.carpool-overlay--open {
+  pointer-events: auto;
+}
+
+.carpool-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(26, 26, 26, 0);
+  transition: background-color var(--transition-slow);
+}
+
+.carpool-overlay--open .carpool-backdrop {
+  background-color: rgba(26, 26, 26, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.carpool-overlay--closing .carpool-backdrop {
+  background-color: rgba(26, 26, 26, 0);
+}
+
+/* ── Sheet ──────────────────────────────────────────────────────────────── */
+
+.carpool-sheet {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--mobile-max-width);
+  max-height: 88vh;
+  overflow-y: auto;
+  background-color: var(--color-surface);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.15);
+  padding: 0 var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.carpool-overlay--open .carpool-sheet {
+  transform: translateY(0);
+}
+
+.carpool-overlay--closing .carpool-sheet {
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Handle bar */
+.carpool-sheet__handle {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) 0 var(--space-1);
+}
+
+.carpool-sheet__handle span {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background-color: var(--color-border);
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+
+.carpool-sheet__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.carpool-sheet__header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.carpool-sheet__badge {
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+}
+
+.carpool-sheet__close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.carpool-sheet__close:hover {
+  background-color: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ── Route Info ────────────────────────────────────────────────────────── */
+
+.carpool-route {
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.carpool-route__endpoints {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.carpool-route__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.carpool-route__dot--from {
+  background-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(232, 98, 26, 0.2);
+}
+
+.carpool-route__dot--to {
+  background-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(45, 106, 46, 0.2);
+}
+
+.carpool-route__arrow {
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+}
+
+.carpool-route__name {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+}
+
+.carpool-route__meta {
+  display: flex;
+  gap: var(--space-4);
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+}
+
+/* ── Seat Count Bar ────────────────────────────────────────────────────── */
+
+.carpool-seat-bar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.carpool-seat-bar__info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.carpool-seat-bar__count {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+}
+
+.carpool-seat-bar__hint {
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+}
+
+.carpool-seat-bar__progress {
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--color-divider);
+  overflow: hidden;
+}
+
+.carpool-seat-bar__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--color-primary), #FF8542);
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── Van Visualization ─────────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+.carpool-van {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2) 0;
+}
+
+.carpool-van__body {
+  width: 240px;
+  background-color: var(--color-surface-alt);
+  border: 2px solid var(--color-border);
+  border-radius: 32px 32px 24px 24px;
+  padding: 0 var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: relative;
+}
+
+/* Windshield */
+.carpool-van__windshield {
+  background: linear-gradient(180deg, rgba(232, 98, 26, 0.08) 0%, transparent 100%);
+  border-radius: 28px 28px 0 0;
+  padding: var(--space-2) 0;
+  text-align: center;
+  font-size: 9px;
+  font-weight: var(--font-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-tertiary);
+}
+
+/* Rows */
+.carpool-van__row {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.carpool-van__row--back {
+  gap: var(--space-2);
+}
+
+.carpool-van__aisle {
+  width: 16px;
+  flex-shrink: 0;
+}
+
+/* ── Seat ───────────────────────────────────────────────────────────────── */
+
+.carpool-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 64px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  border: none;
+  background: none;
+  cursor: default;
+}
+
+/* Driver */
+.carpool-seat--driver .carpool-seat__avatar--driver {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-surface-alt), var(--color-divider));
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.carpool-seat__name {
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 60px;
+  text-align: center;
+}
+
+.carpool-seat__role {
+  font-size: 9px;
+  font-weight: var(--font-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Filled seat */
+.carpool-seat--filled .carpool-seat__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-primary-light);
+  border: 2px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all var(--transition-base);
+}
+
+/* "You" seat */
+.carpool-seat--you .carpool-seat__avatar {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  box-shadow: 0 0 0 3px rgba(232, 98, 26, 0.2), var(--shadow-card);
+}
+
+.carpool-seat--you .carpool-seat__name {
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+}
+
+/* Empty seat */
+.carpool-seat--empty {
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: var(--space-2);
+}
+
+.carpool-seat--empty:hover {
+  transform: scale(1.08);
+}
+
+.carpool-seat--empty:active {
+  transform: scale(0.95);
+}
+
+.carpool-seat__empty-ring {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px dashed var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  background-color: transparent;
+}
+
+.carpool-seat--empty:hover .carpool-seat__empty-ring {
+  border-color: var(--color-primary);
+  background-color: rgba(232, 98, 26, 0.05);
+}
+
+.carpool-seat__plus {
+  font-size: 18px;
+  font-weight: var(--font-bold);
+  color: var(--color-text-tertiary);
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+
+.carpool-seat--empty:hover .carpool-seat__plus {
+  color: var(--color-primary);
+}
+
+.carpool-seat__join {
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.carpool-seat--empty:hover .carpool-seat__join {
+  color: var(--color-primary);
+}
+
+/* Claim animation */
+@keyframes seatClaim {
+  0% { transform: scale(0.6); opacity: 0; }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.carpool-seat--claimed .carpool-seat__avatar {
+  animation: seatClaim 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+
+.carpool-sheet__footer {
+  display: flex;
+  gap: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-divider);
+}
+
+.carpool-sheet__reset-btn {
+  flex: 1;
+}
+
+.carpool-sheet__confirm-btn {
+  flex: 1;
+}
+
+.carpool-sheet__confirm-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Carpool Toast ─────────────────────────────────────────────────────── */
+
+.carpool-toast {
+  position: absolute;
+  bottom: var(--space-10);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px) scale(0.96);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  color: var(--color-surface);
+  background: linear-gradient(135deg, var(--color-primary), #FF8542);
+  box-shadow: 0 4px 20px rgba(232, 98, 26, 0.3);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--transition-base), transform var(--transition-base);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.carpool-toast--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+
+

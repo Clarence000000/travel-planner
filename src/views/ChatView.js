@@ -1,7 +1,7 @@
 /**
  * View: Per-Activity Chat Threads
- * Dedicated contextual discussions anchored to individual itinerary blocks,
- * with real-time thread switching and interactive group mini-polls.
+ * Contextual discussions anchored strictly to individual itinerary blocks,
+ * with real-time thread switching, native mini-polls, and interactive Quick Group Polls.
  */
 
 import {
@@ -10,6 +10,7 @@ import {
   addMessageToThread,
   voteInPoll,
 } from '../models/chatData.js';
+import { createGroupPolls } from '../components/GroupPolls.js';
 
 export function createChatView(initialBlockId = 'd1-3') {
   const container = document.createElement('div');
@@ -58,6 +59,9 @@ export function createChatView(initialBlockId = 'd1-3') {
 
       <!-- Native Mini-Poll Card (if available for thread) -->
       ${renderPollHTML(activeThread.poll)}
+
+      <!-- Quick Group Polls Component Mount -->
+      <div id="group-polls-mount"></div>
 
       <!-- Chat Message Feed -->
       <div class="chat-feed" id="chat-messages-target">
@@ -136,6 +140,13 @@ export function createChatView(initialBlockId = 'd1-3') {
         handleSend();
       }
     });
+
+    // Mount interactive Group Polls
+    const pollsMount = container.querySelector('#group-polls-mount');
+    if (pollsMount) {
+      const groupPolls = createGroupPolls();
+      pollsMount.appendChild(groupPolls.element);
+    }
   }
 
   function renderPollHTML(poll) {
