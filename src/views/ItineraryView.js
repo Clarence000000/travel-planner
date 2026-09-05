@@ -635,6 +635,7 @@ export function createItineraryView() {
 
       backdrop.querySelector('#btn-qt-go-full').addEventListener('click', () => {
         backdrop.remove();
+        sessionStorage.setItem('travel_pending_thread', blockId);
         setActiveTab('chat');
       });
     }
