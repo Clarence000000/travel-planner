@@ -24,7 +24,7 @@ npm run dev
   - [ ] Show imported IG reels in assistant
   - [ ] Allow users to enter interests
   - [ ] Classify and recommend activities from chat threads
-- [ ] Organise chat threads so they are categorised (Food, Location, Hotel, etc.) instead of just a flat list
+- [x] Organise chat threads so they are categorised (Food, Location, Hotel, etc.) instead of just a flat list
 - [ ] Update Dashboard Day-of-Trip HUD so that it is only active on the actual day of the trip, with main focus activity only
 
 ### UI / UX & Quality Audit
@@ -47,7 +47,7 @@ npm run dev
 #### Chat View (`#chat`)
 - [ ] AI: Fix group poll consensus toast disappearing immediately upon render (`showPollToast` immediately overwritten by subsequent `render()` call in `GroupPolls.js`).
 - [ ] AI: Fix chat input bar not adhering to mobile sticky layout standards (sits in normal document flow below messages instead of pinned above the bottom navigation bar).
-- [ ] AI: Fix missing activity metadata in newly created discussion threads (creates generic title and hardcoded "Tokyo" location, ignoring user input).
+- [x] AI: Fix missing activity metadata in newly created discussion threads (creates generic title and hardcoded "Tokyo" location, ignoring user input).
 
 #### Assistant View (`#assistant`)
 - [ ] AI: Relocate toast notice styles out of `ideas.css` into a shared stylesheet (`.toast-notice` used in `AssistantView.js` relies exclusively on `ideas.css`).

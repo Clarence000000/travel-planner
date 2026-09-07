@@ -826,6 +826,8 @@ export function createItineraryView() {
       blockId,
       title: 'Activity Discussion',
       eventTitle: 'Itinerary Stop',
+      category: 'location',
+      location: 'Tokyo & Kyoto',
       messages: [],
     };
 
@@ -833,14 +835,20 @@ export function createItineraryView() {
     backdrop.className = 'quick-thread-backdrop';
 
     function renderThreadContent() {
+      const catClass = thread.category || 'location';
+      const catLabel = catClass.charAt(0).toUpperCase() + catClass.slice(1);
+
       backdrop.innerHTML = `
         <div class="quick-thread-sheet" role="dialog" aria-labelledby="qt-title">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-divider); padding-bottom: 8px;">
             <div>
-              <span style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: var(--color-primary);">Per-Activity Thread</span>
+              <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
+                <span class="thread-category-pill thread-category-pill--${catClass}">${catLabel}</span>
+                <span style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: var(--color-text-secondary);">${thread.location ? thread.location.split(',')[0] : 'Tokyo'}</span>
+              </div>
               <h3 id="qt-title" style="font-size: var(--text-sm); font-weight: bold; color: var(--color-text-primary); margin: 0;">${thread.eventTitle || thread.title}</h3>
             </div>
-            <button type="button" class="drawer-close-btn" id="btn-close-qt" aria-label="Close activity thread">✕</button>
+            <button type="button" class="drawer-close-btn" id="btn-close-qt" aria-label="Close activity thread" style="min-width: 44px; min-height: 44px;">✕</button>
           </div>
 
           <div class="chat-feed" style="max-height: 250px; overflow-y: auto; padding-right: 4px;">

@@ -336,12 +336,195 @@
   font-weight: var(--font-bold);
 }
 
-/* ──────────────── Thread List / Hub View ──────────────── */
+/* ──────────────── Filter Chips ──────────────── */
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  min-height: 38px;
+  user-select: none;
+}
+
+.filter-chip:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-text-tertiary);
+  color: var(--color-text-primary);
+}
+
+.filter-chip--active {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+  font-weight: var(--font-bold);
+  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.25);
+}
+
+.filter-chip--active:hover {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+/* ──────────────── Categorised Threads Hub & Sections ──────────────── */
 
 .threads-hub {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.threads-categories-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.thread-category-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.thread-category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-1) 0 var(--space-1);
+}
+
+.thread-category-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.thread-category-header__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+}
+
+.thread-category-header__icon--food {
+  background-color: #FEF3C7;
+  color: #D97706;
+  border-color: #FDE68A;
+}
+
+.thread-category-header__icon--location {
+  background-color: #DCFCE7;
+  color: #15803D;
+  border-color: #BBF7D0;
+}
+
+.thread-category-header__icon--hotel {
+  background-color: #EEF2FF;
+  color: #4F46E5;
+  border-color: #C7D2FE;
+}
+
+.thread-category-header__icon--transit {
+  background-color: #E0F2FE;
+  color: #0284C7;
+  border-color: #BAE6FD;
+}
+
+.thread-category-header__icon--general {
+  background-color: #FFF3EB;
+  color: #E8621A;
+  border-color: #FFD8C2;
+}
+
+.thread-category-header__icon--polls {
+  background-color: #EDE9FE;
+  color: #7C3AED;
+  border-color: #DDD6FE;
+}
+
+.thread-category-header__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.thread-category-header__name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.thread-category-header__desc {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.thread-category-header__count {
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Category Badges on Thread Cards & Headers */
+.thread-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  text-transform: capitalize;
+  line-height: 1.2;
+}
+
+.thread-category-pill--food {
+  background-color: #FEF3C7;
+  color: #B45309;
+}
+
+.thread-category-pill--location {
+  background-color: #DCFCE7;
+  color: #15803D;
+}
+
+.thread-category-pill--hotel {
+  background-color: #EEF2FF;
+  color: #4338CA;
+}
+
+.thread-category-pill--transit {
+  background-color: #E0F2FE;
+  color: #0369A1;
+}
+
+.thread-category-pill--general {
+  background-color: #FFF3EB;
+  color: #C2410C;
 }
 
 .threads-list {
@@ -366,7 +549,7 @@
 }
 
 .thread-item-card:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: var(--shadow-card-hover);
   border-color: var(--color-primary);
 }
@@ -382,6 +565,41 @@
   font-size: 22px;
   flex-shrink: 0;
   border: 1px solid var(--color-border);
+  transition: transform var(--transition-fast);
+}
+
+.thread-item-card:hover .thread-item-card__icon {
+  transform: scale(1.05);
+}
+
+.thread-item-card__icon--food {
+  background-color: #FEF3C7;
+  color: #D97706;
+  border-color: #FDE68A;
+}
+
+.thread-item-card__icon--location {
+  background-color: #DCFCE7;
+  color: #15803D;
+  border-color: #BBF7D0;
+}
+
+.thread-item-card__icon--hotel {
+  background-color: #EEF2FF;
+  color: #4F46E5;
+  border-color: #C7D2FE;
+}
+
+.thread-item-card__icon--transit {
+  background-color: #E0F2FE;
+  color: #0284C7;
+  border-color: #BAE6FD;
+}
+
+.thread-item-card__icon--general {
+  background-color: #FFF3EB;
+  color: #E8621A;
+  border-color: #FFD8C2;
 }
 
 .thread-item-card__content {
@@ -481,8 +699,8 @@
 .btn-back-threads {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 6px;
+  padding: 8px 14px;
   border-radius: var(--radius-pill);
   font-size: var(--text-xs);
   font-weight: var(--font-bold);
@@ -492,11 +710,97 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   flex-shrink: 0;
+  min-height: 44px;
 }
 
 .btn-back-threads:hover {
   background-color: var(--color-primary-light);
   border-color: var(--color-primary);
+}
+
+/* New Thread Creation Modal */
+.new-thread-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.new-thread-sheet {
+  background-color: var(--color-surface);
+  width: 100%;
+  max-width: 430px;
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  padding: var(--space-4) var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom, 16px));
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.15);
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.25s ease-out;
+}
+
+.new-thread-sheet__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-divider);
+}
+
+.new-thread-category-chips {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+
+.new-thread-category-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.new-thread-cat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  background-color: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  min-height: 40px;
+  transition: all var(--transition-fast);
+}
+
+.new-thread-cat-chip:hover {
+  border-color: var(--color-text-tertiary);
+  color: var(--color-text-primary);
+}
+
+.new-thread-cat-chip--active {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-primary-text) !important;
+  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.25);
+}
+
+.new-thread-cat-chip__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.new-thread-cat-chip--active .new-thread-cat-chip__icon svg {
+  stroke: #ffffff;
 }
 
 .thread-conv-header__info {
@@ -761,14 +1065,29 @@
 }
 
 .chat-send-btn {
-  width: 32px;
-  height: 32px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 50%;
   background-color: var(--color-primary);
   color: var(--color-primary-text);
   display: flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.chat-send-btn:hover {
+  background-color: var(--color-primary-hover);
+  transform: scale(1.04);
+}
+
+.chat-send-btn:active {
+  transform: scale(0.96);
 }
 
 /* ──────────────── Assistant & Optimizer View Elements ──────────────── */
