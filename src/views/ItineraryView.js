@@ -619,13 +619,38 @@ export function createItineraryView() {
 
                   ${
                     block.fallback
-                      ? `<div class="fallback-pill-inline">
-                          <span style="font-weight: 700; color: #EA580C; display: inline-flex; align-items: center; gap: 4px;">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                            Contingency:
-                          </span>
-                          <span>${block.fallback}</span>
-                        </div>`
+                      ? (() => {
+                          let reasonLabel = 'Backup Option';
+                          let reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+                          if (block.fallbackReason === 'weather') {
+                            reasonLabel = 'Rain / Inclement Weather';
+                            reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/><path d="M8 19v2"/><path d="M8 13v2"/><path d="M12 21v2"/><path d="M12 15v2"/><path d="M16 19v2"/><path d="M16 13v2"/></svg>';
+                          } else if (block.fallbackReason === 'crowd') {
+                            reasonLabel = 'Crowded / Long Queue';
+                            reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
+                          } else if (block.fallbackReason === 'closed') {
+                            reasonLabel = 'Closed / Sold Out';
+                            reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>';
+                          }
+
+                          return `<div class="contingency-card">
+                            <div class="contingency-card__header">
+                              <span class="contingency-card__badge contingency-card__badge--${block.fallbackReason || 'default'}">
+                                ${reasonIcon}
+                                <span>${reasonLabel}</span>
+                              </span>
+                              <button type="button" class="contingency-card__swap-btn" data-swap-fallback="${block.id}" title="Swap active event with this backup">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                </svg>
+                                <span>Swap to Backup</span>
+                              </button>
+                            </div>
+                            <div class="contingency-card__body">
+                              <span class="contingency-card__title">${block.fallback}</span>
+                            </div>
+                          </div>`;
+                        })()
                       : ''
                   }
 
@@ -732,6 +757,23 @@ export function createItineraryView() {
         const blockId = btn.getAttribute('data-status-btn');
         const block = itineraryList.find((b) => b.id === blockId);
         if (block) statusModal.open(block);
+      });
+    });
+
+    // 4d. 1-Tap Swap Active Block with Contingency Backup
+    container.querySelectorAll('[data-swap-fallback]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-swap-fallback');
+        const block = itineraryList.find((b) => b.id === blockId);
+        if (block && block.fallback) {
+          const originalTitle = block.title;
+          block.title = block.fallback;
+          block.fallback = originalTitle;
+          saveItineraryData(itineraryList);
+          render();
+          showScheduleToast(`Swapped to backup: ${block.title}`);
+        }
       });
     });
 
