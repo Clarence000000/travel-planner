@@ -22,7 +22,7 @@ export const DEFAULT_ITINERARY = [
     requirements: ['Passports Ready', 'Booking #TK-9821'],
     fallback: null,
     notes: 'Luggage storage is free before 3:00 PM check-in.',
-    dressCode: 'Casual comfortable',
+    dressCode: null,
   },
   {
     id: 'd1-2',
@@ -49,28 +49,29 @@ export const DEFAULT_ITINERARY = [
     status: 'tentative', // Weather Permitting with attached fallback
     title: 'Rooftop Matcha & Street Food Market',
     location: 'Nakamise Street & Asakusa Rooftop',
-    transitToNextMinutes: 35, // Requires 35m transit to next event!
+    transitToNextMinutes: 35, // Requires 35m transit to next event
     transitMode: 'Metro (Ginza Line)',
     requirements: ['Cash Only Stalls'],
     fallback: 'Indoor Asakusa Underground Ramen Arcade',
+    fallbackReason: 'weather', // 'weather' | 'crowd' | 'closed' | 'general'
     notes: 'Rooftop seating depends on weather; indoor arcade is 2 mins away.',
-    dressCode: 'Casual',
+    dressCode: null,
   },
   {
     id: 'd1-4',
     day: 1,
-    startTime: '14:15', // Note: only 15m buffer after 14:00! Triggers transit buffer warning because transitToNextMinutes is 35!
-    endTime: '16:30',
+    startTime: '14:35',
+    endTime: '16:35',
     category: 'activity',
     status: 'proposed',
     title: 'teamLab Borderless Digital Art Museum',
     location: 'Azabudai Hills',
-    transitToNextMinutes: 20,
+    transitToNextMinutes: 25,
     transitMode: 'Subway (Hibiya Line)',
     requirements: ['Advance E-Tickets Booked', 'Charged Phone for QR'],
     fallback: null,
     notes: 'Requires timed-entry ticket slot at 2:30 PM.',
-    dressCode: 'Wear dark shoes, mirrored floors',
+    dressCode: 'Wear pants & dark flat shoes (mirrored floors)',
   },
   {
     id: 'd1-5',
@@ -84,17 +85,18 @@ export const DEFAULT_ITINERARY = [
     transitToNextMinutes: 0,
     transitMode: 'Walk back to hotel',
     requirements: ['20+ Age Verification', 'Reservation Confirmed'],
-    fallback: null,
+    fallback: 'Tsunahachi Tempura Bar (if queue > 30m)',
+    fallbackReason: 'crowd',
     notes: 'Table booked under "Travel Group" for 7:00 PM.',
-    dressCode: 'Casual',
+    dressCode: null,
   },
 
   // ── Day 2 (Kyoto Culture & Bamboo Groves) ──
   {
     id: 'd2-1',
     day: 2,
-    startTime: '07:30',
-    endTime: '09:45',
+    startTime: '08:30',
+    endTime: '10:00',
     category: 'transit',
     status: 'confirmed',
     title: 'Shinkansen Bullet Train to Kyoto',
@@ -104,12 +106,12 @@ export const DEFAULT_ITINERARY = [
     requirements: ['JR Rail Pass Validated', 'Luggage Tag'],
     fallback: null,
     notes: 'Car 6, seats 12A-12D reserved.',
-    dressCode: 'Comfortable travel wear',
+    dressCode: null,
   },
   {
     id: 'd2-2',
     day: 2,
-    startTime: '10:15',
+    startTime: '10:30',
     endTime: '12:30',
     category: 'activity',
     status: 'tentative',
@@ -117,10 +119,11 @@ export const DEFAULT_ITINERARY = [
     location: 'Ukyo Ward, Kyoto',
     transitToNextMinutes: 15,
     transitMode: 'Scenic Rickshaw or Walking',
-    requirements: ['Sturdy walking shoes', 'Camera'],
+    requirements: ['Comfortable walking shoes', 'Camera'],
     fallback: 'Kyoto Railway Museum & Indoor Crafts Center',
-    notes: 'Best photographed in early morning light. Outdoor trail.',
-    dressCode: 'Hiking/sneakers recommended',
+    fallbackReason: 'weather',
+    notes: 'Best photographed in morning light. Outdoor trail.',
+    dressCode: null,
   },
   {
     id: 'd2-3',
@@ -136,7 +139,7 @@ export const DEFAULT_ITINERARY = [
     requirements: ['Vegetarian Options Requested'],
     fallback: null,
     notes: 'Waiting for group poll consensus.',
-    dressCode: 'Casual',
+    dressCode: null,
   },
 
   // ── Day 3 (Modern Vibes & Departure) ──
@@ -153,8 +156,9 @@ export const DEFAULT_ITINERARY = [
     transitMode: 'Walk across crossing',
     requirements: ['Morning Pass 10:00 AM', 'Hat Clips on Rooftop'],
     fallback: 'Shibuya Parco Indoor Shopping & Nintendo Center',
+    fallbackReason: 'weather',
     notes: 'High winds may close open-air deck; 46F indoor lounge remains open.',
-    dressCode: 'No loose hats or tripods on glass deck',
+    dressCode: 'No loose hats, scarves, or tripods on glass deck',
   },
   {
     id: 'd3-2',
@@ -170,11 +174,11 @@ export const DEFAULT_ITINERARY = [
     requirements: ['Group Set Menu Pre-Ordered'],
     fallback: null,
     notes: 'All dietary restrictions cross-checked.',
-    dressCode: 'Smart casual',
+    dressCode: null,
   },
 ];
 
-const STORAGE_KEY = 'travel_planner_itinerary_v1';
+const STORAGE_KEY = 'travel_planner_itinerary_v3';
 
 function sanitizeBlock(block) {
   const clean = (str) =>
@@ -198,8 +202,9 @@ function sanitizeBlock(block) {
     endTime: minutesTo24(endMins),
     title: clean(block.title),
     requirements: uniqueReqs,
-    dressCode: clean(block.dressCode),
-    fallback: clean(block.fallback),
+    dressCode: block.dressCode ? clean(block.dressCode) : null,
+    fallback: block.fallback ? clean(block.fallback) : null,
+    fallbackReason: block.fallbackReason || 'general',
     notes: clean(block.notes),
   };
 }
@@ -212,14 +217,23 @@ export function getItineraryData() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed)) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Sanity check: Ensure day 1 starts at normal daylight hours (6 AM to 10 PM)
+        const d1First = parsed.find((b) => b.day === 1);
+        if (d1First) {
+          const startMins = timeToMinutes(d1First.startTime);
+          if (startMins >= 22 * 60 || startMins < 6 * 60) {
+            console.warn('[Itinerary] Corrupted overnight schedule detected in storage. Resetting to defaults.');
+            return resetItineraryData();
+          }
+        }
         return parsed.map(sanitizeBlock);
       }
     }
   } catch (e) {
     console.warn('[Itinerary] Failed to parse saved itinerary:', e);
   }
-  return JSON.parse(JSON.stringify(DEFAULT_ITINERARY)).map(sanitizeBlock);
+  return resetItineraryData();
 }
 
 /**
@@ -269,6 +283,7 @@ export function applyReshuffle(strategy = 'rain-delay') {
           notes: 'Reshuffled by AI Assistant due to 3:00 PM rain forecast.',
           status: 'confirmed',
           fallback: 'Arashiyama Bamboo Grove (Postponed)',
+          fallbackReason: 'weather',
         };
       }
       return b;
@@ -308,3 +323,4 @@ export function applyReshuffle(strategy = 'rain-delay') {
   saveItineraryData(list);
   return list;
 }
+
