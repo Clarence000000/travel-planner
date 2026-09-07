@@ -1,12 +1,19 @@
 /**
  * Component: Onboarding & Data Import Modal
  * Provides an interactive welcome experience allowing travelers to:
- * 1. Answer quick AI questions to generate a tailored itinerary (mock/fake generation)
- * 2. Import travel data from Instagram Reels / TikTok links (mock/fake extraction)
- * 3. Explore pre-curated default Tokyo & Kyoto itinerary
+ * 1. Configure Destination & Timing (Step 1)
+ * 2. Answer quick AI questions on Vibe, Pace, and anchor top-voted Wishlist spots (Step 2)
+ * 3. Import travel data from Instagram Reels / TikTok links
+ * 4. Review Trip Reveal Summary Sheet (Step 3) before editing timeline
  */
 
 import { saveItineraryData, getItineraryData } from '../models/itineraryData.js';
+import {
+  getWishlist,
+  addWishlistItem,
+  getTopVotedWishlistItems,
+  markWishlistScheduled,
+} from '../models/wishlistData.js';
 import { setActiveTab } from '../config/navigation.js';
 
 export function createOnboardingModal(options = {}) {
@@ -20,16 +27,19 @@ export function createOnboardingModal(options = {}) {
   overlay.setAttribute('aria-labelledby', 'onboarding-title');
   overlay.style.display = 'none';
 
-  // State
-  let currentStep = 'menu'; // 'menu' | 'questions' | 'reels' | 'processing'
+  // Modal Step State: 'menu' | 'destination' | 'questions' | 'reels' | 'processing' | 'reveal'
+  let currentStep = 'menu';
   let processingType = 'questions'; // 'questions' | 'reels'
   let processingStep = 0;
 
   // Questionnaire state
   const survey = {
+    destination: 'Tokyo & Kyoto, Japan',
+    duration: 3,
     vibe: 'food', // 'food' | 'culture' | 'modern' | 'scenic'
     pace: 'balanced', // 'chill' | 'balanced' | 'turbo'
     travelers: 'duo', // 'duo' | 'squad' | 'solo'
+    anchorWishlist: true,
   };
 
   // Reels state
@@ -54,24 +64,29 @@ export function createOnboardingModal(options = {}) {
   }
 
   function renderStepContent() {
-    if (currentStep === 'processing') {
-      return renderProcessingView();
+    switch (currentStep) {
+      case 'destination':
+        return renderDestinationView();
+      case 'questions':
+        return renderQuestionsView();
+      case 'reels':
+        return renderReelsView();
+      case 'processing':
+        return renderProcessingView();
+      case 'reveal':
+        return renderRevealView();
+      case 'menu':
+      default:
+        return renderMenuView();
     }
-    if (currentStep === 'questions') {
-      return renderQuestionsView();
-    }
-    if (currentStep === 'reels') {
-      return renderReelsView();
-    }
-    return renderMenuView();
   }
 
-  // ── Step 1: Main Menu ──────────────────────────────────────────────────
+  // ── Step 0: Main Menu ──────────────────────────────────────────────
   function renderMenuView() {
     return `
       <div class="onboarding-header">
         <div class="onboarding-icon-badge">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
           </svg>
         </div>
@@ -80,7 +95,7 @@ export function createOnboardingModal(options = {}) {
       </div>
 
       <div class="onboarding-options">
-        <!-- Option 1: AI Questions -->
+        <!-- Option 1: AI Questions with Destination & Wishlist -->
         <button type="button" class="onboarding-option-card" id="btn-select-questions">
           <div class="onboarding-option-card__icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -90,10 +105,10 @@ export function createOnboardingModal(options = {}) {
           </div>
           <div class="onboarding-option-card__info">
             <div class="onboarding-option-card__top">
-              <h3 class="onboarding-option-card__title">Quick Trip Questionnaire</h3>
+              <h3 class="onboarding-option-card__title">Trip Setup & Questionnaire</h3>
               <span class="onboarding-option-card__badge">Smart AI</span>
             </div>
-            <p class="onboarding-option-card__desc">Answer 3 simple questions about your group's vibe, budget, and desired pace.</p>
+            <p class="onboarding-option-card__desc">Set destination, customize vibe & pace, and anchor top-voted group wishlist spots.</p>
           </div>
           <div class="onboarding-option-card__arrow">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -102,7 +117,7 @@ export function createOnboardingModal(options = {}) {
 
         <!-- Option 2: Social Media Reels Import -->
         <button type="button" class="onboarding-option-card" id="btn-select-reels">
-          <div class="onboarding-option-card__icon" style="color: #E1306C; background-color: #FDF2F8; border-color: #FBCFE8;">
+          <div class="onboarding-option-card__icon" style="color: #BE185D; background-color: #FDF2F8; border-color: #FBCFE8;">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
@@ -114,7 +129,7 @@ export function createOnboardingModal(options = {}) {
               <h3 class="onboarding-option-card__title">Import from IG Reels / TikTok</h3>
               <span class="onboarding-option-card__badge" style="background-color: #FDF2F8; color: #BE185D;">Auto-Extract</span>
             </div>
-            <p class="onboarding-option-card__desc">Paste a travel video or select trending viral Reels to scan spots into your schedule.</p>
+            <p class="onboarding-option-card__desc">Scan video links to schedule hero spots and save candidate venues into your wishlist.</p>
           </div>
           <div class="onboarding-option-card__arrow">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -130,22 +145,112 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Step 2A: Questionnaire Form ───────────────────────────────────────
-  function renderQuestionsView() {
+  // ── Step 1: Destination & Duration ─────────────────────────────────
+  function renderDestinationView() {
+    const popularDestinations = [
+      'Tokyo & Kyoto, Japan',
+      'Seoul, South Korea',
+      'Taipei, Taiwan',
+      'Paris, France',
+      'Rome, Italy',
+    ];
+
+    const durations = [
+      { days: 3, label: '3 Days (Weekend)' },
+      { days: 5, label: '5 Days (Standard)' },
+      { days: 7, label: '7 Days (Full Week)' },
+    ];
+
     return `
       <div class="onboarding-header">
         <button type="button" class="onboarding-back-btn" id="btn-back-menu">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Back</span>
         </button>
-        <h2 class="onboarding-title" style="margin-top: 8px;">Trip Preferences</h2>
-        <p class="onboarding-subtitle">Tell us what Clarence and Wei Gang love most:</p>
+        <h2 class="onboarding-title" style="margin-top: 8px;">Where & When?</h2>
+        <p class="onboarding-subtitle">Step 1 of 2: Set your trip destination and duration</p>
+      </div>
+
+      <div class="onboarding-form">
+        <!-- Destination Input -->
+        <div class="onboarding-field">
+          <label class="onboarding-field__label" for="dest-search-input">Destination</label>
+          <div class="onboarding-input-wrap">
+            <input
+              type="text"
+              class="onboarding-url-input"
+              id="dest-search-input"
+              value="${survey.destination}"
+              placeholder="e.g. Tokyo, Seoul, Paris..."
+            />
+          </div>
+
+          <!-- Quick City Chips -->
+          <div class="onboarding-dest-chips">
+            ${popularDestinations
+              .map(
+                (city) => `
+              <button
+                type="button"
+                class="onboarding-dest-chip ${survey.destination === city ? 'onboarding-dest-chip--active' : ''}"
+                data-dest="${city}"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>${city.split(',')[0]}</span>
+              </button>
+            `
+              )
+              .join('')}
+          </div>
+        </div>
+
+        <!-- Duration Presets -->
+        <div class="onboarding-field">
+          <label class="onboarding-field__label">Trip Duration</label>
+          <div class="onboarding-chip-group">
+            ${durations
+              .map(
+                (d) => `
+              <button
+                type="button"
+                class="onboarding-chip ${survey.duration === d.days ? 'onboarding-chip--active' : ''}"
+                data-duration="${d.days}"
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>${d.label}</span>
+              </button>
+            `
+              )
+              .join('')}
+          </div>
+        </div>
+
+        <button type="button" class="btn btn--primary onboarding-submit-btn" id="btn-next-preferences">
+          <span>Continue to Preferences</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left: 6px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    `;
+  }
+
+  // ── Step 2: Vibe, Pace & Wishlist Anchors ───────────────────────────
+  function renderQuestionsView() {
+    const topWishlist = getTopVotedWishlistItems(3);
+
+    return `
+      <div class="onboarding-header">
+        <button type="button" class="onboarding-back-btn" id="btn-back-destination">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span>Back to Destination</span>
+        </button>
+        <h2 class="onboarding-title" style="margin-top: 8px;">Trip Preferences & Anchors</h2>
+        <p class="onboarding-subtitle">Step 2 of 2: Customize vibe, pace, and group consensus</p>
       </div>
 
       <div class="onboarding-form">
         <!-- Question 1: Vibe -->
         <div class="onboarding-field">
-          <label class="onboarding-field__label">1. What's the primary travel focus?</label>
+          <label class="onboarding-field__label">1. Primary travel focus?</label>
           <div class="onboarding-chip-group">
             <button type="button" class="onboarding-chip ${survey.vibe === 'food' ? 'onboarding-chip--active' : ''}" data-vibe="food">
               Food & Night Markets
@@ -194,6 +299,40 @@ export function createOnboardingModal(options = {}) {
           </div>
         </div>
 
+        <!-- Question 4: Wishlist Anchors Integration -->
+        <div class="onboarding-anchor-box">
+          <div class="onboarding-anchor-header">
+            <div class="onboarding-anchor-title-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-primary);"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <span>Anchor Group Wishlist Spots</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-anchor-wishlist" ${survey.anchorWishlist ? 'checked' : ''} />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <p class="onboarding-anchor-desc">Automatically locks top-voted wishlist ideas as core itinerary anchors.</p>
+
+          ${
+            survey.anchorWishlist && topWishlist.length > 0
+              ? `
+            <div class="onboarding-anchor-chips">
+              ${topWishlist
+                .map(
+                  (item) => `
+                <span class="onboarding-anchor-chip">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>${item.title.split(' ')[0]} (${item.votes} votes)</span>
+                </span>
+              `
+                )
+                .join('')}
+            </div>
+          `
+              : ''
+          }
+        </div>
+
         <button type="button" class="btn btn--primary onboarding-submit-btn" id="btn-submit-questions">
           <span>Generate Customized Itinerary</span>
         </button>
@@ -201,7 +340,7 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Step 2B: IG Reels / Social Import Form ─────────────────────────────
+  // ── Step 2B: IG Reels / Social Import Form ──────────────────────────
   function renderReelsView() {
     return `
       <div class="onboarding-header">
@@ -257,21 +396,21 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Step 3: Mock AI Processing Animation ──────────────────────────────
+  // ── Step 3: AI Processing Animation ────────────────────────────────
   function renderProcessingView() {
     const isReel = processingType === 'reels';
     const steps = isReel
       ? [
           'Downloading audio transcript and video metadata...',
           'Detecting geo-coordinates and spot names (4 venues found)...',
-          'Aligning opening hours & transit buffer recalculation...',
-          'Building your 3-day itinerary stops!',
+          'Saving secondary venues to Trip Wishlist...',
+          'Scheduling hero spot into Day 1 timeline with buffers!',
         ]
       : [
-          'Analyzing travel vibe and group preferences...',
-          'Optimizing Tokyo and Kyoto route transit corridors...',
-          'Assigning meal slots and weather-permitting fallbacks...',
-          'Finalizing your customized Japan itinerary!',
+          'Aligning travel vibe and group pace preferences...',
+          'Extracting top-voted spots from Trip Wishlist as anchors...',
+          'Balancing transit travel windows & weather contingencies...',
+          'Synthesizing your optimized 3-day itinerary!',
         ];
 
     const currentText = steps[Math.min(processingStep, steps.length - 1)];
@@ -296,7 +435,15 @@ export function createOnboardingModal(options = {}) {
               const isCurrent = i === processingStep;
               return `
               <div class="processing-step-item ${isDone ? 'is-done' : isCurrent ? 'is-active' : ''}">
-                <span class="step-indicator">${isDone ? '✓' : isCurrent ? '●' : '○'}</span>
+                <span class="step-indicator">
+                  ${
+                    isDone
+                      ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`
+                      : isCurrent
+                      ? `<svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle></svg>`
+                      : `<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>`
+                  }
+                </span>
                 <span>${text}</span>
               </div>
             `;
@@ -307,24 +454,110 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Event Handlers ────────────────────────────────────────────────────
+  // ── Step 4: Trip Reveal Summary Sheet ───────────────────────────────
+  function renderRevealView() {
+    const isReel = processingType === 'reels';
+    const topWishlist = getTopVotedWishlistItems(2);
+
+    return `
+      <div class="onboarding-reveal">
+        <!-- Hero Summary Card -->
+        <div class="reveal-hero">
+          <span class="reveal-hero__badge">Trip Synthesis Ready</span>
+          <h2 class="reveal-hero__title">${survey.destination}</h2>
+          
+          <!-- Trip DNA Badges -->
+          <div class="reveal-dna-bar">
+            <span class="reveal-dna-pill">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span>${survey.duration} Days</span>
+            </span>
+            <span class="reveal-dna-pill">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <span>${survey.pace.charAt(0).toUpperCase() + survey.pace.slice(1)} Pace</span>
+            </span>
+            <span class="reveal-dna-pill">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Transit Buffer Safe</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 3-Day Snapshot List -->
+        <div class="reveal-days-list">
+          <div class="reveal-day-card">
+            <div class="reveal-day-num">D1</div>
+            <div class="reveal-day-info">
+              <h4 class="reveal-day-title">Arrival, Historic Asakusa & Digital Art</h4>
+              <span class="reveal-day-meta">4 activities • 30m allocated transit buffer</span>
+            </div>
+          </div>
+
+          <div class="reveal-day-card">
+            <div class="reveal-day-num">D2</div>
+            <div class="reveal-day-info">
+              <h4 class="reveal-day-title">Kyoto Cultural Shrines & Riverside Soba</h4>
+              <span class="reveal-day-meta">3 activities • Weather-permitting fallback armed</span>
+            </div>
+          </div>
+
+          <div class="reveal-day-card">
+            <div class="reveal-day-num">D3</div>
+            <div class="reveal-day-info">
+              <h4 class="reveal-day-title">Modern Cityscape, Skyline & Farewell BBQ</h4>
+              <span class="reveal-day-meta">2 activities • Direct airport transit linked</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Anchors Summary Box -->
+        <div class="reveal-anchors-box">
+          <span class="reveal-anchors-title">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <span>${isReel ? 'Extracted Spots Linked' : 'Group Wishlist Anchors Scheduled'}</span>
+          </span>
+          <div class="reveal-anchors-chips">
+            ${
+              isReel
+                ? `
+              <span class="reveal-anchor-tag">Shibuya Sky (Scheduled Day 1)</span>
+              <span class="reveal-anchor-tag">3 Alley Venues (Saved to Wishlist)</span>
+            `
+                : survey.anchorWishlist && topWishlist.length > 0
+                ? topWishlist.map((item) => `<span class="reveal-anchor-tag">${item.title}</span>`).join('')
+                : `<span class="reveal-anchor-tag">Curated AI Highlights</span>`
+            }
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="reveal-actions">
+          <button type="button" class="btn btn--primary onboarding-submit-btn" id="btn-reveal-confirm">
+            <span>Explore Full Itinerary</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left: 6px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+          <button type="button" class="reveal-btn-reedit" id="btn-reveal-adjust">
+            Adjust Vibe or Pace
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── Event Handlers ──────────────────────────────────────────────────
   function bindEvents() {
     // Close / Skip
     const closeBtn = overlay.querySelector('#btn-close-onboarding');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeModal);
-    }
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
 
     const skipBtn = overlay.querySelector('#btn-skip-onboarding');
-    if (skipBtn) {
-      skipBtn.addEventListener('click', closeModal);
-    }
+    if (skipBtn) skipBtn.addEventListener('click', closeModal);
 
-    // Step navigation
+    // Menu Navigation
     const selectQuestions = overlay.querySelector('#btn-select-questions');
     if (selectQuestions) {
       selectQuestions.addEventListener('click', () => {
-        currentStep = 'questions';
+        currentStep = 'destination';
         render();
       });
     }
@@ -337,15 +570,53 @@ export function createOnboardingModal(options = {}) {
       });
     }
 
-    const backBtn = overlay.querySelector('#btn-back-menu');
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
+    // Step 1: Destination handlers
+    const backMenuBtn = overlay.querySelector('#btn-back-menu');
+    if (backMenuBtn) {
+      backMenuBtn.addEventListener('click', () => {
         currentStep = 'menu';
         render();
       });
     }
 
-    // Questionnaire chips
+    const destInput = overlay.querySelector('#dest-search-input');
+    if (destInput) {
+      destInput.addEventListener('input', (e) => {
+        survey.destination = e.target.value;
+      });
+    }
+
+    overlay.querySelectorAll('[data-dest]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        survey.destination = btn.getAttribute('data-dest');
+        render();
+      });
+    });
+
+    overlay.querySelectorAll('[data-duration]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        survey.duration = Number(btn.getAttribute('data-duration'));
+        render();
+      });
+    });
+
+    const nextPrefBtn = overlay.querySelector('#btn-next-preferences');
+    if (nextPrefBtn) {
+      nextPrefBtn.addEventListener('click', () => {
+        currentStep = 'questions';
+        render();
+      });
+    }
+
+    // Step 2: Questionnaire handlers
+    const backDestBtn = overlay.querySelector('#btn-back-destination');
+    if (backDestBtn) {
+      backDestBtn.addEventListener('click', () => {
+        currentStep = 'destination';
+        render();
+      });
+    }
+
     overlay.querySelectorAll('[data-vibe]').forEach((chip) => {
       chip.addEventListener('click', () => {
         survey.vibe = chip.getAttribute('data-vibe');
@@ -367,7 +638,14 @@ export function createOnboardingModal(options = {}) {
       });
     });
 
-    // Questionnaire submit
+    const anchorToggle = overlay.querySelector('#toggle-anchor-wishlist');
+    if (anchorToggle) {
+      anchorToggle.addEventListener('change', (e) => {
+        survey.anchorWishlist = e.target.checked;
+        render();
+      });
+    }
+
     const submitQuestions = overlay.querySelector('#btn-submit-questions');
     if (submitQuestions) {
       submitQuestions.addEventListener('click', () => {
@@ -375,7 +653,7 @@ export function createOnboardingModal(options = {}) {
       });
     }
 
-    // Reel presets
+    // Reels handlers
     overlay.querySelectorAll('.demo-reel-card').forEach((card) => {
       card.addEventListener('click', () => {
         const url = card.getAttribute('data-reel-url');
@@ -386,7 +664,6 @@ export function createOnboardingModal(options = {}) {
       });
     });
 
-    // Reel submit
     const submitReel = overlay.querySelector('#btn-submit-reel');
     if (submitReel) {
       submitReel.addEventListener('click', () => {
@@ -395,9 +672,25 @@ export function createOnboardingModal(options = {}) {
         startProcessing('reels');
       });
     }
+
+    // Step 3: Reveal Sheet Handlers
+    const confirmReveal = overlay.querySelector('#btn-reveal-confirm');
+    if (confirmReveal) {
+      confirmReveal.addEventListener('click', () => {
+        finishOnboarding(processingType);
+      });
+    }
+
+    const adjustReveal = overlay.querySelector('#btn-reveal-adjust');
+    if (adjustReveal) {
+      adjustReveal.addEventListener('click', () => {
+        currentStep = 'questions';
+        render();
+      });
+    }
   }
 
-  // ── Fake Processing Animation & Data Injection ────────────────────────
+  // ── Processing Animation ────────────────────────────────────────────
   function startProcessing(type) {
     processingType = type;
     currentStep = 'processing';
@@ -410,13 +703,15 @@ export function createOnboardingModal(options = {}) {
         render();
       } else {
         clearInterval(interval);
-        finishOnboarding(type);
+        // Advance to Step 3: Trip Reveal Summary Sheet
+        currentStep = 'reveal';
+        render();
       }
-    }, 600);
+    }, 550);
   }
 
+  // ── Finalization & Cross-Tab Ecosystem Propagation ──────────────────
   function finishOnboarding(type) {
-    // Generate simulated themed itinerary blocks
     applyGeneratedData(type);
 
     localStorage.setItem('travel_planner_onboarded_v1', 'true');
@@ -424,6 +719,9 @@ export function createOnboardingModal(options = {}) {
 
     // Navigate to itinerary tab
     setActiveTab('itinerary');
+
+    // Show clean celebration toast
+    showToastNotice('Itinerary generated! Wishlist anchors synced and transit buffers optimized.');
 
     if (typeof onComplete === 'function') {
       onComplete(type);
@@ -434,7 +732,7 @@ export function createOnboardingModal(options = {}) {
     const list = getItineraryData();
 
     if (type === 'reels') {
-      // Injected Reel Spot
+      // 1. Injected Primary Reel Spot into Day 1 Schedule
       const newSpot = {
         id: `reel-${Date.now()}`,
         day: 1,
@@ -442,28 +740,95 @@ export function createOnboardingModal(options = {}) {
         endTime: '17:00',
         category: 'activity',
         status: 'confirmed',
-        title: 'Shibuya Sky & Rooftop Lounge (Extracted from Reel)',
+        title: 'Shibuya Sky & Rooftop Observatory',
         location: 'Shibuya Scramble Square 47F',
         transitToNextMinutes: 20,
         transitMode: 'Direct Elevator',
         requirements: ['Advance E-Tickets Validated', 'Audio Transcript Verified'],
-        fallback: 'Shibuya Parco Nintendo Store (Indoor Backup)',
+        fallback: 'Shibuya Parco Indoor Shopping & Nintendo Center',
         notes: `Extracted via Instagram Reel import: ${reelUrl}. Automatically synced with group schedule.`,
         dressCode: 'Casual comfortable',
+        source: 'reel',
       };
       list.splice(3, 0, newSpot);
+
+      // 2. Deposit detected secondary venues into Trip Wishlist
+      addWishlistItem({
+        title: 'Uobei Shibuya Conveyor Belt Sushi',
+        category: 'food',
+        description: 'Futuristic high-speed touch-screen sushi ordering in vibrant Dogenzaka.',
+        estimatedCost: '¥1,500 (~$10)',
+        votes: 2,
+        addedBy: 'IG Reel Import',
+      });
+      addWishlistItem({
+        title: 'Nonbei Yokocho Micro-Izakaya Alleys',
+        category: 'nightlife',
+        description: 'Retro Showa-era alleyway featuring intimate skewers and sake counters.',
+        estimatedCost: '¥2,800 (~$19)',
+        votes: 3,
+        addedBy: 'IG Reel Import',
+      });
     } else {
-      // Custom Vibe adjustment
+      // 1. Tailor Itinerary based on Vibe & Pace
       list[1].title =
         survey.vibe === 'food'
-          ? 'Nakamise Street Food Crawl & Matcha Tour'
+          ? 'Nakamise Street Food Crawl & Matcha Tasting'
           : survey.vibe === 'scenic'
           ? 'Sumida Riverfront Scenic Walk & Gardens'
-          : 'Senso-ji Traditional Shrine Walk';
-      list[1].notes = `Tailored by AI for Clarence & Wei Gang (${survey.pace} pace, ${survey.vibe} focus).`;
+          : survey.vibe === 'modern'
+          ? 'Ginza Skyline Architecture & Art Walk'
+          : 'Senso-ji Traditional Shrine & Garden Walk';
+      list[1].notes = `Tailored by AI for ${survey.travelers === 'duo' ? 'Clarence & Wei Gang' : 'Group'} (${survey.pace} pace, ${survey.vibe} focus).`;
+
+      // 2. Wishlist Anchoring: Pull top-voted wishlist items into schedule
+      if (survey.anchorWishlist) {
+        const topWishlist = getTopVotedWishlistItems(2);
+        if (topWishlist.length > 0) {
+          // Anchor 1: Slot into Day 1 Lunch/Afternoon
+          list[2].title = topWishlist[0].title;
+          list[2].location = 'Tsukiji Outer Market, Chuo City';
+          list[2].notes = `Group Wishlist anchor item voted by ${topWishlist[0].addedBy}.`;
+          list[2].source = 'wishlist';
+          list[2].sourceVotes = topWishlist[0].votes;
+          list[2].sourceAuthor = topWishlist[0].addedBy;
+          markWishlistScheduled(topWishlist[0].id, { day: 1, time: list[2].startTime });
+        }
+
+        if (topWishlist.length > 1) {
+          // Anchor 2: Slot into Day 2 Cultural stop
+          list[6].title = topWishlist[1].title;
+          list[6].notes = `Group Wishlist anchor item voted by ${topWishlist[1].addedBy}.`;
+          list[6].source = 'wishlist';
+          list[6].sourceVotes = topWishlist[1].votes;
+          list[6].sourceAuthor = topWishlist[1].addedBy;
+          markWishlistScheduled(topWishlist[1].id, { day: 2, time: list[6].startTime });
+        }
+      }
     }
 
     saveItineraryData(list);
+
+    // Update Header Trip Title if destination was customized
+    const headerTitleEl = document.querySelector('.top-header__title');
+    if (headerTitleEl && survey.destination) {
+      const mainCity = survey.destination.split(',')[0].trim();
+      headerTitleEl.textContent = `${mainCity} 2026`;
+    }
+  }
+
+  function showToastNotice(message) {
+    const existing = document.querySelector('.toast-notice');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notice';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      if (toast.parentElement) toast.remove();
+    }, 3200);
   }
 
   function closeModal() {

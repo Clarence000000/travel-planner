@@ -129,6 +129,12 @@ export function createIdeasView() {
                 <img src="${item.imageUrl}" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
                 <div class="wishlist-card__badge-row">
                   <span class="wishlist-card__category">${item.category}</span>
+                  ${item.isScheduled ? `
+                    <span class="wishlist-card__status-tag">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <span>Scheduled Day ${item.scheduledDay || 1}</span>
+                    </span>
+                  ` : ''}
                   <span class="wishlist-card__cost">${item.estimatedCost}</span>
                 </div>
               </div>

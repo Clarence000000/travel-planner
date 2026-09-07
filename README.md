@@ -40,6 +40,16 @@ A mobile-only web application prototype built for the Travel Planner platform, s
 - **1-Tap Schedule Shift**: Delay entire schedule by `+30 Mins` or `+1 Hour` with automatic non-fixed activity adjustment.
 - **Daily Preparation Checklist**: Pre-departure essentials checklist (power bank, local cash, walking shoes).
 
+### 5. 🌟 Onboarding & Multi-Step Trip Synthesis
+- **Step 1: Destination & Duration**: Autocomplete search + quick city chips (Tokyo, Seoul, Taipei, Paris, Rome) and duration presets (3D Weekend, 5D Standard, 7D Week). Trip renaming propagates live to the app header.
+- **Step 2: Vibe, Pace & Group Wishlist Anchoring**: Primary focus (Food, Shrines/Culture, Modern City, Scenic Trails), pace selectors (Chill, Balanced, High Energy), party chips, and a native **Wishlist Anchor toggle** pulling top-voted ideas as core schedule stops.
+- **Alternative: Reels / TikTok Import**: Extracts detected spots from social media video URLs, scheduling the hero venue in Day 1 and saving candidate secondary spots to the Trip Wishlist.
+- **Step 3: Trip Reveal Summary Sheet**: Presents a synthesis overview featuring Trip DNA tags, 3-day snapshots, anchored highlight badges, and immediate *Explore Full Itinerary* or *Adjust Preferences* actions.
+- **Post-Generation Ecosystem Propagation**:
+  - **Itinerary**: Slots top-voted wishlist and reel spots with clean SVG origin badges (`Wishlist Anchor (X votes)`, `From Social Reel`).
+  - **Wishlist**: Tracks scheduled status (`Scheduled Day X`) with direct links to the timeline.
+  - **Visual Standards**: Pure inline SVGs throughout all badges, chips, and modals (zero emojis).
+
 ---
 
 ## 📁 File Structure
@@ -88,7 +98,7 @@ npm run dev
 - [ ] Fix repeating tags in itinerary
 - [ ] Fix itinerary after dragging so that it changes time
 - [ ] Improve itinerary readability and flow (currently difficult to follow)
-- [ ] Allow trip planner renaming
+- [x] Allow trip planner renaming (Integrated into Onboarding Destination & Header)
 - [ ] Make assistant more coherent instead of random:
   - [ ] Show imported IG reels in assistant
   - [ ] Allow users to enter interests
