@@ -34,22 +34,26 @@
   flex-direction: column;
   position: relative;
   user-select: none;
-  padding-left: 28px;
+  padding-left: 48px;
   margin-top: var(--space-2);
 }
 
-/* Continuous vertical guide line / spine (Stylized Blue Line) */
 .timeline-feed::before {
-  content: "";
+  display: none;
+}
+
+/* Vertical spine segment connecting consecutive nodes (terminates strictly at final node) */
+.timeline-spine-connector {
   position: absolute;
-  top: 20px;
-  bottom: 24px;
-  left: 9px;
+  top: 32px;
+  bottom: -44px;
+  left: -31px;
   width: 2px;
   background: #2563EB;
   border-radius: 2px;
   opacity: 0.85;
   z-index: 1;
+  pointer-events: none;
 }
 
 /* ──────────────── Drag-and-Drop Card Wrapper ──────────────── */
@@ -69,7 +73,7 @@
   content: "";
   position: absolute;
   top: -8px;
-  left: -24px;
+  left: -44px;
   right: 0;
   height: 4px;
   border-radius: 4px;
@@ -82,7 +86,7 @@
   content: "";
   position: absolute;
   bottom: -8px;
-  left: -24px;
+  left: -44px;
   right: 0;
   height: 4px;
   border-radius: 4px;
@@ -91,20 +95,31 @@
   z-index: 30;
 }
 
-/* Stylized Vertical Blue Line & Liquid Glass Clear White Circle Node */
+/* Stylized Illustrated Venue SVG Milestone Node on Vertical Spine */
 .timeline-node-pin {
   position: absolute;
-  left: -28px;
-  top: 16px;
-  width: 18px;
-  height: 18px;
+  left: -48px;
+  top: 14px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 2.5px solid #2563EB;
-  box-shadow: 0 0 10px rgba(37, 99, 235, 0.35), inset 0 1px 1px #FFFFFF;
+  background: #FFFFFF;
+  border: 2px solid #2563EB;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28), inset 0 1px 1px #FFFFFF;
   z-index: 3;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.timeline-node-pin .venue-circle-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 50%;
 }
 
 /* ──────────────── Liquid Glass Timeline Card Structure ──────────────── */
@@ -667,6 +682,7 @@
 }
 
 .timeline-buffer-line {
+  display: none;
   position: absolute;
   left: -19px;
   top: -8px;
