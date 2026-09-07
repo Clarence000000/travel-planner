@@ -18,6 +18,7 @@ import {
 import {
   calculateItineraryBuffers,
   recalculateDaySchedule,
+  swapBlockTimeSlots,
   formatDisplayTime,
   formatDuration,
   timeToMinutes,
@@ -1027,17 +1028,15 @@ export function createItineraryView() {
         return;
       }
 
-      const [removed] = rawBlocks.splice(fromIndex, 1);
-      let insertionIndex = rawBlocks.findIndex((b) => b.id === targetId);
-      if (!placeAbove) insertionIndex += 1;
+      const sourceBlock = rawBlocks[fromIndex];
+      const targetBlock = rawBlocks[toIndex];
 
-      rawBlocks.splice(insertionIndex, 0, removed);
-
-      // Automatically recalculate schedule times sequentially to keep schedule strictly chronological
-      rawBlocks = recalculateDaySchedule(rawBlocks);
+      // Directly exchange time slots while preserving activity durations
+      rawBlocks = swapBlockTimeSlots(rawBlocks, sourceId, targetId);
       setDayBlocks(rawBlocks);
+      clearOverClasses();
       render();
-      showScheduleToast('Schedule reordered · Times updated chronologically');
+      showScheduleToast(`Swapped time slots: ${sourceBlock.title} ⇄ ${targetBlock.title}`);
     }
   }
 

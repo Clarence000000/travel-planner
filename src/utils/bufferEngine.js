@@ -143,6 +143,73 @@ export function recalculateDaySchedule(blocks, anchorStartMinutes = null) {
  * @param {Array} blocks Chronological array of blocks for a day
  * @returns {Array} Blocks enriched with transitBuffer metadata
  */
+/**
+ * Swap time slots between two blocks on a single day.
+ * Preserves each activity's duration while exchanging their scheduled start times.
+ * If an earlier activity extends past the next activity's start time,
+ * downstream activities are cleanly cascaded forward to prevent time collisions.
+ *
+ * @param {Array} blocks Current blocks for the day
+ * @param {string} sourceId ID of dragged block
+ * @param {string} targetId ID of target block
+ * @returns {Array} Updated array of blocks in chronological order
+ */
+export function swapBlockTimeSlots(blocks, sourceId, targetId) {
+  if (!Array.isArray(blocks) || blocks.length < 2) return blocks;
+
+  const sourceIndex = blocks.findIndex((b) => b.id === sourceId);
+  const targetIndex = blocks.findIndex((b) => b.id === targetId);
+
+  if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) {
+    return blocks;
+  }
+
+  const newBlocks = blocks.map((b) => ({ ...b }));
+  const source = newBlocks[sourceIndex];
+  const target = newBlocks[targetIndex];
+
+  // Calculate durations for both blocks
+  const sourceStartMins = timeToMinutes(source.startTime);
+  const sourceEndMins = timeToMinutes(source.endTime);
+  const sourceDuration = Math.max(30, sourceEndMins - sourceStartMins);
+
+  const targetStartMins = timeToMinutes(target.startTime);
+  const targetEndMins = timeToMinutes(target.endTime);
+  const targetDuration = Math.max(30, targetEndMins - targetStartMins);
+
+  // Exchange start times
+  const newSourceStartMins = targetStartMins;
+  const newTargetStartMins = sourceStartMins;
+
+  source.startTime = minutesTo24(newSourceStartMins);
+  source.endTime = minutesTo24(newSourceStartMins + sourceDuration);
+
+  target.startTime = minutesTo24(newTargetStartMins);
+  target.endTime = minutesTo24(newTargetStartMins + targetDuration);
+
+  // Sort chronological by start time
+  newBlocks.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+  // Resolve any downstream overlaps cleanly while preserving activity durations
+  for (let i = 0; i < newBlocks.length - 1; i++) {
+    const currentEnd = timeToMinutes(newBlocks[i].endTime);
+    const minBuffer = newBlocks[i].transitToNextMinutes !== undefined && newBlocks[i].transitToNextMinutes !== null
+      ? Math.max(10, newBlocks[i].transitToNextMinutes)
+      : 15;
+    const earliestNextStart = currentEnd + minBuffer;
+
+    const nextStart = timeToMinutes(newBlocks[i + 1].startTime);
+    if (nextStart < earliestNextStart) {
+      const nextEnd = timeToMinutes(newBlocks[i + 1].endTime);
+      const nextDuration = Math.max(30, nextEnd - nextStart);
+      newBlocks[i + 1].startTime = minutesTo24(earliestNextStart);
+      newBlocks[i + 1].endTime = minutesTo24(earliestNextStart + nextDuration);
+    }
+  }
+
+  return newBlocks;
+}
+
 export function calculateItineraryBuffers(blocks) {
   if (!Array.isArray(blocks) || blocks.length === 0) return [];
 
