@@ -182,17 +182,18 @@
 
 /* Fixed-width Left Stacked Time Column */
 .timeline-card__time-col {
-  width: 78px;
-  min-width: 78px;
+  width: 84px;
+  min-width: 84px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
   gap: 6px;
   border-right: 1px solid rgba(15, 23, 42, 0.08);
-  padding-right: 8px;
+  padding-right: 6px;
   padding-top: 1px;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .time-col__times {
@@ -309,13 +310,13 @@
 .timeline-card__category-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3.5px;
   font-size: 8.5px;
-  font-weight: 750;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: -0.1px;
   height: 19px;
-  padding: 0 6px;
+  padding: 0 4.5px;
   border-radius: 5px;
   line-height: 1;
   white-space: nowrap;
@@ -323,6 +324,14 @@
   width: 100%;
   justify-content: flex-start;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.timeline-card__status-pill span,
+.timeline-card__category-badge span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .timeline-card__status-pill svg,

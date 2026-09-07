@@ -398,22 +398,22 @@ export function createItineraryView() {
     const categoryMap = {
       activity: {
         label: 'Activity',
-        badgeLabel: 'ACTIVITY',
+        badgeLabel: 'Activity',
         icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
       },
       meal: {
         label: 'Meal',
-        badgeLabel: 'MEAL',
+        badgeLabel: 'Meal',
         icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>`,
       },
       transit: {
         label: 'Transit',
-        badgeLabel: 'TRANSIT',
+        badgeLabel: 'Transit',
         icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path></svg>`,
       },
       rest: {
         label: 'Check-in / Rest',
-        badgeLabel: 'CHECK-IN',
+        badgeLabel: 'Check-in',
         icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
       },
     };
