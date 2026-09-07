@@ -711,41 +711,78 @@ export function createChatView(initialBlockId = null) {
   function renderPollHTML(poll) {
     if (!poll) return '';
     const totalVotes = poll.options.reduce((sum, o) => sum + o.votes, 0);
+    const isClosed = poll.status === 'closed';
+    const isVoted = Boolean(poll.userVote);
+    const maxVotes = Math.max(...poll.options.map((o) => o.votes), 0);
 
     return `
-      <div class="poll-card" style="margin-top: var(--space-2);">
+      <div class="poll-card ${isClosed ? 'poll-card--closed' : 'poll-card--active'}">
         <div class="poll-card__header">
-          <span class="poll-card__badge">
-            ${getPollsIconSvg(13)}
-            Consensus Poll
+          <div class="poll-card__badge-group">
+            <span class="poll-card__badge">
+              ${getPollsIconSvg(12)}
+              <span>Consensus Poll</span>
+            </span>
+            ${
+              isClosed
+                ? `<span class="poll-status-tag poll-status-tag--closed">
+                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                     <span>Decided</span>
+                   </span>`
+                : `<span class="poll-status-tag poll-status-tag--live">
+                     <span class="poll-status-tag__dot" aria-hidden="true"></span>
+                     <span>Voting Open</span>
+                   </span>`
+            }
+          </div>
+          <span class="poll-card__meta">
+            ${totalVotes} vote${totalVotes !== 1 ? 's' : ''} ${isClosed ? 'locked in' : 'cast'}
           </span>
-          <span class="poll-card__meta">${totalVotes} group votes cast</span>
         </div>
-        <p class="poll-card__question">${escapeHtml(poll.question)}</p>
+
+        <h3 class="poll-card__question">${escapeHtml(poll.question)}</h3>
+
         <div class="poll-card__options">
           ${poll.options
             .map((opt) => {
               const pct = totalVotes > 0 ? Math.round((opt.votes / totalVotes) * 100) : 0;
               const isSelected = poll.userVote === opt.id;
+              const isWinning = maxVotes > 0 && opt.votes === maxVotes;
               return `
               <button 
                 type="button" 
-                class="poll-option-btn ${isSelected ? 'poll-option-btn--voted' : ''}" 
+                class="poll-option-btn ${isSelected ? 'poll-option-btn--voted' : ''} ${isWinning && (isClosed || isVoted) ? 'poll-option-btn--leading' : ''}" 
                 data-option-id="${opt.id}"
                 aria-pressed="${isSelected}"
               >
                 <div class="poll-option-btn__fill" style="width: ${pct}%;"></div>
                 <div class="poll-option-btn__content">
-                  <span class="poll-option-btn__label">
-                    ${isSelected ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right: 4px; vertical-align: -1px;"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
-                    ${escapeHtml(opt.label)}
-                  </span>
-                  <span class="poll-option-btn__stat">${pct}% (${opt.votes})</span>
+                  <div class="poll-option-btn__left">
+                    <span class="poll-option-btn__radio" aria-hidden="true">
+                      ${isSelected ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+                    </span>
+                    <span class="poll-option-btn__label">${escapeHtml(opt.label)}</span>
+                  </div>
+                  <div class="poll-option-btn__stat-badge">
+                    <span class="poll-option-btn__pct">${pct}%</span>
+                    <span class="poll-option-btn__votes">${opt.votes} ${opt.votes === 1 ? 'vote' : 'votes'}</span>
+                  </div>
                 </div>
               </button>
             `;
             })
             .join('')}
+        </div>
+        <div class="poll-card__footer">
+          <span class="poll-card__hint">
+            ${
+              isClosed
+                ? 'Consensus reached. Option locked in schedule.'
+                : isVoted
+                ? 'Your vote is recorded! Tap another option to change anytime.'
+                : 'Tap any option above to cast your group vote.'
+            }
+          </span>
         </div>
       </div>
     `;

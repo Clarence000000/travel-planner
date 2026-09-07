@@ -6,7 +6,7 @@
 
 import { getItineraryData } from './itineraryData.js';
 
-const STORAGE_KEY = 'travel_planner_chat_v4';
+const STORAGE_KEY = 'travel_planner_chat_v5';
 const PREV_STORAGE_KEY = 'travel_planner_chat_v3';
 
 export const THREAD_CATEGORIES = [
@@ -139,10 +139,11 @@ const INITIAL_THREADS = [
     participantCount: 4,
     poll: {
       id: 'poll-d1-3',
+      status: 'closed',
       question: 'Which lunch spot should we lock in for the group?',
       options: [
-        { id: 'opt-soba', label: 'Traditional Soba Noodles', votes: 4 },
-        { id: 'opt-seafood', label: 'Tsukiji Fresh Seafood Bowl', votes: 2 },
+        { id: 'opt-soba', label: 'Traditional Soba Noodles', votes: 3 },
+        { id: 'opt-seafood', label: 'Tsukiji Fresh Seafood Bowl', votes: 1 },
       ],
       userVote: 'opt-soba',
     },
@@ -254,12 +255,13 @@ const INITIAL_THREADS = [
     participantCount: 4,
     poll: {
       id: 'poll-d1-4',
+      status: 'active',
       question: 'Which gallery section should we explore first?',
       options: [
-        { id: 'opt-crystal', label: 'Infinite Crystal World', votes: 3 },
+        { id: 'opt-crystal', label: 'Infinite Crystal World', votes: 2 },
         { id: 'opt-forest', label: 'Forest of Resonating Lamps', votes: 1 },
       ],
-      userVote: 'opt-crystal',
+      userVote: null,
     },
     messages: [
       {
@@ -355,10 +357,11 @@ const INITIAL_THREADS = [
     participantCount: 4,
     poll: {
       id: 'poll-d2-1',
+      status: 'closed',
       question: 'Which Shinkansen bento box should we grab at Tokyo Station?',
       options: [
         { id: 'opt-ekiben-beef', label: 'Yonezawa Wagyu Bento', votes: 3 },
-        { id: 'opt-ekiben-sushi', label: 'Edo-style Nigiri Bento', votes: 2 },
+        { id: 'opt-ekiben-sushi', label: 'Edo-style Nigiri Bento', votes: 1 },
       ],
       userVote: 'opt-ekiben-beef',
     },
@@ -401,12 +404,13 @@ const INITIAL_THREADS = [
     participantCount: 4,
     poll: {
       id: 'poll-d3-1',
+      status: 'active',
       question: 'Which viewing slot should we reserve for Shibuya Sky?',
       options: [
-        { id: 'opt-sunset', label: 'Golden Hour Sunset (4:40 PM)', votes: 4 },
+        { id: 'opt-sunset', label: 'Golden Hour Sunset (4:40 PM)', votes: 2 },
         { id: 'opt-neon', label: 'Night Neon Lights (7:30 PM)', votes: 1 },
       ],
-      userVote: 'opt-sunset',
+      userVote: null,
     },
     messages: [
       {
