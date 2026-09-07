@@ -456,23 +456,39 @@ export function createItineraryView() {
         let cardContent = '';
 
         if (!isExpanded) {
-          // CARD 1 (Collapsed State - Clean View):
-          // Clean, single rounded white card. Refined Sans-serif: "9:00 AM – 10:15 AM",
-          // modern "CHECK-IN / REST" icon, and text "Hotel Check-In & Luggage Drop".
-          // Far right: clean line-art down-arrow. No other details visible.
+          // OPTION B: Collapsed State (Left-Right Split):
+          // Left column: Clean stacked times (9:00 AM to 10:15 AM).
+          // Right column: Full un-truncated title on top, category pill & location underneath.
+          // Far right: Chevron button.
           cardContent = `
             <article class="timeline-card timeline-card--collapsed timeline-card--${block.category}">
-              <div class="timeline-card__collapsed-body" data-toggle-details="${block.id}" role="button" tabindex="0" aria-expanded="false">
-                <div class="timeline-card__collapsed-left">
-                  <span class="timeline-card__time-text">${displayStart} – ${displayEnd}</span>
-                  <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
-                    ${catInfo.icon}
-                    <span>${catInfo.badgeLabel}</span>
-                  </span>
-                  <h3 class="timeline-card__title">${block.title}</h3>
+              <div class="timeline-card__collapsed-split" data-toggle-details="${block.id}" role="button" tabindex="0" aria-expanded="false">
+                <!-- Left Column: Fixed-width Clean Stacked Times -->
+                <div class="timeline-card__time-col">
+                  <span class="time-col__start">${displayStart}</span>
+                  <span class="time-col__divider">to</span>
+                  <span class="time-col__end">${displayEnd}</span>
                 </div>
 
-                <div class="timeline-card__collapsed-right">
+                <!-- Right Column: Full Title on Top, Category Badge & Location Underneath -->
+                <div class="timeline-card__body-col">
+                  <h3 class="timeline-card__title">${block.title}</h3>
+                  <div class="timeline-card__sub-row">
+                    <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
+                      ${catInfo.icon}
+                      <span>${catInfo.label}</span>
+                    </span>
+                    ${block.location ? `
+                      <span class="timeline-card__loc-snippet" title="${block.location}">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <span>${block.location}</span>
+                      </span>
+                    ` : ''}
+                  </div>
+                </div>
+
+                <!-- Far Right: Chevron Expand Button -->
+                <div class="timeline-card__chevron-wrapper">
                   <button type="button" class="timeline-card__chevron-btn" data-toggle-details="${block.id}" aria-label="Expand details">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="6 9 12 15 18 9"></polyline>
@@ -483,90 +499,92 @@ export function createItineraryView() {
             </article>
           `;
         } else {
-          // CARD 2 (Expanded State - Active/Transitioned View):
-          // Original clean info shifted to narrow vertical strip on far left.
-          // Wider detailed panel slid out to the right with darker white background,
-          // stylized circular photo, location text, clean green Confirmed badge with checkmark,
-          // requirements label, and up-arrow toggle at far right.
+          // OPTION A: Expanded State (Integrated Full-Width Card):
+          // Full-width card with no awkward left strip.
+          // Top row: time range, category pill, confirmed status badge, and chevron.
+          // Showcase row: Venue artwork circle, title, full un-truncated location, origin badge.
+          // Single-line dress code, deduplicated checklist, fallback card, and bottom actions.
           cardContent = `
             <article class="timeline-card timeline-card--expanded timeline-card--${block.category}">
-              <div class="timeline-card__split-layout">
-                
-                <!-- 1. Narrow Left Vertical Strip: Shifted original info -->
-                <div class="timeline-card__strip">
-                  <span class="timeline-card__strip-time">${displayStart} – ${displayEnd}</span>
-                  <div class="timeline-card__strip-category timeline-card__category-badge--${block.category}">
-                    ${catInfo.icon}
-                    <span>${catInfo.badgeLabel}</span>
+              <div class="timeline-card__expanded-inner">
+                <!-- Top Row: Time Range, Category Pill, Status Badge & Collapse Chevron -->
+                <div class="timeline-card__expanded-header">
+                  <div class="timeline-card__expanded-header-left">
+                    <span class="timeline-card__time-pill">${displayStart} – ${displayEnd}</span>
+                    <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
+                      ${catInfo.icon}
+                      <span>${catInfo.label}</span>
+                    </span>
+                    <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                      <span>${statusLabel}</span>
+                    </button>
                   </div>
-                  <h4 class="timeline-card__strip-title">${block.title}</h4>
+
+                  <button type="button" class="timeline-card__chevron-btn timeline-card__chevron-btn--active" data-toggle-details="${block.id}" aria-label="Collapse details">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="18 15 12 9 6 15"></polyline>
+                    </svg>
+                  </button>
                 </div>
 
-                <!-- 2. Wider Slide-Out Detail Panel -->
-                <div class="timeline-card__detail-panel">
-                  
-                  <div class="detail-panel__main-row">
-                    <!-- Stylized circular photo of venue (e.g. Senso-ji temple gate) -->
-                    <div class="detail-panel__photo-wrapper" title="${block.title}">
-                      ${getVenueThumbnail(block)}
-                    </div>
-
-                    <!-- Location, Confirmed badge, Requirements count -->
-                    <div class="detail-panel__info-col">
-                      <div class="detail-panel__location">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                          <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        <span>${block.location}</span>
-                      </div>
-
-                      <div class="detail-panel__meta-row">
-                        <!-- Clean green Confirmed badge with checkmark -->
-                        <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                          </svg>
-                          <span>${statusLabel}</span>
-                        </button>
-
-                        <!-- Requirements summary label (e.g. 2 requirements) -->
-                        ${
-                          cleanReqs.length > 0
-                            ? `<span class="req-label-badge">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                  <polyline points="20 6 9 17 4 12"></polyline>
-                                </svg>
-                                <span>${cleanReqs.length === 1 ? cleanReqs[0] : `${cleanReqs.length} requirements`}</span>
-                              </span>`
-                            : ''
-                        }
-                      </div>
-                    </div>
-
-                    <!-- Up-Arrow Toggle Button at far right -->
-                    <div class="detail-panel__actions">
-                      <button type="button" class="timeline-card__chevron-btn timeline-card__chevron-btn--active" data-toggle-details="${block.id}" aria-label="Collapse details">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="18 15 12 9 6 15"></polyline>
-                        </svg>
-                      </button>
-                    </div>
+                <!-- Venue Showcase Row: Illustrated Artwork + Full Title & Complete Location -->
+                <div class="timeline-card__showcase-row">
+                  <div class="detail-panel__photo-wrapper" title="${block.title}">
+                    ${getVenueThumbnail(block)}
                   </div>
+                  <div class="timeline-card__showcase-info">
+                    <h3 class="timeline-card__title timeline-card__title--expanded">${block.title}</h3>
+                    <div class="detail-panel__location">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      <span>${block.location}</span>
+                    </div>
 
-                  <!-- Expanded Cohesive Subset: Requirements, Fallback, Thread Button -->
-                  <div class="detail-panel__sub-details">
                     ${
-                      block.dressCode
-                        ? `<div class="detail-panel__note-tag">
-                            <span style="font-weight: 700; color: #475569;">👔 Dress code:</span> <span>${block.dressCode}</span>
+                      block.source === 'wishlist'
+                        ? `<div class="card-origin-badge card-origin-badge--wishlist">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            <span>Wishlist Anchor (${block.sourceVotes || 4} votes)</span>
+                          </div>`
+                        : block.source === 'reel'
+                        ? `<div class="card-origin-badge card-origin-badge--reel">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                            <span>From Social Reel</span>
                           </div>`
                         : ''
                     }
+                  </div>
+                </div>
 
-                    ${
-                      cleanReqs.length > 0
-                        ? `<div class="detail-panel__checklist">
+                <!-- Structured Details: Single-line Dress Code, Requirements Checklist, Contingency -->
+                <div class="timeline-card__details-content">
+                  ${
+                    block.dressCode
+                      ? `<div class="detail-panel__note-tag">
+                          <span class="detail-panel__note-label">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg>
+                            Dress Code:
+                          </span>
+                          <span>${block.dressCode}</span>
+                        </div>`
+                      : ''
+                  }
+
+                  ${
+                    cleanReqs.length > 0
+                      ? `<div class="detail-panel__checklist-section">
+                          <div class="checklist-section__header">
+                            <span class="req-label-badge">
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                              <span>${cleanReqs.length === 1 ? cleanReqs[0] : `${cleanReqs.length} Requirements`}</span>
+                            </span>
+                          </div>
+                          <div class="detail-panel__checklist">
                             ${cleanReqs
                               .map(
                                 (r) => `
@@ -577,36 +595,40 @@ export function createItineraryView() {
                             `
                               )
                               .join('')}
-                          </div>`
-                        : ''
-                    }
+                          </div>
+                        </div>`
+                      : ''
+                  }
 
-                    ${
-                      block.fallback
-                        ? `<div class="fallback-pill-inline">
-                            <span style="font-weight: 700; color: #EA580C;">Contingency:</span> <span>${block.fallback}</span>
-                          </div>`
-                        : ''
-                    }
+                  ${
+                    block.fallback
+                      ? `<div class="fallback-pill-inline">
+                          <span style="font-weight: 700; color: #EA580C; display: inline-flex; align-items: center; gap: 4px;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                            Contingency:
+                          </span>
+                          <span>${block.fallback}</span>
+                        </div>`
+                      : ''
+                  }
 
-                    <div class="detail-panel__bottom-row">
-                      <button type="button" class="btn-thread-badge btn-thread-badge--inline" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        <span>Activity Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
-                      </button>
+                  <!-- Bottom Action Row: Activity Chat Thread + Drag Grip -->
+                  <div class="detail-panel__bottom-row">
+                    <button type="button" class="btn-thread-badge btn-thread-badge--inline" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                      </svg>
+                      <span>Activity Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
+                    </button>
 
-                      <div class="drag-grip drag-grip--inline" data-id="${block.id}" title="Hold and drag to reorder schedule" aria-label="Drag handle">
-                        <svg width="12" height="14" viewBox="0 0 16 20" fill="currentColor" opacity="0.65">
-                          <circle cx="5" cy="4" r="1.5"/><circle cx="11" cy="4" r="1.5"/>
-                          <circle cx="5" cy="10" r="1.5"/><circle cx="11" cy="10" r="1.5"/>
-                          <circle cx="5" cy="16" r="1.5"/><circle cx="11" cy="16" r="1.5"/>
-                        </svg>
-                      </div>
+                    <div class="drag-grip drag-grip--inline" data-id="${block.id}" title="Hold and drag to reorder schedule" aria-label="Drag handle">
+                      <svg width="12" height="14" viewBox="0 0 16 20" fill="currentColor" opacity="0.65">
+                        <circle cx="5" cy="4" r="1.5"/><circle cx="11" cy="4" r="1.5"/>
+                        <circle cx="5" cy="10" r="1.5"/><circle cx="11" cy="10" r="1.5"/>
+                        <circle cx="5" cy="16" r="1.5"/><circle cx="11" cy="16" r="1.5"/>
+                      </svg>
                     </div>
                   </div>
-
                 </div>
               </div>
             </article>
@@ -615,7 +637,7 @@ export function createItineraryView() {
 
         return `
         <div 
-          class="timeline-item-wrapper" 
+          class="timeline-item-wrapper"  
           data-block-id="${block.id}" 
           data-index="${index}"
           draggable="true"
@@ -939,6 +961,7 @@ export function createItineraryView() {
   }
 
   function openQuickThreadDrawer(blockId) {
+    const block = itineraryList.find((b) => b.id === blockId) || {};
     const thread = getThreadById(blockId) || {
       blockId,
       title: 'Activity Discussion',
