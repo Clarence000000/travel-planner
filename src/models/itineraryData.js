@@ -4,6 +4,8 @@
  * status lifecycle, requirements, and required transit travel times.
  */
 
+import { timeToMinutes, minutesTo24 } from '../utils/bufferEngine.js';
+
 export const DEFAULT_ITINERARY = [
   // ── Day 1 (Tokyo Arrival & Ancient Taito) ──
   {
@@ -42,7 +44,7 @@ export const DEFAULT_ITINERARY = [
     id: 'd1-3',
     day: 1,
     startTime: '12:40',
-    endTime: '02:00',
+    endTime: '14:00',
     category: 'meal',
     status: 'tentative', // Weather Permitting with attached fallback
     title: 'Rooftop Matcha & Street Food Market',
@@ -57,8 +59,8 @@ export const DEFAULT_ITINERARY = [
   {
     id: 'd1-4',
     day: 1,
-    startTime: '02:15', // Note: only 15m buffer after 02:00! This triggers a transit buffer warning because transitToNextMinutes is 35!
-    endTime: '04:30',
+    startTime: '14:15', // Note: only 15m buffer after 14:00! Triggers transit buffer warning because transitToNextMinutes is 35!
+    endTime: '16:30',
     category: 'activity',
     status: 'proposed',
     title: 'teamLab Borderless Digital Art Museum',
@@ -73,8 +75,8 @@ export const DEFAULT_ITINERARY = [
   {
     id: 'd1-5',
     day: 1,
-    startTime: '05:00',
-    endTime: '07:00',
+    startTime: '17:00',
+    endTime: '19:00',
     category: 'meal',
     status: 'confirmed',
     title: 'Izakaya Gathering & Craft Skewers',
@@ -124,7 +126,7 @@ export const DEFAULT_ITINERARY = [
     id: 'd2-3',
     day: 2,
     startTime: '12:45',
-    endTime: '02:15',
+    endTime: '14:15',
     category: 'meal',
     status: 'proposed',
     title: 'Handmade Soba & Yuba Dining',
@@ -158,7 +160,7 @@ export const DEFAULT_ITINERARY = [
     id: 'd3-2',
     day: 3,
     startTime: '12:00',
-    endTime: '02:00',
+    endTime: '14:00',
     category: 'meal',
     status: 'confirmed',
     title: 'Farewell Wagyu BBQ Feast',
@@ -180,12 +182,22 @@ function sanitizeBlock(block) {
       ? str.replace(/[\p{Extended_Pictographic}\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim()
       : str;
 
+  // Deduplicate and clean requirements
+  const rawReqs = Array.isArray(block.requirements)
+    ? block.requirements.map(clean).filter(Boolean)
+    : [];
+  const uniqueReqs = Array.from(new Set(rawReqs));
+
+  // Normalize times to consistent 24h "HH:MM" format
+  const startMins = timeToMinutes(block.startTime);
+  const endMins = timeToMinutes(block.endTime);
+
   return {
     ...block,
+    startTime: minutesTo24(startMins),
+    endTime: minutesTo24(endMins),
     title: clean(block.title),
-    requirements: Array.isArray(block.requirements)
-      ? block.requirements.map(clean).filter(Boolean)
-      : [],
+    requirements: uniqueReqs,
     dressCode: clean(block.dressCode),
     fallback: clean(block.fallback),
     notes: clean(block.notes),
@@ -225,8 +237,9 @@ export function saveItineraryData(items) {
  * Reset itinerary data back to initial defaults
  */
 export function resetItineraryData() {
-  localStorage.removeItem(STORAGE_KEY);
-  return JSON.parse(JSON.stringify(DEFAULT_ITINERARY));
+  const defaults = JSON.parse(JSON.stringify(DEFAULT_ITINERARY)).map(sanitizeBlock);
+  saveItineraryData(defaults);
+  return defaults;
 }
 
 /**
@@ -234,7 +247,7 @@ export function resetItineraryData() {
  */
 export function addItineraryBlock(block) {
   const list = getItineraryData();
-  list.push(block);
+  list.push(sanitizeBlock(block));
   saveItineraryData(list);
   return list;
 }
