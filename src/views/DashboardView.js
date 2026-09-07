@@ -425,7 +425,7 @@ export function createDashboardView() {
       <!-- Atmospheric Vertical Asset Banner -->
       <div class="view-banner" style="background-image: url('./src/assets/bg-dashboard.png');">
         <div class="view-banner__scrim">
-          <span class="view-banner__badge">🐾 Cozy Live HUD</span>
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Cozy Live HUD</span>
           <h2 class="view-banner__title">Now & Next Dashboard</h2>
         </div>
       </div>

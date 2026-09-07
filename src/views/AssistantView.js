@@ -46,7 +46,7 @@ export function createAssistantView() {
       <!-- Atmospheric Vertical Asset Banner -->
       <div class="view-banner" style="background-image: url('./src/assets/bg-assistant.png');">
         <div class="view-banner__scrim">
-          <span class="view-banner__badge">✨ Smiling Copilot</span>
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> Smiling Copilot</span>
           <h2 class="view-banner__title">AI Schedule Assistant</h2>
         </div>
       </div>

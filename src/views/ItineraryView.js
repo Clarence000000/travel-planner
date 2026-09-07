@@ -179,7 +179,7 @@ export function createItineraryView() {
       <!-- Atmospheric Vertical Asset Banner -->
       <div class="view-banner" style="background-image: url('./src/assets/bg-itinerary.png');">
         <div class="view-banner__scrim">
-          <span class="view-banner__badge">🐱 Interactive Master Timeline</span>
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Interactive Master Timeline</span>
           <h2 class="view-banner__title">Drag-and-Drop Itinerary</h2>
         </div>
       </div>

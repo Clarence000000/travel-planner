@@ -91,7 +91,7 @@ export function createChatView(initialBlockId = null) {
       <!-- Atmospheric Vertical Asset Banner -->
       <div class="view-banner" style="background-image: url('./src/assets/bg-chat.png');">
         <div class="view-banner__scrim">
-          <span class="view-banner__badge">📦 Boxed Buddies Chat</span>
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Boxed Buddies Chat</span>
           <h2 class="view-banner__title">Per-Activity Chat</h2>
         </div>
       </div>

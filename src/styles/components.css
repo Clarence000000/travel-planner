@@ -94,6 +94,9 @@
 
 .view-banner__badge {
   align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font-size: 10px;
   font-weight: var(--font-bold);
   text-transform: uppercase;
@@ -103,6 +106,12 @@
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   margin-bottom: var(--space-1);
+  line-height: 1.2;
+}
+
+.view-banner__badge svg {
+  stroke: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .view-banner__title {
