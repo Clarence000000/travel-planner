@@ -399,22 +399,22 @@ export function createItineraryView() {
       activity: {
         label: 'Activity',
         badgeLabel: 'ACTIVITY',
-        icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+        icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
       },
       meal: {
         label: 'Meal',
         badgeLabel: 'MEAL',
-        icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>`,
+        icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>`,
       },
       transit: {
         label: 'Transit',
         badgeLabel: 'TRANSIT',
-        icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path></svg>`,
+        icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path></svg>`,
       },
       rest: {
         label: 'Check-in / Rest',
         badgeLabel: 'CHECK-IN',
-        icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+        icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
       },
     };
 
@@ -488,20 +488,18 @@ export function createItineraryView() {
                   </div>
                 </div>
 
-                <!-- Right Column: Flowing Title and Location taking full use of the line -->
+                <!-- Right Column: Dedicated Title Row & Location Row with clean spacing -->
                 <div class="timeline-card__body-col">
-                  <div class="timeline-card__content-flow">
-                    <h3 class="timeline-card__title">${block.title}</h3>
-                    ${block.location ? `
-                      <span class="timeline-card__location-inline" title="${block.location}">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                          <circle cx="12" cy="10" r="3"></circle>
-                        </svg>
-                        <span class="timeline-card__location-text">${block.location}</span>
-                      </span>
-                    ` : ''}
-                  </div>
+                  <h3 class="timeline-card__title">${block.title}</h3>
+                  ${block.location ? `
+                    <div class="timeline-card__location-row" title="${block.location}">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      <span class="timeline-card__location-text">${block.location}</span>
+                    </div>
+                  ` : ''}
                 </div>
 
                 <!-- Far Right: Chevron Expand Button on Top, Activity Thread Icon Below -->
@@ -531,20 +529,22 @@ export function createItineraryView() {
           cardContent = `
             <article class="timeline-card timeline-card--expanded timeline-card--${block.category}">
               <div class="timeline-card__expanded-inner">
-                <!-- Top Row: Time Range, Category Pill, Status Badge & Collapse Chevron -->
+                <!-- Top Row: Time on Top, Category & Status Below Time, Chevron on Top-Right -->
                 <div class="timeline-card__expanded-header">
                   <div class="timeline-card__expanded-header-left">
                     <span class="timeline-card__time-pill">${displayStart} – ${displayEnd}</span>
-                    <!-- Status Badge FIRST with consistent statusIconSvg -->
-                    <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
-                      ${statusIconSvg}
-                      <span>${statusLabel}</span>
-                    </button>
-                    <!-- Category Pill SECOND -->
-                    <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
-                      ${catInfo.icon}
-                      <span>${catInfo.label}</span>
-                    </span>
+                    <div class="timeline-card__expanded-badges">
+                      <!-- Status Badge FIRST with consistent statusIconSvg -->
+                      <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
+                        ${statusIconSvg}
+                        <span>${statusLabel}</span>
+                      </button>
+                      <!-- Category Pill SECOND -->
+                      <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
+                        ${catInfo.icon}
+                        <span>${catInfo.label}</span>
+                      </span>
+                    </div>
                   </div>
 
                   <button type="button" class="timeline-card__chevron-btn timeline-card__chevron-btn--active" data-toggle-details="${block.id}" aria-label="Collapse details">
@@ -806,9 +806,10 @@ export function createItineraryView() {
     // 4b. Open Per-Activity Chat Thread
     container.querySelectorAll('[data-thread-btn]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
         const blockId = btn.getAttribute('data-thread-btn');
-        openQuickThreadDrawer(blockId);
+        if (blockId) openQuickThreadDrawer(blockId);
       });
     });
 
@@ -1063,26 +1064,30 @@ export function createItineraryView() {
     const backdrop = document.createElement('div');
     backdrop.className = 'quick-thread-backdrop';
 
-    function renderThreadContent() {
-      const catClass = thread.category || 'location';
-      const catLabel = catClass.charAt(0).toUpperCase() + catClass.slice(1);
+    function closeDrawer() {
+      backdrop.classList.remove('is-open');
+      setTimeout(() => {
+        backdrop.remove();
+      }, 250);
+    }
 
+    function renderThreadContent() {
       backdrop.innerHTML = `
         <div class="quick-thread-sheet" role="dialog" aria-labelledby="qt-title">
-          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-divider); padding-bottom: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(15, 23, 42, 0.08); padding-bottom: 10px;">
             <div>
               <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
                 <span class="thread-day-pill">${getDayCalendarIconSvg(10)} <span>Day ${block.day || currentDay}</span></span>
               </div>
-              <h3 id="qt-title" style="font-size: var(--text-sm); font-weight: bold; color: var(--color-text-primary); margin: 0;">${thread.eventTitle || thread.title}</h3>
+              <h3 id="qt-title" style="font-size: 14px; font-weight: 800; color: #0F172A; margin: 0;">${thread.eventTitle || thread.title || block.title}</h3>
             </div>
-            <button type="button" class="drawer-close-btn" id="btn-close-qt" aria-label="Close activity thread" style="min-width: 44px; min-height: 44px;">✕</button>
+            <button type="button" class="drawer-close-btn" id="btn-close-qt" aria-label="Close activity thread" style="min-width: 36px; min-height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.05); border: none; cursor: pointer; font-size: 14px;">✕</button>
           </div>
 
-          <div class="chat-feed" style="max-height: 250px; overflow-y: auto; padding-right: 4px;">
+          <div class="chat-feed" style="max-height: 250px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 8px;">
             ${
               thread.messages.length === 0
-                ? `<p style="font-size: 11px; color: var(--color-text-secondary); text-align: center; padding: 18px 0;">No messages in this activity thread yet. Start the discussion below!</p>`
+                ? `<p style="font-size: 12px; color: #64748B; text-align: center; padding: 24px 0;">No messages in this activity thread yet. Start the discussion below!</p>`
                 : thread.messages
                     .map(
                       (m) => `
@@ -1105,14 +1110,14 @@ export function createItineraryView() {
               type="text" 
               class="chat-input" 
               id="qt-input" 
-              placeholder="Discuss this block..." 
-              style="flex: 1; padding: 8px 14px; background: var(--color-surface-alt); border-radius: var(--radius-pill); border: 1px solid var(--color-border); font-size: 12px;" 
+              placeholder="Discuss this stop..." 
+              style="flex: 1; padding: 9px 14px; background: #F8FAFC; border-radius: 9999px; border: 1px solid #CBD5E1; font-size: 13px; outline: none;" 
             />
-            <button type="button" class="btn btn--primary btn--sm" id="btn-qt-send">Send</button>
+            <button type="button" class="btn btn--primary btn--sm" id="btn-qt-send" style="padding: 8px 16px; border-radius: 9999px; background: #0F172A; color: #FFFFFF; font-weight: 700; font-size: 12px; border: none; cursor: pointer;">Send</button>
           </div>
 
           <div style="text-align: center; margin-top: 2px;">
-            <button type="button" class="btn btn--secondary btn--sm" id="btn-qt-go-full" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-qt-go-full" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px; border-radius: 12px; background: rgba(15, 23, 42, 0.04); border: 1px solid rgba(15, 23, 42, 0.08); font-size: 12px; font-weight: 700; color: #334155; cursor: pointer;">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
               </svg>
@@ -1122,9 +1127,9 @@ export function createItineraryView() {
         </div>
       `;
 
-      backdrop.querySelector('#btn-close-qt').addEventListener('click', () => backdrop.remove());
+      backdrop.querySelector('#btn-close-qt').addEventListener('click', closeDrawer);
       backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) backdrop.remove();
+        if (e.target === backdrop) closeDrawer();
       });
 
       const input = backdrop.querySelector('#qt-input');
@@ -1147,7 +1152,7 @@ export function createItineraryView() {
       });
 
       backdrop.querySelector('#btn-qt-go-full').addEventListener('click', () => {
-        backdrop.remove();
+        closeDrawer();
         sessionStorage.setItem('travel_pending_thread', blockId);
         setActiveTab('chat');
       });
@@ -1155,6 +1160,9 @@ export function createItineraryView() {
 
     renderThreadContent();
     document.body.appendChild(backdrop);
+    requestAnimationFrame(() => {
+      backdrop.classList.add('is-open');
+    });
   }
 
   // Initial setup and render
