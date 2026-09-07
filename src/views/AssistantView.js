@@ -43,6 +43,14 @@ export function createAssistantView() {
 
   function render() {
     container.innerHTML = `
+      <!-- Atmospheric Vertical Asset Banner -->
+      <div class="view-banner" style="background-image: url('./src/assets/bg-assistant.png');">
+        <div class="view-banner__scrim">
+          <span class="view-banner__badge">✨ Smiling Copilot</span>
+          <h2 class="view-banner__title">AI Schedule Assistant</h2>
+        </div>
+      </div>
+
       <div class="view-header">
         <div class="view-header__meta">
           <span class="view-badge">Schedule Optimizer</span>

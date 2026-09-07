@@ -422,6 +422,14 @@ export function createDashboardView() {
     const next = getNext();
 
     container.innerHTML = `
+      <!-- Atmospheric Vertical Asset Banner -->
+      <div class="view-banner" style="background-image: url('./src/assets/bg-dashboard.png');">
+        <div class="view-banner__scrim">
+          <span class="view-banner__badge">🐾 Cozy Live HUD</span>
+          <h2 class="view-banner__title">Now & Next Dashboard</h2>
+        </div>
+      </div>
+
       <div class="view-header">
         <div class="view-header__meta">
           <div class="dash-header-row">

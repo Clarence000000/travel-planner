@@ -53,6 +53,14 @@ export function createChatView(initialBlockId = null) {
     hubElem.className = 'threads-hub';
 
     hubElem.innerHTML = `
+      <!-- Atmospheric Vertical Asset Banner -->
+      <div class="view-banner" style="background-image: url('./src/assets/bg-chat.png');">
+        <div class="view-banner__scrim">
+          <span class="view-banner__badge">📦 Boxed Buddies Chat</span>
+          <h2 class="view-banner__title">Per-Activity Chat</h2>
+        </div>
+      </div>
+
       <div class="view-header">
         <div class="view-header__meta">
           <span class="view-badge">Activity Discussions</span>

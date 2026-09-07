@@ -176,6 +176,14 @@ export function createItineraryView() {
     );
 
     container.innerHTML = `
+      <!-- Atmospheric Vertical Asset Banner -->
+      <div class="view-banner" style="background-image: url('./src/assets/bg-itinerary.png');">
+        <div class="view-banner__scrim">
+          <span class="view-banner__badge">🐱 Interactive Master Timeline</span>
+          <h2 class="view-banner__title">Drag-and-Drop Itinerary</h2>
+        </div>
+      </div>
+
       <div class="view-header">
         <div class="view-header__meta">
           <div style="display: flex; justify-content: space-between; align-items: center;">
