@@ -413,7 +413,7 @@ export function createItineraryView() {
       },
       rest: {
         label: 'Check-in / Rest',
-        badgeLabel: 'CHECK-IN / REST',
+        badgeLabel: 'CHECK-IN',
         icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
       },
     };
@@ -449,72 +449,74 @@ export function createItineraryView() {
         const thread = getThreadById(block.id);
         const threadMsgCount = thread && thread.messages ? thread.messages.length : 0;
 
-        // Inline Status Vector Icon
+        // Status Vector Icon (Consistent across collapsed card & expanded header)
         let statusIconSvg = '';
         if (block.status === 'confirmed') {
-          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
         } else if (block.status === 'tentative') {
-          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+          // Weather Permitting cloud-sun icon
+          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/></svg>';
         } else {
-          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
         }
+
+        const collapsedStatusLabel = block.status === 'tentative' ? 'Weather' : (block.status === 'confirmed' ? 'Confirmed' : 'Proposed');
 
         let cardContent = '';
 
         if (!isExpanded) {
-          // Collapsed State: Un-truncated Title, Status Pill BEFORE Category Pill, Readable Location Row
+          // Collapsed State: Left Meta Column (Times + Status + Category), Body (Flowing Title & Location), Right (Chevron on top, Thread Icon below)
           cardContent = `
             <article class="timeline-card timeline-card--collapsed timeline-card--${block.category}">
               <div class="timeline-card__collapsed-split" data-toggle-details="${block.id}" role="button" tabindex="0" aria-expanded="false">
-                <!-- Left Column: Fixed-width Clean Stacked Times -->
+                <!-- Left Column: Fixed-width Clean Stacked Times with Status & Category Badges Below -->
                 <div class="timeline-card__time-col">
-                  <span class="time-col__start">${displayStart}</span>
-                  <span class="time-col__divider">to</span>
-                  <span class="time-col__end">${displayEnd}</span>
-                </div>
-
-                <!-- Right Column: Un-truncated Title, Status Pill BEFORE Category Pill, Dedicated Location Row -->
-                <div class="timeline-card__body-col">
-                  <h3 class="timeline-card__title">${block.title}</h3>
-                  <div class="timeline-card__badges-row">
-                    <!-- Status Pill FIRST -->
+                  <div class="time-col__times">
+                    <span class="time-col__start">${displayStart}</span>
+                    <span class="time-col__divider">to</span>
+                    <span class="time-col__end">${displayEnd}</span>
+                  </div>
+                  <div class="time-col__badges">
                     <span class="timeline-card__status-pill timeline-card__status-pill--${block.status}" title="Status: ${statusLabel}">
                       ${statusIconSvg}
-                      <span>${statusLabel}</span>
+                      <span>${collapsedStatusLabel}</span>
                     </span>
-
-                    <!-- Category Pill SECOND -->
                     <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
                       ${catInfo.icon}
-                      <span>${catInfo.label}</span>
+                      <span>${catInfo.badgeLabel || catInfo.label}</span>
                     </span>
                   </div>
-
-                  <!-- Location Row: Full readable location text -->
-                  ${block.location ? `
-                    <div class="timeline-card__location-row" title="${block.location}">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                      <span class="timeline-card__location-text">${block.location}</span>
-                    </div>
-                  ` : ''}
                 </div>
 
-                <!-- Far Right: Thread Pill Button & Chevron Expand Button -->
+                <!-- Right Column: Flowing Title and Location taking full use of the line -->
+                <div class="timeline-card__body-col">
+                  <div class="timeline-card__content-flow">
+                    <h3 class="timeline-card__title">${block.title}</h3>
+                    ${block.location ? `
+                      <span class="timeline-card__location-inline" title="${block.location}">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                          <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span class="timeline-card__location-text">${block.location}</span>
+                      </span>
+                    ` : ''}
+                  </div>
+                </div>
+
+                <!-- Far Right: Chevron Expand Button on Top, Activity Thread Icon Below -->
                 <div class="timeline-card__right-actions">
+                  <button type="button" class="timeline-card__chevron-btn" data-toggle-details="${block.id}" aria-label="Expand details">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+
                   <button type="button" class="timeline-card__thread-pill-btn" data-thread-btn="${block.id}" title="Open activity thread" aria-label="Activity thread">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                     </svg>
                     <span>${threadMsgCount}</span>
-                  </button>
-
-                  <button type="button" class="timeline-card__chevron-btn" data-toggle-details="${block.id}" aria-label="Expand details">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
                   </button>
                 </div>
               </div>
@@ -533,11 +535,9 @@ export function createItineraryView() {
                 <div class="timeline-card__expanded-header">
                   <div class="timeline-card__expanded-header-left">
                     <span class="timeline-card__time-pill">${displayStart} – ${displayEnd}</span>
-                    <!-- Status Badge FIRST -->
+                    <!-- Status Badge FIRST with consistent statusIconSvg -->
                     <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
+                      ${statusIconSvg}
                       <span>${statusLabel}</span>
                     </button>
                     <!-- Category Pill SECOND -->

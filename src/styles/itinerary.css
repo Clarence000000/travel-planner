@@ -182,17 +182,24 @@
 
 /* Fixed-width Left Stacked Time Column */
 .timeline-card__time-col {
-  width: 68px;
-  min-width: 68px;
+  width: 78px;
+  min-width: 78px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
-  gap: 1px;
+  gap: 6px;
   border-right: 1px solid rgba(15, 23, 42, 0.08);
   padding-right: 8px;
   padding-top: 1px;
   flex-shrink: 0;
+}
+
+.time-col__times {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
 }
 
 .time-col__start {
@@ -205,7 +212,7 @@
 }
 
 .time-col__divider {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 600;
   color: #94A3B8;
   text-transform: uppercase;
@@ -223,13 +230,27 @@
   line-height: 1.2;
 }
 
-/* Right Body Column: Full Title on top, Category badge & Location underneath */
+.time-col__badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+}
+
+/* Right Body Column: Full Title on top, flowing location beside/below */
 .timeline-card__body-col {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  justify-content: flex-start;
+  padding-top: 1px;
+}
+
+.timeline-card__content-flow {
+  line-height: 1.4;
+  word-break: break-word;
 }
 
 .timeline-card__title {
@@ -237,8 +258,7 @@
   font-weight: 700;
   color: #0F172A;
   margin: 0;
-  white-space: normal;
-  word-break: break-word;
+  display: inline;
   line-height: 1.35;
   letter-spacing: -0.15px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -248,26 +268,43 @@
   font-size: 14.5px;
   font-weight: 800;
   margin-bottom: 2px;
+  display: block;
   white-space: normal;
 }
 
-.timeline-card__badges-row {
-  display: flex;
+.timeline-card__location-inline {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 3.5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748B;
+  margin-left: 6px;
+  vertical-align: baseline;
+  line-height: 1.3;
+}
+
+.timeline-card__location-inline svg {
+  stroke: #64748B;
+  flex-shrink: 0;
+  position: relative;
+  top: 1px;
+}
+
+.timeline-card__location-text {
+  color: #64748B;
 }
 
 .timeline-card__status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 3.5px;
-  font-size: 9.5px;
-  font-weight: 800;
+  gap: 3px;
+  font-size: 8.5px;
+  font-weight: 750;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-  padding: 2.5px 7px;
-  border-radius: 6px;
+  letter-spacing: 0.3px;
+  padding: 2px 5px;
+  border-radius: 5px;
   line-height: 1.2;
   white-space: nowrap;
   flex-shrink: 0;
@@ -291,39 +328,16 @@
   border: 1px solid #FECACA;
 }
 
-.timeline-card__location-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-  font-size: 11px;
-  font-weight: 500;
-  color: #64748B;
-  line-height: 1.35;
-  white-space: normal;
-  word-break: break-word;
-}
-
-.timeline-card__location-row svg {
-  stroke: #64748B;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.timeline-card__location-text {
-  flex: 1;
-  min-width: 0;
-}
-
 .timeline-card__category-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 9.5px;
-  font-weight: 800;
+  gap: 3px;
+  font-size: 8.5px;
+  font-weight: 750;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 2.5px 7px;
-  border-radius: 6px;
+  letter-spacing: 0.3px;
+  padding: 2px 5px;
+  border-radius: 5px;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -370,7 +384,9 @@
 .timeline-card__right-actions {
   flex-shrink: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   gap: 6px;
   padding-top: 1px;
 }
