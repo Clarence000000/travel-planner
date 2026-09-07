@@ -6,8 +6,8 @@
 
 import { getItineraryData, saveItineraryData } from './itineraryData.js';
 
-const STORAGE_KEY_WISHLIST = 'travel_planner_wishlist_v1';
-const STORAGE_KEY_WHITEBOARD = 'travel_planner_whiteboard_v1';
+const STORAGE_KEY_WISHLIST = 'travel_planner_wishlist_v2';
+const STORAGE_KEY_WHITEBOARD = 'travel_planner_whiteboard_v2';
 
 const INITIAL_WISHLIST = [
   {
@@ -20,7 +20,8 @@ const INITIAL_WISHLIST = [
     estimatedCost: '¥1,000 (~$7)',
     votes: 5,
     userVoted: true,
-    addedBy: 'Tony',
+    addedBy: 'Clarence',
+    isScheduled: false,
   },
   {
     id: 'wl-2',
@@ -32,7 +33,8 @@ const INITIAL_WISHLIST = [
     estimatedCost: '¥2,500 (~$17)',
     votes: 4,
     userVoted: false,
-    addedBy: 'Elena',
+    addedBy: 'Wei Gang',
+    isScheduled: false,
   },
   {
     id: 'wl-3',
@@ -45,6 +47,7 @@ const INITIAL_WISHLIST = [
     votes: 6,
     userVoted: true,
     addedBy: 'Kenji',
+    isScheduled: false,
   },
   {
     id: 'wl-4',
@@ -56,7 +59,8 @@ const INITIAL_WISHLIST = [
     estimatedCost: '¥3,000 (~$20)',
     votes: 3,
     userVoted: false,
-    addedBy: 'Tony',
+    addedBy: 'Clarence',
+    isScheduled: false,
   },
 ];
 
@@ -68,7 +72,7 @@ const INITIAL_WHITEBOARD_NOTES = [
     color: 'yellow',
     x: 16,
     y: 24,
-    author: 'Tony',
+    author: 'Clarence',
     tag: 'Transit',
   },
   {
@@ -78,7 +82,7 @@ const INITIAL_WHITEBOARD_NOTES = [
     color: 'peach',
     x: 210,
     y: 35,
-    author: 'Elena',
+    author: 'Wei Gang',
     tag: 'Backup',
   },
   {
@@ -98,7 +102,7 @@ const INITIAL_WHITEBOARD_NOTES = [
     color: 'sky',
     x: 215,
     y: 215,
-    author: 'Tony',
+    author: 'Clarence',
     tag: 'Logistics',
   },
 ];
@@ -121,13 +125,50 @@ export function saveWishlist(items) {
   }
 }
 
+export function getTopVotedWishlistItems(limit = 3) {
+  const items = getWishlist();
+  return items.slice().sort((a, b) => (b.votes || 0) - (a.votes || 0)).slice(0, limit);
+}
+
+export function markWishlistScheduled(itemTitleOrId, scheduleInfo = {}) {
+  const list = getWishlist().map((item) => {
+    if (
+      item.id === itemTitleOrId ||
+      (item.title && itemTitleOrId && item.title.toLowerCase().includes(itemTitleOrId.toLowerCase()))
+    ) {
+      return {
+        ...item,
+        isScheduled: true,
+        scheduledDay: scheduleInfo.day || 1,
+        scheduledTime: scheduleInfo.time || '14:00',
+      };
+    }
+    return item;
+  });
+  saveWishlist(list);
+  return list;
+}
+
+export function resetWishlistScheduled() {
+  const list = getWishlist().map((item) => {
+    const copy = { ...item };
+    copy.isScheduled = false;
+    delete copy.scheduledDay;
+    delete copy.scheduledTime;
+    return copy;
+  });
+  saveWishlist(list);
+  return list;
+}
+
 export function addWishlistItem(item) {
   const list = getWishlist();
   const newItem = {
-    id: 'wl-' + Date.now(),
+    id: 'wl-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
     votes: 1,
     userVoted: true,
-    addedBy: 'Tony',
+    addedBy: 'Clarence',
+    isScheduled: false,
     ...item,
   };
   list.unshift(newItem);
@@ -181,7 +222,7 @@ export function addWhiteboardNote(note) {
     color: note.color || 'yellow',
     x: note.x !== undefined ? note.x : 40,
     y: note.y !== undefined ? note.y : 40,
-    author: 'Tony',
+    author: 'Clarence',
     tag: note.tag || 'Idea',
   };
   notes.push(newNote);
@@ -207,7 +248,7 @@ export function deleteWhiteboardNote(id) {
 /**
  * Promote an item (from Wishlist or Whiteboard note) into an active Itinerary Block
  */
-export function promoteToItinerary({ title, location, category, day = 1, startTime = '03:00', endTime = '04:30', notes = '' }) {
+export function promoteToItinerary({ title, location, category, day = 1, startTime = '03:00', endTime = '04:30', notes = '', source = 'wishlist', sourceVotes = 4 }) {
   const itinerary = getItineraryData();
   const newId = `d${day}-${Date.now().toString().slice(-4)}`;
 
@@ -222,13 +263,20 @@ export function promoteToItinerary({ title, location, category, day = 1, startTi
     location: location || title,
     transitToNextMinutes: 15,
     transitMode: 'Metro or Walking',
-    requirements: ['📍 Added from Group Wishlist'],
+    requirements: ['Added from Group Wishlist'],
     fallback: null,
     notes: notes || 'Scheduled from collaborative ideas wishlist.',
     dressCode: 'Comfortable',
+    source: source || 'wishlist',
+    sourceVotes: sourceVotes || 4,
+    sourceAuthor: 'Clarence',
   };
 
   itinerary.push(newBlock);
   saveItineraryData(itinerary);
+
+  // Mark in wishlist as scheduled
+  markWishlistScheduled(title, { day: Number(day), time: startTime });
+
   return newBlock;
 }

@@ -33,19 +33,19 @@ export function createAddBlockModal({ onAdd }) {
           <div class="form-group">
             <label class="form-label" for="block-category">Category</label>
             <select class="form-select" id="block-category">
-              <option value="activity">🎯 Activity</option>
-              <option value="meal">🍜 Meal</option>
-              <option value="transit">🚇 Transit</option>
-              <option value="rest">🏨 Check-in / Rest</option>
+              <option value="activity">Activity</option>
+              <option value="meal">Meal</option>
+              <option value="transit">Transit</option>
+              <option value="rest">Check-in / Rest</option>
             </select>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="block-status">Initial Status</label>
             <select class="form-select" id="block-status">
-              <option value="proposed">🟡 Proposed</option>
-              <option value="confirmed">🟢 Confirmed</option>
-              <option value="tentative">🟠 Weather Permitting</option>
+              <option value="proposed">Proposed</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="tentative">Weather Permitting</option>
             </select>
           </div>
         </div>
@@ -71,7 +71,7 @@ export function createAddBlockModal({ onAdd }) {
         <!-- Requirements & Dress Code -->
         <div class="form-group">
           <label class="form-label" for="block-reqs">Requirements / What to Bring (comma separated)</label>
-          <input type="text" class="form-input" id="block-reqs" placeholder="e.g. 🪪 Passport tag, 👟 Walking shoes" />
+          <input type="text" class="form-input" id="block-reqs" placeholder="e.g. Passport, Walking shoes" />
         </div>
 
         <!-- Fallback if tentative -->

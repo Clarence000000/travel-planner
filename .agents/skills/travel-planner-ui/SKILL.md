@@ -84,8 +84,18 @@ Read the page layout patterns (Home, Detail, Trips) in
 
 ## Key Design Rules
 
+- **Use SVGs Everywhere, Discourage Emojis**: Always use inline SVG vector icons
+  for all UI elements, controls, chips, pills, badges, tabs, and buttons.
+  **Avoid and discourage the use of emojis in UI components** (e.g. no emojis
+  inside filter chips, category pills, status tags, headers, or buttons).
+  *Why*: Emojis render unpredictably across different operating systems (iOS,
+  Android, Linux, Windows), disrupt typographic line-heights and vertical
+  alignment, and cannot adapt to theme tokens or active/hover states with
+  `currentColor`. In contrast, clean inline SVGs (`stroke="currentColor"`,
+  stroke-width 2–2.5px, `stroke-linecap="round"`, `stroke-linejoin="round"`)
+  ensure razor-sharp vector scaling, consistent styling, and full accessibility.
 - **Rounded everything**: All cards, buttons, inputs, and images use generous
-  border-radius (minimum `12px` for small elements, `24px` for cards).
+  border-radius (minimum `12px` for small elements, `24px` for cards, `9999px` for pills).
 - **Warm palette**: The background is a warm cream (`#F5F0E8`), never pure
   white. Cards are white to provide contrast against the cream background.
 - **Orange as primary CTA**: All primary actions (buttons, active states,
@@ -97,10 +107,13 @@ Read the page layout patterns (Home, Detail, Trips) in
   always visible. The active tab label is colored orange.
 - **Soft shadows**: Cards use subtle box-shadows
   (`0 2px 12px rgba(0,0,0,0.08)`), never harsh or dark shadows.
-- **Country flag emoji**: Country names are preceded by the flag emoji of that
-  country (e.g. 🇩🇪 Germany, 🇨🇭 Switzerland).
-- **Star ratings**: Displayed with an orange star icon (`★`) followed by the
+- **Clean vector metadata**: Metadata (locations, dates, categories) uses
+  crisp inline SVG icons (e.g. pin, calendar, clock) followed by clean text,
+  never platform-dependent emojis.
+- **Star ratings**: Displayed with an orange star icon (`★` or SVG star) followed by the
   numeric rating.
-- **Chip/tag pattern**: Horizontally scrollable chip rows for filtering
-  (country filters, amenity tags). Active chip is filled orange with white
-  text; inactive chips have a dark border with transparent background.
+- **Chip/tag & pill pattern**: Horizontally scrollable chip rows for filtering
+  (categories, amenities, quick filters). Use an inline SVG icon inside the chip
+  alongside concise text — never emojis. Active chip is filled orange with white
+  text and white icon; inactive chips have a subtle border with transparent or
+  glass-tinted background.

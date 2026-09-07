@@ -1,5 +1,5 @@
 /**
- * Component: Quick Group Polls (群投票联动日程)
+ * Component: Quick Group Polls
  * An inline, state-driven poll card that looks like an undecided schedule slot.
  * Features:
  *   1. Schedule-inline form — displays as a "pending decision" itinerary card
@@ -11,33 +11,31 @@
 
 // ── Fake Voter Avatars ──────────────────────────────────────────────────
 const VOTER_POOL = [
-  { emoji: '🍙', name: 'Haru' },
-  { emoji: '🐱', name: 'Mochi' },
-  { emoji: '🌸', name: 'Sakura' },
-  { emoji: '🍵', name: 'Yuki' },
-  { emoji: '🎌', name: 'Ren' },
-  { emoji: '🦊', name: 'Kitsune' },
+  { initials: 'CL', name: 'Clarence' },
+  { initials: 'WG', name: 'Wei Gang' },
+  { initials: 'SK', name: 'Sakura' },
+  { initials: 'YK', name: 'Yuki' },
+  { initials: 'RN', name: 'Ren' },
+  { initials: 'KT', name: 'Kenji' },
 ];
 
 // ── Default Poll Data ───────────────────────────────────────────────────
 const DEFAULT_POLLS = [
   {
     id: 'poll-lunch',
-    question: '🍜 午餐去哪吃？',
+    question: 'Lunch Location Decision',
     subtitle: 'Day 1 • 12:30 PM Slot • Undecided',
     timeSlot: '12:30 PM – 01:30 PM',
     options: [
       {
         id: 'opt-a',
-        label: '一兰拉面 (Ichiran Ramen)',
-        emoji: '🍜',
+        label: 'Ichiran Ramen',
         location: 'Shibuya, Tokyo',
         votes: [VOTER_POOL[0], VOTER_POOL[2]],
       },
       {
         id: 'opt-b',
-        label: '筑地寿司 (Tsukiji Sushi)',
-        emoji: '🍣',
+        label: 'Tsukiji Sushi Market',
         location: 'Chuo City, Tokyo',
         votes: [VOTER_POOL[1]],
       },
@@ -48,21 +46,19 @@ const DEFAULT_POLLS = [
   },
   {
     id: 'poll-evening',
-    question: '🌃 Evening Activity?',
+    question: 'Evening Activity Choice',
     subtitle: 'Day 1 • 06:00 PM Slot • Undecided',
     timeSlot: '06:00 PM – 08:00 PM',
     options: [
       {
         id: 'opt-c',
-        label: 'Robot Restaurant Show',
-        emoji: '🤖',
+        label: 'Robot Restaurant Experience',
         location: 'Shinjuku, Tokyo',
         votes: [VOTER_POOL[3]],
       },
       {
         id: 'opt-d',
         label: 'Golden Gai Bar Hopping',
-        emoji: '🍶',
         location: 'Kabukicho, Shinjuku',
         votes: [VOTER_POOL[4], VOTER_POOL[5]],
       },
@@ -70,6 +66,29 @@ const DEFAULT_POLLS = [
     myVote: null,
     ended: false,
     winnerId: null,
+  },
+  {
+    id: 'poll-breakfast',
+    question: 'Day 1 Breakfast Spot',
+    subtitle: 'Day 1 • 08:30 AM Slot • Consensus Reached',
+    timeSlot: '08:30 AM – 09:30 AM',
+    options: [
+      {
+        id: 'opt-b1',
+        label: 'Tsujihan Seafood Donburi',
+        location: 'Nihonbashi, Tokyo',
+        votes: [VOTER_POOL[0], VOTER_POOL[1], VOTER_POOL[2], VOTER_POOL[4]],
+      },
+      {
+        id: 'opt-b2',
+        label: 'Bills Omotesando Hotcakes',
+        location: 'Jingumae, Shibuya',
+        votes: [VOTER_POOL[3]],
+      },
+    ],
+    myVote: 'opt-b1',
+    ended: true,
+    winnerId: 'opt-b1',
   },
 ];
 
@@ -88,7 +107,10 @@ export function createGroupPolls() {
   function render() {
     wrapper.innerHTML = `
       <div class="group-polls__header">
-        <h3 class="group-polls__title">📊 Quick Group Polls</h3>
+        <h3 class="group-polls__title" style="display: flex; align-items: center; gap: 6px;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <span>Group Polls</span>
+        </h3>
         <span class="group-polls__subtitle">${polls.filter(p => !p.ended).length} active poll(s)</span>
       </div>
       ${polls.map(renderPollCard).join('')}
@@ -113,10 +135,11 @@ export function createGroupPolls() {
         <!-- Schedule Context Badge Row -->
         <div class="gpoll-card__badge-row">
           <span class="gpoll-card__schedule-badge">
-            📅 ${poll.timeSlot}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            ${poll.timeSlot}
           </span>
-          <span class="gpoll-card__status-pill gpoll-card__status-pill--voting">
-            ● Voting Open
+          <span class="gpoll-card__status-pill gpoll-card__status-pill--voting" style="display: flex; align-items: center; gap: 4px;">
+            <span class="status-dot status-dot--proposed"></span> Voting Open
           </span>
         </div>
 
@@ -145,7 +168,7 @@ export function createGroupPolls() {
             ${!poll.myVote ? 'disabled' : ''}
             title="${!poll.myVote ? 'Vote first before ending' : isTie ? 'Tie! Winner picked by first voted' : `Winner: ${winner.label}`}"
           >
-            <span>🏁 End Poll & Apply</span>
+            <span>End Poll & Apply</span>
           </button>
         </div>
       </div>
@@ -162,7 +185,7 @@ export function createGroupPolls() {
     const avatarHTML = opt.votes
       .slice(0, 5)
       .map(
-        (v, i) => `<span class="gpoll-avatar" style="z-index:${5 - i};" title="${v.name}">${v.emoji}</span>`
+        (v, i) => `<span class="gpoll-avatar" style="z-index:${5 - i}; font-size: 9px; font-weight: bold;" title="${v.name}">${v.initials}</span>`
       )
       .join('');
 
@@ -176,10 +199,12 @@ export function createGroupPolls() {
         <div class="gpoll-option__bar" style="width: ${pct}%;"></div>
         <div class="gpoll-option__content">
           <div class="gpoll-option__label-row">
-            <span class="gpoll-option__emoji">${opt.emoji}</span>
             <div class="gpoll-option__text">
               <span class="gpoll-option__name">${opt.label}</span>
-              <span class="gpoll-option__location">📍 ${opt.location}</span>
+              <span class="gpoll-option__location">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                ${opt.location}
+              </span>
             </div>
           </div>
           <div class="gpoll-option__stats">
@@ -197,18 +222,21 @@ export function createGroupPolls() {
       <div class="gpoll-card gpoll-card--confirmed" data-poll-id="${poll.id}">
         <div class="gpoll-card__badge-row">
           <span class="gpoll-card__schedule-badge gpoll-card__schedule-badge--confirmed">
-            📅 ${poll.timeSlot}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            ${poll.timeSlot}
           </span>
-          <span class="gpoll-card__status-pill gpoll-card__status-pill--confirmed">
-            ✓ Confirmed
+          <span class="gpoll-card__status-pill gpoll-card__status-pill--confirmed" style="display: flex; align-items: center; gap: 4px;">
+            <span class="status-dot status-dot--confirmed"></span> Confirmed
           </span>
         </div>
 
         <div class="gpoll-confirmed-body">
-          <span class="gpoll-confirmed-emoji">${winner.emoji}</span>
           <div class="gpoll-confirmed-info">
             <h4 class="gpoll-confirmed-title">${winner.label}</h4>
-            <p class="gpoll-confirmed-location">📍 ${winner.location}</p>
+            <p class="gpoll-confirmed-location">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              ${winner.location}
+            </p>
           </div>
         </div>
 
@@ -219,7 +247,7 @@ export function createGroupPolls() {
           <div class="gpoll-avatar-stack gpoll-avatar-stack--confirmed">
             ${winner.votes
               .map(
-                (v, i) => `<span class="gpoll-avatar" style="z-index:${5 - i};" title="${v.name}">${v.emoji}</span>`
+                (v, i) => `<span class="gpoll-avatar" style="z-index:${5 - i}; font-size: 9px; font-weight: bold;" title="${v.name}">${v.initials}</span>`
               )
               .join('')}
           </div>
@@ -253,13 +281,13 @@ export function createGroupPolls() {
     const poll = polls.find((p) => p.id === pollId);
     if (!poll || poll.ended) return;
 
-    const meVoter = { emoji: '🧑', name: 'You' };
+    const meVoter = { initials: 'CL', name: 'Clarence (You)' };
 
     // Remove previous vote if exists
     if (poll.myVote) {
       const prevOpt = poll.options.find((o) => o.id === poll.myVote);
       if (prevOpt) {
-        prevOpt.votes = prevOpt.votes.filter((v) => v.name !== 'You');
+        prevOpt.votes = prevOpt.votes.filter((v) => v.name !== 'Clarence (You)');
       }
     }
 
@@ -302,7 +330,7 @@ export function createGroupPolls() {
     poll.ended = true;
 
     // Show toast (emit custom event for parent to catch, or use simple built-in)
-    showPollToast(wrapper, `✅ "${sorted[0].label}" locked in as Confirmed!`);
+    showPollToast(wrapper, `"${sorted[0].label}" locked in as Confirmed!`);
 
     render();
   }

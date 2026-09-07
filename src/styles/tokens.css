@@ -91,6 +91,7 @@
   --shadow-header:          0 2px 12px rgba(0, 0, 0, 0.04);
   --shadow-drawer:          -4px 0 24px rgba(0, 0, 0, 0.15);
   --shadow-button:          0 4px 14px rgba(232, 98, 26, 0.28);
+  --shadow-nav:             0 -4px 16px rgba(0, 0, 0, 0.06);
 
   /* ──────────────── Transitions ──────────────── */
   --transition-fast:        150ms cubic-bezier(0.4, 0, 0.2, 1);

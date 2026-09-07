@@ -28,7 +28,9 @@ export function createStatusModal({ onSave }) {
           <label class="lifecycle-option" id="option-proposed">
             <input type="radio" name="slotStatus" value="proposed" />
             <div class="lifecycle-option__text">
-              <span class="lifecycle-option__name" style="color: #B45309;">🟡 Proposed</span>
+              <span class="lifecycle-option__name" style="color: #B45309; display: flex; align-items: center;">
+                <span class="status-dot status-dot--proposed"></span> Proposed
+              </span>
               <span class="lifecycle-option__desc">An idea waiting for group feedback and voting.</span>
             </div>
           </label>
@@ -37,7 +39,9 @@ export function createStatusModal({ onSave }) {
           <label class="lifecycle-option" id="option-confirmed">
             <input type="radio" name="slotStatus" value="confirmed" />
             <div class="lifecycle-option__text">
-              <span class="lifecycle-option__name" style="color: #2D6A2E;">🟢 Confirmed</span>
+              <span class="lifecycle-option__name" style="color: #2D6A2E; display: flex; align-items: center;">
+                <span class="status-dot status-dot--confirmed"></span> Confirmed
+              </span>
               <span class="lifecycle-option__desc">Locked in with booking details, tickets, or general agreement.</span>
             </div>
           </label>
@@ -46,7 +50,9 @@ export function createStatusModal({ onSave }) {
           <label class="lifecycle-option" id="option-tentative">
             <input type="radio" name="slotStatus" value="tentative" />
             <div class="lifecycle-option__text">
-              <span class="lifecycle-option__name" style="color: #C2410C;">🟠 Weather Permitting / Tentative</span>
+              <span class="lifecycle-option__name" style="color: #C2410C; display: flex; align-items: center;">
+                <span class="status-dot status-dot--tentative"></span> Weather Permitting / Tentative
+              </span>
               <span class="lifecycle-option__desc">Contingent outdoor plan with a built-in fallback attached.</span>
             </div>
           </label>

@@ -14,6 +14,7 @@ import {
   deleteWhiteboardNote,
   promoteToItinerary,
 } from '../models/wishlistData.js';
+import { enableDragScroll } from '../utils/dragScroll.js';
 
 export function createIdeasView() {
   const container = document.createElement('div');
@@ -52,14 +53,16 @@ export function createIdeasView() {
             class="segmented-btn ${currentSubTab === 'wishlist' ? 'segmented-btn--active' : ''}" 
             data-subtab="wishlist"
           >
-            <span>💡 Trip Wishlist</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            <span>Trip Wishlist</span>
           </button>
           <button 
             type="button" 
             class="segmented-btn ${currentSubTab === 'whiteboard' ? 'segmented-btn--active' : ''}" 
             data-subtab="whiteboard"
           >
-            <span>📌 Idea Whiteboard</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            <span>Idea Whiteboard</span>
           </button>
         </div>
       </div>
@@ -101,13 +104,14 @@ export function createIdeasView() {
       <div class="wishlist-controls">
         <div class="category-filter-bar">
           <button class="filter-chip ${currentCategory === 'all' ? 'filter-chip--active' : ''}" data-cat="all">All (${items.length})</button>
-          <button class="filter-chip ${currentCategory === 'sightseeing' ? 'filter-chip--active' : ''}" data-cat="sightseeing">⛩️ Sightseeing</button>
-          <button class="filter-chip ${currentCategory === 'food' ? 'filter-chip--active' : ''}" data-cat="food">🍜 Food</button>
-          <button class="filter-chip ${currentCategory === 'activity' ? 'filter-chip--active' : ''}" data-cat="activity">🎯 Activity</button>
-          <button class="filter-chip ${currentCategory === 'nightlife' ? 'filter-chip--active' : ''}" data-cat="nightlife">🍸 Nightlife</button>
+          <button class="filter-chip ${currentCategory === 'sightseeing' ? 'filter-chip--active' : ''}" data-cat="sightseeing">Sightseeing</button>
+          <button class="filter-chip ${currentCategory === 'food' ? 'filter-chip--active' : ''}" data-cat="food">Food</button>
+          <button class="filter-chip ${currentCategory === 'activity' ? 'filter-chip--active' : ''}" data-cat="activity">Activity</button>
+          <button class="filter-chip ${currentCategory === 'nightlife' ? 'filter-chip--active' : ''}" data-cat="nightlife">Nightlife</button>
         </div>
         <button type="button" class="btn btn--primary btn--sm" id="btn-open-add-wishlist">
-          <span>➕ Add</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <span>Add Idea</span>
         </button>
       </div>
 
@@ -115,7 +119,7 @@ export function createIdeasView() {
         ${
           filtered.length === 0
             ? `<div style="text-align: center; padding: 32px 16px; color: var(--color-text-secondary); font-size: var(--text-sm);">
-                No ideas found in this category. Tap <strong>+ Add</strong> to save one!
+                No ideas found in this category. Tap <strong>Add Idea</strong> to save one!
                </div>`
             : filtered
                 .map(
@@ -125,6 +129,12 @@ export function createIdeasView() {
                 <img src="${item.imageUrl}" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
                 <div class="wishlist-card__badge-row">
                   <span class="wishlist-card__category">${item.category}</span>
+                  ${item.isScheduled ? `
+                    <span class="wishlist-card__status-tag">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      <span>Scheduled Day ${item.scheduledDay || 1}</span>
+                    </span>
+                  ` : ''}
                   <span class="wishlist-card__cost">${item.estimatedCost}</span>
                 </div>
               </div>
@@ -151,12 +161,15 @@ export function createIdeasView() {
                 </div>
 
                 <div class="wishlist-card__actions">
-                  <button type="button" class="btn-vote ${item.userVoted ? 'btn-vote--active' : ''}" data-vote-id="${item.id}">
-                    <span>${item.userVoted ? '❤️' : '🤍'}</span>
+                  <button type="button" class="btn-vote ${item.userVoted ? 'btn-vote--active' : ''}" data-vote-id="${item.id}" aria-label="Vote for ${item.title}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="${item.userVoted ? 'var(--color-primary)' : 'none'}" stroke="${item.userVoted ? 'var(--color-primary)' : 'currentColor'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
                     <span>${item.votes}</span>
                   </button>
                   <button type="button" class="btn btn--primary btn--sm" style="flex: 1;" data-schedule-id="${item.id}">
-                    <span>📅 Add to Schedule</span>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <span>Add to Schedule</span>
                   </button>
                 </div>
               </div>
@@ -167,6 +180,9 @@ export function createIdeasView() {
         }
       </div>
     `;
+
+    // Enable drag scrolling on category filter bar
+    enableDragScroll(wrap.querySelector('.category-filter-bar'));
 
     // Filter chip clicks
     wrap.querySelectorAll('.filter-chip').forEach((btn) => {
@@ -220,11 +236,12 @@ export function createIdeasView() {
             <button type="button" class="color-swatch swatch--purple ${selectedStickyColor === 'purple' ? 'color-swatch--active' : ''}" data-color="purple" aria-label="Purple note"></button>
           </div>
           <button type="button" class="btn btn--primary btn--sm" id="btn-add-note">
-            <span>➕ Note</span>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Add Note</span>
           </button>
         </div>
         <div class="whiteboard-instructions">
-          <span>🖐 Drag notes freely • Double-tap canvas to place note</span>
+          <span>Drag notes freely • Double-tap canvas to place note</span>
         </div>
       </div>
 
@@ -289,7 +306,7 @@ export function createIdeasView() {
         tag: 'Idea',
       });
       renderWhiteboard(target);
-      showToast(`📝 Sticky note added!`);
+      showToast(`Sticky note added!`);
     });
 
     // Double-click/double-tap canvas to add note
@@ -482,7 +499,7 @@ export function createIdeasView() {
       });
 
       modalBackdrop.remove();
-      showToast(`✈️ Scheduled "${item.title}" on Day ${day}!`);
+      showToast(`Scheduled "${item.title}" on Day ${day}!`);
     });
   }
 
@@ -502,10 +519,10 @@ export function createIdeasView() {
         <div class="schedule-modal__field">
           <label class="schedule-modal__label">Category</label>
           <select class="schedule-modal__select" id="wishlist-input-cat">
-            <option value="sightseeing">⛩️ Sightseeing</option>
-            <option value="food">🍜 Food</option>
-            <option value="activity">🎯 Activity</option>
-            <option value="nightlife">🍸 Nightlife</option>
+            <option value="sightseeing">Sightseeing</option>
+            <option value="food">Food</option>
+            <option value="activity">Activity</option>
+            <option value="nightlife">Nightlife</option>
           </select>
         </div>
 
@@ -563,7 +580,7 @@ export function createIdeasView() {
 
       modalBackdrop.remove();
       render();
-      showToast(`💡 "${title}" saved to Wishlist!`);
+      showToast(`"${title}" saved to Wishlist!`);
     });
   }
 
