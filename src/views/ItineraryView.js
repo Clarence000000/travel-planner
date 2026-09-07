@@ -438,9 +438,10 @@ export function createItineraryView() {
 
         const catInfo = categoryMap[block.category] || categoryMap.activity;
 
-        // Deduplicate requirements array
+        // Deduplicate requirements array & count completed
         const rawReqs = Array.isArray(block.requirements) ? block.requirements : [];
         const cleanReqs = Array.from(new Set(rawReqs.filter(Boolean)));
+        const completedCount = cleanReqs.filter((_, idx) => checkedRequirements.has(`${block.id}-${idx}`)).length;
 
         // Discussion thread message count
         const thread = getThreadById(block.id);
@@ -589,21 +590,27 @@ export function createItineraryView() {
                     cleanReqs.length > 0
                       ? `<div class="detail-panel__checklist-section">
                           <div class="checklist-section__header">
-                            <span class="req-label-badge">
-                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                              <span>${cleanReqs.length === 1 ? cleanReqs[0] : `${cleanReqs.length} Requirements`}</span>
+                            <span class="checklist-section__title">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M9 11l3 3L22 4"/>
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                              </svg>
+                              <span>Requirements (${completedCount}/${cleanReqs.length})</span>
                             </span>
                           </div>
                           <div class="detail-panel__checklist">
                             ${cleanReqs
-                              .map(
-                                (r) => `
-                              <span class="checklist-bullet">
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-                                ${r}
-                              </span>
-                            `
-                              )
+                              .map((r, idx) => {
+                                const isChecked = checkedRequirements.has(`${block.id}-${idx}`);
+                                return `
+                                  <div class="checklist-item ${isChecked ? 'checklist-item--checked' : ''}" data-req-toggle="${block.id}" data-req-idx="${idx}" role="checkbox" aria-checked="${isChecked}" tabindex="0">
+                                    <span class="checklist-checkbox ${isChecked ? 'checklist-checkbox--checked' : ''}">
+                                      ${isChecked ? '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+                                    </span>
+                                    <span class="checklist-item__text">${r}</span>
+                                  </div>
+                                `;
+                              })
                               .join('')}
                           </div>
                         </div>`
@@ -725,6 +732,22 @@ export function createItineraryView() {
         const blockId = btn.getAttribute('data-status-btn');
         const block = itineraryList.find((b) => b.id === blockId);
         if (block) statusModal.open(block);
+      });
+    });
+
+    // 4c. Toggle Interactive Checklist Items
+    container.querySelectorAll('[data-req-toggle]').forEach((item) => {
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = item.getAttribute('data-req-toggle');
+        const idx = parseInt(item.getAttribute('data-req-idx'), 10);
+        const key = `${blockId}-${idx}`;
+        if (checkedRequirements.has(key)) {
+          checkedRequirements.delete(key);
+        } else {
+          checkedRequirements.add(key);
+        }
+        render();
       });
     });
 
