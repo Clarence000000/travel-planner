@@ -26,6 +26,7 @@ npm run dev
   - [ ] Classify and recommend activities from chat threads
 - [x] Organise chat threads so they are categorised (Food, Location, Hotel, etc.) instead of just a flat list
 - [ ] Update Dashboard Day-of-Trip HUD so that it is only active on the actual day of the trip, with main focus activity only
+- [ ] Hovering hover a highlighted orange pill is white and doesnt look good
 
 ### UI / UX & Quality Audit
 
