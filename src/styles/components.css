@@ -500,6 +500,8 @@
   border-radius: var(--radius-pill);
   text-transform: capitalize;
   line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .thread-category-pill--food {
@@ -644,8 +646,11 @@
 .thread-item-card__footer {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-top: 4px;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .thread-item-card__badge {
@@ -654,12 +659,28 @@
   gap: 4px;
   font-size: 10px;
   font-weight: var(--font-semibold);
-  padding: 3px 8px;
+  padding: 2px 8px;
   border-radius: var(--radius-pill);
   background-color: var(--color-surface-alt);
   color: var(--color-text-secondary);
   white-space: nowrap;
-  line-height: 1;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.thread-item-card__badge--loc {
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 95px;
+  overflow: hidden;
+}
+
+.thread-item-card__badge--loc span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  min-width: 0;
 }
 
 .thread-item-card__badge svg {
@@ -3540,13 +3561,15 @@
   align-items: center;
   gap: 4px;
   font-size: 10px;
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-bold);
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   background-color: var(--color-surface-alt);
   border: 1px solid var(--color-border);
   color: var(--color-text-secondary);
   line-height: 1.2;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .thread-day-pill svg {

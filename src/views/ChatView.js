@@ -23,7 +23,6 @@ import {
   getDayCalendarIconSvg,
   getThreadDay,
 } from '../models/chatData.js';
-import { createGroupPolls } from '../components/GroupPolls.js';
 import { enableDragScroll } from '../utils/dragScroll.js';
 
 export function createChatView(initialBlockId = null) {
@@ -98,10 +97,9 @@ export function createChatView(initialBlockId = null) {
       </div>
 
       <div class="view-header">
-        <div class="view-header__top-row" style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-2);">
+        <div class="view-header__top-row" style="display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
           <div class="view-header__meta">
             <span class="view-badge">Categorised Discussions</span>
-            <p class="view-subtitle" style="margin-top: 4px;">Coordinate food choices, sights, hotel logistics, and travel plans by day and category</p>
           </div>
           <button type="button" class="btn btn--primary btn--sm" id="btn-open-new-thread" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius-pill); padding: 8px 14px; font-weight: var(--font-semibold); min-height: 40px;" aria-label="Start new discussion thread">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -179,8 +177,7 @@ export function createChatView(initialBlockId = null) {
         ${renderCategorisedSectionsHTML(dayScopedThreads, hubFilter)}
       </div>
 
-      <!-- Quick Group Polls Section -->
-      <div id="group-polls-hub-mount" style="margin-top: var(--space-3);"></div>
+
     `;
 
     // Enable horizontal drag scroll on both filter bars
@@ -239,12 +236,7 @@ export function createChatView(initialBlockId = null) {
       });
     }
 
-    // Mount Group Polls component on hub
-    const pollsMount = hubElem.querySelector('#group-polls-hub-mount');
-    if (pollsMount) {
-      const groupPolls = createGroupPolls();
-      pollsMount.appendChild(groupPolls.element);
-    }
+
 
     container.appendChild(hubElem);
   }
@@ -265,12 +257,9 @@ export function createChatView(initialBlockId = null) {
           <div class="thread-category-header">
             <div class="thread-category-header__left">
               <div class="thread-category-header__icon thread-category-header__icon--polls">
-                ${getPollsIconSvg(18)}
+                ${getPollsIconSvg(16)}
               </div>
-              <div class="thread-category-header__titles">
-                <h2 class="thread-category-header__name">Active Consensus Polls</h2>
-                <span class="thread-category-header__desc">Threads with group decisions pending vote</span>
-              </div>
+              <h2 class="thread-category-header__name">Active Consensus Polls</h2>
             </div>
             <span class="thread-category-header__count">${pollThreads.length} ${pollThreads.length === 1 ? 'poll' : 'polls'}</span>
           </div>
@@ -303,10 +292,7 @@ export function createChatView(initialBlockId = null) {
               <div class="thread-category-header__icon thread-category-header__icon--${cat.id}">
                 ${cat.iconSvg}
               </div>
-              <div class="thread-category-header__titles">
-                <h2 class="thread-category-header__name">${cat.name}</h2>
-                <span class="thread-category-header__desc">${cat.description}</span>
-              </div>
+              <h2 class="thread-category-header__name">${cat.name}</h2>
             </div>
             <span class="thread-category-header__count">${catThreads.length} ${catThreads.length === 1 ? 'thread' : 'threads'}</span>
           </div>
@@ -344,15 +330,31 @@ export function createChatView(initialBlockId = null) {
     `;
   }
 
+  function formatShortLocation(loc) {
+    if (!loc) return '';
+    let part = loc.split(',')[0].trim();
+    const parenMatch = part.match(/\(([^)]+)\)/);
+    if (parenMatch) return parenMatch[1].trim();
+    // Common landmark shortenings
+    if (part.startsWith('Shibuya')) return 'Shibuya';
+    if (part.startsWith('Shinjuku')) return 'Shinjuku';
+    if (part.startsWith('Roppongi')) return 'Roppongi';
+    if (part.startsWith('Tokyo')) return 'Tokyo';
+    if (part.startsWith('Kyoto')) return 'Kyoto';
+    if (part.startsWith('Arashiyama')) return 'Arashiyama';
+    return part;
+  }
+
   function renderThreadCardHTML(t) {
     const lastMsg = t.messages.length > 0 ? t.messages[t.messages.length - 1] : null;
     const normCat = normalizeCategory(t.category);
     const catConfig = getCategoryConfig(normCat);
     const day = getThreadDay(t);
     const dayLabel = day ? `Day ${day}` : 'Trip-Wide';
+    const shortLoc = formatShortLocation(t.location);
 
     return `
-      <div class="thread-item-card" data-thread-id="${t.blockId}" role="button" tabindex="0" aria-label="Open discussion: ${t.title}">
+      <div class="thread-item-card" data-thread-id="${t.blockId}" role="button" tabindex="0" aria-label="Open discussion: ${escapeHtml(t.title)}">
         <div class="thread-item-card__icon thread-item-card__icon--${normCat}" aria-hidden="true">
           ${getCategoryIconSvg(normCat, 18)}
         </div>
@@ -373,19 +375,20 @@ export function createChatView(initialBlockId = null) {
               ${getCategoryIconSvg(normCat, 10)}
               <span>${catConfig.label}</span>
             </span>
-            <span class="thread-item-card__badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-              <span>${escapeHtml(t.location.split(',')[0])}</span>
-            </span>
-            <span class="thread-item-card__badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-              <span>${t.participantCount || 4}</span>
-            </span>
+            ${
+              shortLoc
+                ? `
+              <span class="thread-item-card__badge thread-item-card__badge--loc" title="${escapeHtml(t.location)}">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>${escapeHtml(shortLoc)}</span>
+              </span>`
+                : ''
+            }
             ${
               t.poll
                 ? `
               <span class="thread-item-card__badge thread-item-card__badge--poll">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
                 <span>Poll</span>
               </span>`
                 : ''
