@@ -9,14 +9,18 @@
   gap: var(--space-4);
 }
 
-/* ──────────────── Segmented Control ──────────────── */
+/* ──────────────── Segmented Control (Liquid Glass Pill) ──────────────── */
 
 .segmented-control {
   display: flex;
-  background-color: rgba(230, 224, 215, 0.7);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.88);
   padding: 4px;
   border-radius: var(--radius-pill);
   gap: 4px;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.95), 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .segmented-btn {
@@ -28,19 +32,22 @@
   padding: 8px 14px;
   border-radius: var(--radius-pill);
   font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  border: none;
+  font-weight: 600;
+  border: 1px solid transparent;
   background: transparent;
-  color: var(--color-text-secondary);
+  color: #64748B;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 180ms ease;
 }
 
 .segmented-btn--active {
-  background-color: var(--color-surface);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(255, 255, 255, 0.95);
   color: var(--color-primary);
-  font-weight: var(--font-bold);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05), inset 0 1px 1px #FFFFFF;
 }
 
 /* ──────────────── Wishlist Styles ──────────────── */
@@ -73,23 +80,41 @@
 }
 
 .filter-chip {
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
+  padding: 7px 14px;
+  border-radius: 9999px;
   font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  color: #475569;
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--transition-fast);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.03),
+    inset 0 1px 0.5px rgba(255, 255, 255, 0.9);
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-chip:hover {
+  background: rgba(255, 255, 255, 0.85);
+  color: #0F172A;
+  transform: translateY(-1px);
+}
+
+.filter-chip:active {
+  transform: scale(0.96);
 }
 
 .filter-chip--active {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-primary-text);
-  font-weight: var(--font-semibold);
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.92) 0%, rgba(217, 74, 5, 0.88) 100%);
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #FFFFFF;
+  font-weight: 700;
+  box-shadow: 
+    0 4px 16px rgba(234, 88, 12, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
 }
 
 .wishlist-grid {
@@ -99,10 +124,16 @@
 }
 
 .wishlist-card {
-  background-color: var(--color-surface);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.76) 0%,
+    rgba(255, 255, 255, 0.58) 100%
+  );
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05), inset 0 1px 1.5px rgba(255, 255, 255, 0.98);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -110,7 +141,13 @@
 }
 
 .wishlist-card:hover {
-  box-shadow: var(--shadow-card-hover);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.70) 100%
+  );
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.10), inset 0 1px 1.5px #FFFFFF;
 }
 
 .wishlist-card__image-wrap {
@@ -320,14 +357,17 @@
   box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.04);
 }
 
-/* Sticky Notes */
+/* Sticky Notes (Liquid Glass Notes) */
 .sticky-note {
   position: absolute;
   width: 165px;
   min-height: 140px;
   padding: 12px;
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.09), 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 18px;
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
   cursor: grab;
   display: flex;
   flex-direction: column;
@@ -338,38 +378,38 @@
 
 .sticky-note:active {
   cursor: grabbing;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
   z-index: 50 !important;
   transform: rotate(1deg) scale(1.03);
 }
 
 .sticky-note--yellow {
-  background-color: #FEF08A;
-  border-top: 3px solid #FACC15;
+  background: rgba(254, 240, 138, 0.78);
+  border-top: 3px solid rgba(250, 204, 21, 0.85);
   color: #713F12;
 }
 
 .sticky-note--peach {
-  background-color: #FED7AA;
-  border-top: 3px solid #FB923C;
+  background: rgba(254, 215, 170, 0.78);
+  border-top: 3px solid rgba(251, 146, 60, 0.85);
   color: #7C2D12;
 }
 
 .sticky-note--mint {
-  background-color: #A7F3D0;
-  border-top: 3px solid #34D399;
+  background: rgba(167, 243, 208, 0.78);
+  border-top: 3px solid rgba(52, 211, 153, 0.85);
   color: #064E3B;
 }
 
 .sticky-note--sky {
-  background-color: #BAE6FD;
-  border-top: 3px solid #38BDF8;
+  background: rgba(186, 230, 253, 0.78);
+  border-top: 3px solid rgba(56, 189, 248, 0.85);
   color: #0C4A6E;
 }
 
 .sticky-note--purple {
-  background-color: #E9D5FF;
-  border-top: 3px solid #C084FC;
+  background: rgba(233, 213, 255, 0.78);
+  border-top: 3px solid rgba(192, 132, 252, 0.85);
   color: #581C87;
 }
 

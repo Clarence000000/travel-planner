@@ -1,52 +1,61 @@
 /**
- * Mobile Top Header Component
- * Sticky top bar matching .agents/skills/travel-planner-ui mobile layout.
- * Displays trip destination/title and quick status indicators.
+ * Mobile Sticky Cat Photo Header Component
+ * Replaces the static status bar with an atmospheric sticky cat photo banner.
+ * Stays pinned at the top when scrolling down.
+ * Features a clean frosted-glass hamburger button that opens the sidebar menu.
  */
 
 export function createHeader(options = {}) {
-  const { onOpenOnboarding } = options;
+  const { onOpenSidebar } = options;
   const header = document.createElement('header');
-  header.className = 'top-header';
+  header.className = 'cat-header';
   header.setAttribute('role', 'banner');
 
   header.innerHTML = `
-    <div class="top-header__inner">
-      <div class="top-header__brand">
-        <div class="top-header__logo" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.3c.4-.2.6-.6.5-1.1z"/>
-          </svg>
-        </div>
-        <div class="top-header__text">
-          <span class="top-header__subtitle">Trip Planner</span>
-          <h1 class="top-header__title">Summer Tour 2026</h1>
-        </div>
-      </div>
+    <div class="cat-header__banner" id="cat-header-banner" style="background-image: url('./src/assets/bg-itinerary.png');">
+      <div class="cat-header__scrim">
+        <div class="cat-header__top-row">
+          <!-- Clean Sidebar Menu Toggle Button -->
+          <button type="button" class="cat-header__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
 
-      <div class="top-header__actions" style="display: flex; align-items: center; gap: 6px;">
-        <button type="button" class="top-header__action-btn" id="btn-open-onboarding" aria-label="Import Data & AI Trip Setup" title="Import Data / AI Trip Setup">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
-        </button>
-        <button type="button" class="top-header__action-btn" aria-label="Trip Status Notifications">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-          <span class="notification-indicator"></span>
-        </button>
+          <!-- Centered Trip Identification -->
+          <div class="cat-header__center">
+            <span class="cat-header__tag">Summer Tour 2026</span>
+          </div>
+
+          <!-- Right Balance Spacer -->
+          <div class="cat-header__spacer" aria-hidden="true"></div>
+        </div>
+
+        <div class="cat-header__bottom-row">
+          <h1 class="cat-header__title">Tokyo Expedition</h1>
+          <span class="cat-header__subtitle">July 14 – 16 • 3-Day Journey</span>
+        </div>
       </div>
     </div>
   `;
 
-  const onboardingBtn = header.querySelector('#btn-open-onboarding');
-  if (onboardingBtn && typeof onOpenOnboarding === 'function') {
-    onboardingBtn.addEventListener('click', onOpenOnboarding);
+  const menuBtn = header.querySelector('#btn-open-sidebar');
+  if (menuBtn && typeof onOpenSidebar === 'function') {
+    menuBtn.addEventListener('click', onOpenSidebar);
+  }
+
+  // Helper method to dynamically switch the cat photo per active tab if needed
+  function setBackground(imagePath) {
+    const banner = header.querySelector('#cat-header-banner');
+    if (banner && imagePath) {
+      banner.style.backgroundImage = `url('${imagePath}')`;
+    }
   }
 
   return {
     element: header,
+    setBackground,
   };
 }
