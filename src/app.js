@@ -1,6 +1,7 @@
 /**
  * Mobile Travel Planner App
- * Orchestrates sticky header, dynamic tab views, and 5-tab bottom navigation.
+ * Features atmospheric sticky cat photo banner, clean slide-out sidebar,
+ * dynamic tab views, and 5-tab bottom navigation.
  * Tab Views:
  * 1. Itinerary (Interactive Timeline)
  * 2. Chat (Per-Activity Chat Threads)
@@ -9,7 +10,7 @@
  * 5. Dashboard (Now & Next Live HUD)
  */
 
-import { createHeader } from './components/Header.js';
+import { createSidebar } from './components/Sidebar.js';
 import { createBottomNav } from './components/BottomNav.js';
 import { createOnboardingModal } from './components/OnboardingModal.js';
 import { createItineraryView } from './views/ItineraryView.js';
@@ -41,13 +42,16 @@ export function initApp() {
   });
   appShell.appendChild(onboardingModal.element);
 
-  // 3. Sticky Top Header with Onboarding Trigger
-  const headerComponent = createHeader({
+  // 3. Clean Side Menu / Sidebar Drawer Component
+  const sidebarComponent = createSidebar({
     onOpenOnboarding: () => {
       onboardingModal.open();
     },
+    onSelectTab: (tabId) => {
+      setActiveTab(tabId);
+    },
   });
-  appShell.appendChild(headerComponent.element);
+  appShell.appendChild(sidebarComponent.element);
 
   // 4. Main Content Container for Tab Views
   const mainContent = document.createElement('main');
@@ -67,13 +71,52 @@ export function initApp() {
 
   appShell.appendChild(mainContent);
 
-  // 4. Fixed Bottom Tab Bar
+  // Viewport Occlusion Guards (prevents scrolled content from exceeding above the cat photo banner or below the floating bottom nav bar)
+  const topGuard = document.createElement('div');
+  topGuard.className = 'app-shell__top-guard';
+  topGuard.setAttribute('aria-hidden', 'true');
+  appShell.appendChild(topGuard);
+
+  const bottomGuard = document.createElement('div');
+  bottomGuard.className = 'app-shell__bottom-guard';
+  bottomGuard.setAttribute('aria-hidden', 'true');
+  appShell.appendChild(bottomGuard);
+
+  // 5. Fixed Bottom Tab Bar
   const bottomNavComponent = createBottomNav();
   appShell.appendChild(bottomNavComponent.element);
 
   root.appendChild(appShell);
 
-  // 5. View Switcher Logic
+  // Helper to ensure all view banners have the menu button to open sidebar
+  function ensureBannerMenuButton() {
+    const banner = viewContainer.querySelector('.view-banner');
+    if (banner && !banner.querySelector('.view-banner__menu-btn')) {
+      const menuBtn = document.createElement('button');
+      menuBtn.type = 'button';
+      menuBtn.className = 'view-banner__menu-btn';
+      menuBtn.id = 'btn-open-sidebar';
+      menuBtn.setAttribute('aria-label', 'Open Trip Menu');
+      menuBtn.setAttribute('title', 'Open Menu');
+      menuBtn.innerHTML = `
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      `;
+      banner.appendChild(menuBtn);
+    }
+  }
+
+  // Delegated click listener for menu button on cat photo banners
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#btn-open-sidebar') || e.target.closest('.view-banner__menu-btn')) {
+      sidebarComponent.open();
+    }
+  });
+
+  // 6. View Switcher Logic
   function renderView(activeTab) {
     appShell.setAttribute('data-active-tab', activeTab.id);
     viewContainer.innerHTML = '';
@@ -100,6 +143,7 @@ export function initApp() {
     }
 
     viewContainer.appendChild(view.element);
+    ensureBannerMenuButton();
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
 
@@ -125,6 +169,8 @@ export function initApp() {
     getActiveTab,
     getNavTabs,
     openOnboarding: () => onboardingModal.open(),
+    openSidebar: () => sidebarComponent.open(),
+    closeSidebar: () => sidebarComponent.close(),
   };
 
   // Auto-show onboarding modal on first visit
@@ -135,7 +181,7 @@ export function initApp() {
   }
 
   console.log(
-    '%c[App] Travel Planner Mobile App Initialized',
+    '%c[App] Travel Planner Mobile App Initialized (Cat Photo Header & Clean Sidebar)',
     'color: #E8621A; font-weight: bold; font-size: 14px;'
   );
 }

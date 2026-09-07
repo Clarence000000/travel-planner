@@ -15,27 +15,38 @@
   --color-secondary:        #2D6A2E;
   --color-secondary-light:  #E8F5E9;
 
-  /* Neutral Surfaces & Backgrounds */
+  /* Neutral Surfaces & Backgrounds - Apple iOS 26 Liquid Glass */
   --color-background:       #F5F0E8;   /* Warm cream page background */
-  --color-surface:          #FFFFFF;   /* Clean white card surface */
-  --color-surface-alt:      #FDF6EE;   /* Slightly tinted warm surface */
-  --color-border:           #E0DDD6;   /* Subtle divider / border */
-  --color-border-strong:    #1A1A1A;   /* Chip outlines */
-  --color-divider:          #F0ECE4;
+  --color-surface:          rgba(255, 255, 255, 0.74);   /* Translucent frosted glass */
+  --color-surface-alt:      rgba(255, 255, 255, 0.58);   /* Layered frosted glass */
+  --color-border:           rgba(255, 255, 255, 0.88);   /* Light-refractive edge */
+  --color-border-strong:    rgba(15, 23, 42, 0.25);
+  --color-divider:          rgba(255, 255, 255, 0.70);
+
+  /* Liquid Glass System Tokens */
+  --glass-blur-sm:          blur(12px) saturate(180%);
+  --glass-blur-md:          blur(22px) saturate(190%);
+  --glass-blur-lg:          blur(32px) saturate(200%);
+  --glass-bg-card:          linear-gradient(180deg, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0.56) 100%);
+  --glass-bg-card-hover:    linear-gradient(180deg, rgba(255, 255, 255, 0.90) 0%, rgba(255, 255, 255, 0.72) 100%);
+  --glass-border-refractive:1px solid rgba(255, 255, 255, 0.90);
+  --glass-specular-top:     inset 0 1px 1.5px rgba(255, 255, 255, 0.98);
+  --glass-shadow:           0 8px 24px rgba(15, 23, 42, 0.06);
+  --glass-shadow-floating:  0 14px 38px rgba(15, 23, 42, 0.12);
 
   /* Typography Colors */
-  --color-text-primary:     #1A1A1A;
-  --color-text-secondary:   #6B6B6B;
-  --color-text-tertiary:    #9E9E9E;
+  --color-text-primary:     #0F172A;
+  --color-text-secondary:   #475569;
+  --color-text-tertiary:    #64748B;
   --color-text-inverse:     #FFFFFF;
 
   /* Semantic */
   --color-star:             #E8621A;
   --color-heart:            #E8621A;
-  --color-success:          #2D6A2E;
-  --color-error:            #D32F2F;
-  --color-badge-bg:         rgba(232, 98, 26, 0.12);
-  --color-badge-text:       #E8621A;
+  --color-success:          #10B981;
+  --color-error:            #EF4444;
+  --color-badge-bg:         rgba(232, 98, 26, 0.15);
+  --color-badge-text:       #EA580C;
 
   /* ──────────────── Typography ──────────────── */
   --font-family:            'Inter', 'SF Pro Display', -apple-system,

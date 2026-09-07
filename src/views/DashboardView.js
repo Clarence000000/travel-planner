@@ -422,8 +422,15 @@ export function createDashboardView() {
     const next = getNext();
 
     container.innerHTML = `
-      <!-- Atmospheric Vertical Asset Banner -->
+      <!-- Atmospheric Vertical Asset Banner (Sticky Cat Photo Header) -->
       <div class="view-banner" style="background-image: url('./src/assets/bg-dashboard.png');">
+        <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <div class="view-banner__scrim">
           <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Cozy Live HUD</span>
           <h2 class="view-banner__title">Now & Next Dashboard</h2>

@@ -84,18 +84,31 @@ export function createChatView(initialBlockId = null) {
       polls: dayScopedThreads.filter((t) => Boolean(t.poll)).length,
     };
 
-    const hubElem = document.createElement('div');
-    hubElem.className = 'threads-hub';
-
-    hubElem.innerHTML = `
-      <!-- Atmospheric Vertical Asset Banner -->
+    // 1. Sticky Cat Photo Banner directly attached to container
+    const bannerWrapper = document.createElement('div');
+    bannerWrapper.innerHTML = `
+      <!-- Atmospheric Vertical Asset Banner (Sticky Cat Photo Header) -->
       <div class="view-banner" style="background-image: url('./src/assets/bg-chat.png');">
+        <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <div class="view-banner__scrim">
           <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Boxed Buddies Chat</span>
           <h2 class="view-banner__title">Per-Activity Chat</h2>
         </div>
       </div>
+    `;
+    container.appendChild(bannerWrapper.firstElementChild);
 
+    // 2. Main Threads Hub Content
+    const hubElem = document.createElement('div');
+    hubElem.className = 'threads-hub';
+
+    hubElem.innerHTML = `
       <div class="view-header">
         <div class="view-header__top-row" style="display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
           <div class="view-header__meta">

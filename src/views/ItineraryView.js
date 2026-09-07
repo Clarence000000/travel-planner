@@ -34,7 +34,7 @@ export function createItineraryView() {
 
   let itineraryList = getItineraryData();
   let currentDay = 1;
-  let expandedCardIds = new Set(['d1-2', 'd1-3']); // Default expand first couple for showcase
+  let expandedCardIds = new Set(['d1-2']); // Card 1 (Hotel) collapsed, Card 2 (Senso-ji) expanded by default
 
   // Modals
   let statusModal;
@@ -176,8 +176,15 @@ export function createItineraryView() {
     );
 
     container.innerHTML = `
-      <!-- Atmospheric Vertical Asset Banner -->
+      <!-- Atmospheric Vertical Asset Banner (Sticky Cat Photo Header) -->
       <div class="view-banner" style="background-image: url('./src/assets/bg-itinerary.png');">
+        <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
         <div class="view-banner__scrim">
           <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Interactive Master Timeline</span>
           <h2 class="view-banner__title">Drag-and-Drop Itinerary</h2>
@@ -250,6 +257,139 @@ export function createItineraryView() {
     attachEvents(rawBlocks);
   }
 
+  function getVenueThumbnail(block) {
+    // 1. Senso-ji Temple Gate (Iconic Kaminarimon with curved eaves, red pillars, giant red lantern)
+    if (block.id === 'd1-2' || (block.title && block.title.includes('Senso-ji'))) {
+      return `
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="48" height="48" xmlns="http://www.w3.org/2000/svg" aria-label="Senso-ji Temple Gate">
+          <defs>
+            <clipPath id="circleClip-sensoji">
+              <circle cx="32" cy="32" r="30" />
+            </clipPath>
+            <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="55%" stop-color="#93C5FD"/>
+              <stop offset="100%" stop-color="#EFF6FF"/>
+            </linearGradient>
+            <linearGradient id="lanternGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#EF4444"/>
+              <stop offset="45%" stop-color="#DC2626"/>
+              <stop offset="100%" stop-color="#991B1B"/>
+            </linearGradient>
+            <linearGradient id="roofGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#374151"/>
+              <stop offset="100%" stop-color="#111827"/>
+            </linearGradient>
+          </defs>
+          <g clip-path="url(#circleClip-sensoji)">
+            <!-- Sky Background -->
+            <rect width="64" height="64" fill="url(#skyGrad)"/>
+            <!-- Distant Cloud / Mt Fuji Silhouette -->
+            <ellipse cx="48" cy="18" rx="10" ry="4" fill="#FFFFFF" opacity="0.6"/>
+            <ellipse cx="16" cy="16" rx="8" ry="3" fill="#FFFFFF" opacity="0.5"/>
+            <!-- Curved Pagoda Roof (Kaminarimon Gate) -->
+            <path d="M4 22 C18 16 46 16 60 22 L57 26 L7 26 Z" fill="url(#roofGrad)"/>
+            <path d="M8 23 C20 18 44 18 56 23" stroke="#F59E0B" stroke-width="1.5" fill="none"/>
+            <!-- Red Wooden Crossbeam & Pillars -->
+            <rect x="10" y="26" width="44" height="5" fill="#991B1B"/>
+            <rect x="12" y="30" width="5" height="34" fill="#DC2626"/>
+            <rect x="47" y="30" width="5" height="34" fill="#DC2626"/>
+            <!-- Iconic Giant Red Lantern (Chochin) -->
+            <ellipse cx="32" cy="39" rx="11" ry="13" fill="url(#lanternGrad)"/>
+            <line x1="32" y1="26" x2="32" y2="30" stroke="#111827" stroke-width="2.5"/>
+            <rect x="25" y="29" width="14" height="3" fill="#111827" rx="1"/>
+            <rect x="25" y="48" width="14" height="3" fill="#111827" rx="1"/>
+            <!-- Golden Character (雷) on Lantern -->
+            <circle cx="32" cy="39" r="5.5" fill="#FBBF24" opacity="0.9"/>
+            <text x="32" y="42" font-size="6.5" font-family="'Inter', sans-serif" font-weight="900" fill="#111827" text-anchor="middle">雷</text>
+            <!-- Stone Ground -->
+            <rect x="0" y="56" width="64" height="8" fill="#E2E8F0"/>
+          </g>
+          <circle cx="32" cy="32" r="30" fill="none" stroke="#2563EB" stroke-width="2"/>
+        </svg>
+      `;
+    }
+
+    // 2. Hotel Check-in / Rest
+    if (block.category === 'rest') {
+      return `
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="48" height="48" xmlns="http://www.w3.org/2000/svg" aria-label="Hotel Lobby">
+          <defs>
+            <clipPath id="circleClip-hotel">
+              <circle cx="32" cy="32" r="30" />
+            </clipPath>
+            <linearGradient id="hotelGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#EEF2FF"/>
+              <stop offset="100%" stop-color="#C7D2FE"/>
+            </linearGradient>
+          </defs>
+          <g clip-path="url(#circleClip-hotel)">
+            <rect width="64" height="64" fill="url(#hotelGrad)"/>
+            <rect x="18" y="16" width="28" height="48" fill="#4338CA" rx="3"/>
+            <rect x="23" y="21" width="5" height="5" fill="#FEF08A" rx="1"/>
+            <rect x="36" y="21" width="5" height="5" fill="#FEF08A" rx="1"/>
+            <rect x="23" y="30" width="5" height="5" fill="#FEF08A" rx="1"/>
+            <rect x="36" y="30" width="5" height="5" fill="#FEF08A" rx="1"/>
+            <rect x="23" y="39" width="5" height="5" fill="#FEF08A" rx="1"/>
+            <rect x="36" y="39" width="5" height="5" fill="#FEF08A" rx="1"/>
+            <polygon points="16,50 48,50 44,55 20,55" fill="#E8621A"/>
+          </g>
+          <circle cx="32" cy="32" r="30" fill="none" stroke="#4F46E5" stroke-width="2"/>
+        </svg>
+      `;
+    }
+
+    // 3. Meals & Street Food
+    if (block.category === 'meal') {
+      return `
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="48" height="48" xmlns="http://www.w3.org/2000/svg" aria-label="Street Food & Matcha">
+          <defs>
+            <clipPath id="circleClip-meal">
+              <circle cx="32" cy="32" r="30" />
+            </clipPath>
+            <linearGradient id="mealBg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FEF3C7"/>
+              <stop offset="100%" stop-color="#FDE68A"/>
+            </linearGradient>
+          </defs>
+          <g clip-path="url(#circleClip-meal)">
+            <rect width="64" height="64" fill="url(#mealBg)"/>
+            <!-- Matcha Bowl -->
+            <ellipse cx="32" cy="42" rx="18" ry="11" fill="#065F46"/>
+            <ellipse cx="32" cy="40" rx="15" ry="8" fill="#10B981"/>
+            <!-- Dango Skewer -->
+            <line x1="16" y1="20" x2="48" y2="20" stroke="#78350F" stroke-width="2.5"/>
+            <circle cx="24" cy="20" r="4.5" fill="#F472B6"/>
+            <circle cx="33" cy="20" r="4.5" fill="#FFFFFF"/>
+            <circle cx="42" cy="20" r="4.5" fill="#34D399"/>
+          </g>
+          <circle cx="32" cy="32" r="30" fill="none" stroke="#D97706" stroke-width="2"/>
+        </svg>
+      `;
+    }
+
+    // 4. Digital Art Museum & Sightseeing
+    return `
+      <svg class="venue-circle-svg" viewBox="0 0 64 64" width="48" height="48" xmlns="http://www.w3.org/2000/svg" aria-label="Sightseeing Landmark">
+        <defs>
+          <clipPath id="circleClip-art">
+            <circle cx="32" cy="32" r="30" />
+          </clipPath>
+          <linearGradient id="artBg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#3B82F6"/>
+            <stop offset="100%" stop-color="#8B5CF6"/>
+          </linearGradient>
+        </defs>
+        <g clip-path="url(#circleClip-art)">
+          <rect width="64" height="64" fill="url(#artBg)"/>
+          <polygon points="32,14 46,32 32,50 18,32" fill="#FFFFFF" opacity="0.85"/>
+          <circle cx="32" cy="32" r="6" fill="#FBBF24"/>
+        </g>
+        <circle cx="32" cy="32" r="30" fill="none" stroke="#3B82F6" stroke-width="2"/>
+      </svg>
+    `;
+  }
+
   function renderTimelineItems(blocks) {
     if (blocks.length === 0) {
       return `
@@ -260,54 +400,49 @@ export function createItineraryView() {
       `;
     }
 
+    const categoryMap = {
+      activity: {
+        label: 'Activity',
+        badgeLabel: 'ACTIVITY',
+        icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+      },
+      meal: {
+        label: 'Meal',
+        badgeLabel: 'MEAL',
+        icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>`,
+      },
+      transit: {
+        label: 'Transit',
+        badgeLabel: 'TRANSIT',
+        icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path></svg>`,
+      },
+      rest: {
+        label: 'Check-in / Rest',
+        badgeLabel: 'CHECK-IN / REST',
+        icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
+      },
+    };
+
     return blocks
       .map((block, index) => {
         const isExpanded = expandedCardIds.has(block.id);
         const buffer = block.transitBuffer;
 
-        // Formatted times & duration
+        // Formatted times
         const displayStart = formatDisplayTime(block.startTime);
         const displayEnd = formatDisplayTime(block.endTime);
-        const durationMins = timeToMinutes(block.endTime) - timeToMinutes(block.startTime);
-        const displayDuration = formatDuration(durationMins);
 
         // Status styling and label
         let statusClass = 'status-pill-btn--proposed';
-        let statusDotClass = 'status-dot--proposed';
         let statusLabel = 'Proposed';
         if (block.status === 'confirmed') {
           statusClass = 'status-pill-btn--confirmed';
-          statusDotClass = 'status-dot--confirmed';
           statusLabel = 'Confirmed';
         } else if (block.status === 'tentative') {
           statusClass = 'status-pill-btn--tentative';
-          statusDotClass = 'status-dot--tentative';
           statusLabel = 'Weather Permitting';
         }
 
-        // Category info & pin icons
-        const categoryMap = {
-          activity: {
-            label: 'Activity',
-            icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>`,
-            pinIcon: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>`,
-          },
-          meal: {
-            label: 'Meal',
-            icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>`,
-            pinIcon: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>`,
-          },
-          transit: {
-            label: 'Transit',
-            icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path><path d="m8 19-2 3"></path><path d="m16 19 2 3"></path></svg>`,
-            pinIcon: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path></svg>`,
-          },
-          rest: {
-            label: 'Check-in / Rest',
-            icon: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`,
-            pinIcon: `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>`,
-          },
-        };
         const catInfo = categoryMap[block.category] || categoryMap.activity;
 
         // Deduplicate requirements array
@@ -318,6 +453,166 @@ export function createItineraryView() {
         const thread = getThreadById(block.id);
         const threadMsgCount = thread && thread.messages ? thread.messages.length : 0;
 
+        let cardContent = '';
+
+        if (!isExpanded) {
+          // CARD 1 (Collapsed State - Clean View):
+          // Clean, single rounded white card. Refined Sans-serif: "9:00 AM – 10:15 AM",
+          // modern "CHECK-IN / REST" icon, and text "Hotel Check-In & Luggage Drop".
+          // Far right: clean line-art down-arrow. No other details visible.
+          cardContent = `
+            <article class="timeline-card timeline-card--collapsed timeline-card--${block.category}">
+              <div class="timeline-card__collapsed-body" data-toggle-details="${block.id}" role="button" tabindex="0" aria-expanded="false">
+                <div class="timeline-card__collapsed-left">
+                  <span class="timeline-card__time-text">${displayStart} – ${displayEnd}</span>
+                  <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
+                    ${catInfo.icon}
+                    <span>${catInfo.badgeLabel}</span>
+                  </span>
+                  <h3 class="timeline-card__title">${block.title}</h3>
+                </div>
+
+                <div class="timeline-card__collapsed-right">
+                  <button type="button" class="timeline-card__chevron-btn" data-toggle-details="${block.id}" aria-label="Expand details">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </article>
+          `;
+        } else {
+          // CARD 2 (Expanded State - Active/Transitioned View):
+          // Original clean info shifted to narrow vertical strip on far left.
+          // Wider detailed panel slid out to the right with darker white background,
+          // stylized circular photo, location text, clean green Confirmed badge with checkmark,
+          // requirements label, and up-arrow toggle at far right.
+          cardContent = `
+            <article class="timeline-card timeline-card--expanded timeline-card--${block.category}">
+              <div class="timeline-card__split-layout">
+                
+                <!-- 1. Narrow Left Vertical Strip: Shifted original info -->
+                <div class="timeline-card__strip">
+                  <span class="timeline-card__strip-time">${displayStart} – ${displayEnd}</span>
+                  <div class="timeline-card__strip-category timeline-card__category-badge--${block.category}">
+                    ${catInfo.icon}
+                    <span>${catInfo.badgeLabel}</span>
+                  </div>
+                  <h4 class="timeline-card__strip-title">${block.title}</h4>
+                </div>
+
+                <!-- 2. Wider Slide-Out Detail Panel -->
+                <div class="timeline-card__detail-panel">
+                  
+                  <div class="detail-panel__main-row">
+                    <!-- Stylized circular photo of venue (e.g. Senso-ji temple gate) -->
+                    <div class="detail-panel__photo-wrapper" title="${block.title}">
+                      ${getVenueThumbnail(block)}
+                    </div>
+
+                    <!-- Location, Confirmed badge, Requirements count -->
+                    <div class="detail-panel__info-col">
+                      <div class="detail-panel__location">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                          <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>${block.location}</span>
+                      </div>
+
+                      <div class="detail-panel__meta-row">
+                        <!-- Clean green Confirmed badge with checkmark -->
+                        <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                          <span>${statusLabel}</span>
+                        </button>
+
+                        <!-- Requirements summary label (e.g. 2 requirements) -->
+                        ${
+                          cleanReqs.length > 0
+                            ? `<span class="req-label-badge">
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                  <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                                <span>${cleanReqs.length === 1 ? cleanReqs[0] : `${cleanReqs.length} requirements`}</span>
+                              </span>`
+                            : ''
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Up-Arrow Toggle Button at far right -->
+                    <div class="detail-panel__actions">
+                      <button type="button" class="timeline-card__chevron-btn timeline-card__chevron-btn--active" data-toggle-details="${block.id}" aria-label="Collapse details">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Expanded Cohesive Subset: Requirements, Fallback, Thread Button -->
+                  <div class="detail-panel__sub-details">
+                    ${
+                      block.dressCode
+                        ? `<div class="detail-panel__note-tag">
+                            <span style="font-weight: 700; color: #475569;">👔 Dress code:</span> <span>${block.dressCode}</span>
+                          </div>`
+                        : ''
+                    }
+
+                    ${
+                      cleanReqs.length > 0
+                        ? `<div class="detail-panel__checklist">
+                            ${cleanReqs
+                              .map(
+                                (r) => `
+                              <span class="checklist-bullet">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                ${r}
+                              </span>
+                            `
+                              )
+                              .join('')}
+                          </div>`
+                        : ''
+                    }
+
+                    ${
+                      block.fallback
+                        ? `<div class="fallback-pill-inline">
+                            <span style="font-weight: 700; color: #EA580C;">Contingency:</span> <span>${block.fallback}</span>
+                          </div>`
+                        : ''
+                    }
+
+                    <div class="detail-panel__bottom-row">
+                      <button type="button" class="btn-thread-badge btn-thread-badge--inline" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span>Activity Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
+                      </button>
+
+                      <div class="drag-grip drag-grip--inline" data-id="${block.id}" title="Hold and drag to reorder schedule" aria-label="Drag handle">
+                        <svg width="12" height="14" viewBox="0 0 16 20" fill="currentColor" opacity="0.65">
+                          <circle cx="5" cy="4" r="1.5"/><circle cx="11" cy="4" r="1.5"/>
+                          <circle cx="5" cy="10" r="1.5"/><circle cx="11" cy="10" r="1.5"/>
+                          <circle cx="5" cy="16" r="1.5"/><circle cx="11" cy="16" r="1.5"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </article>
+          `;
+        }
+
         return `
         <div 
           class="timeline-item-wrapper" 
@@ -325,207 +620,26 @@ export function createItineraryView() {
           data-index="${index}"
           draggable="true"
         >
-          <!-- Timeline Pin Node on the vertical spine -->
-          <div class="timeline-node-pin timeline-node-pin--${block.category}">
-            ${catInfo.pinIcon}
-          </div>
+          <!-- Stylized clear white circle node connected to vertical blue line -->
+          <div class="timeline-node-pin"></div>
 
-          <!-- Main Timeline Card -->
-          <article class="timeline-card timeline-card--${block.category}">
-            <div class="timeline-card__main">
-              <!-- Top Row: Time, Duration & Actions -->
-              <div class="timeline-card__top">
-                <div class="timeline-card__time-badge">
-                  <span class="time-range-text">${displayStart} – ${displayEnd}</span>
-                  <span class="duration-pill">${displayDuration}</span>
-                </div>
+          <!-- Timeline Card (Collapsed or Expanded) -->
+          ${cardContent}
 
-                <div class="timeline-card__controls">
-                  <!-- Per-Activity Chat Thread Button -->
-                  <button type="button" class="btn-thread-badge" data-thread-btn="${block.id}" title="Open Activity Chat Thread" aria-label="Open Activity Chat Thread">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    ${threadMsgCount > 0 ? `<span>${threadMsgCount}</span>` : ''}
-                  </button>
-
-                  <!-- Accessible Quick Shift Up / Down Arrow buttons -->
-                  ${
-                    index > 0
-                      ? `<button type="button" class="shift-arrow-btn shift-up-btn" data-id="${block.id}" title="Move earlier in schedule" aria-label="Move earlier">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
-                        </button>`
-                      : ''
-                  }
-                  ${
-                    index < blocks.length - 1
-                      ? `<button type="button" class="shift-arrow-btn shift-down-btn" data-id="${block.id}" title="Move later in schedule" aria-label="Move later">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                        </button>`
-                      : ''
-                  }
-
-                  <!-- Touch & Mouse Grip Handle -->
-                  <div class="drag-grip" title="Hold and drag to reorder schedule" data-id="${block.id}" aria-label="Drag handle">
-                    <svg width="12" height="14" viewBox="0 0 16 20" fill="currentColor" opacity="0.65">
-                      <circle cx="5" cy="4" r="1.5"/><circle cx="11" cy="4" r="1.5"/>
-                      <circle cx="5" cy="10" r="1.5"/><circle cx="11" cy="10" r="1.5"/>
-                      <circle cx="5" cy="16" r="1.5"/><circle cx="11" cy="16" r="1.5"/>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Sub-Meta Row: Category & Status -->
-              <div class="timeline-card__submeta">
-                <span class="category-tag">
-                  ${catInfo.icon}
-                  <span>${catInfo.label}</span>
-                </span>
-
-                <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
-                  <span class="status-dot ${statusDotClass}"></span>
-                  <span>${statusLabel}</span>
-                </button>
-              </div>
-
-              <!-- Title & Location -->
-              <div class="timeline-card__heading">
-                <h3 class="timeline-card__title">${block.title}</h3>
-                <div class="timeline-card__location-row">
-                  <span class="timeline-card__location">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                      <circle cx="12" cy="10" r="3"></circle>
-                    </svg>
-                    <span>${block.location}</span>
-                  </span>
-
-                  ${
-                    block.source === 'wishlist'
-                      ? `<div class="card-origin-badge card-origin-badge--wishlist">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                          <span>Wishlist Anchor (${block.sourceVotes || 4} votes)</span>
-                        </div>`
-                      : block.source === 'reel'
-                      ? `<div class="card-origin-badge card-origin-badge--reel">
-                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                          <span>From Social Reel</span>
-                        </div>`
-                      : ''
-                  }
-                </div>
-              </div>
-
-              <!-- Card Bottom Summary / Toggle Row (Clean Non-Repeating Tags) -->
-              <div class="timeline-card__toggle-row">
-                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-                  ${
-                    cleanReqs.length > 0
-                      ? `<span class="req-summary-pill">
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                          <span>${cleanReqs.length === 1 ? cleanReqs[0] : `${cleanReqs.length} requirements`}</span>
-                        </span>`
-                      : ''
-                  }
-                  ${
-                    block.fallback
-                      ? `<span class="req-summary-pill req-summary-pill--fallback">
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                          <span>Backup Planned</span>
-                        </span>`
-                      : ''
-                  }
-                </div>
-
-                <button type="button" class="timeline-card__expand-btn" data-toggle-details="${block.id}" aria-expanded="${isExpanded}">
-                  <span>${isExpanded ? 'Hide Details' : 'Details'}</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'}; transition: transform 200ms ease;">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Expandable Per-Slot Details & Requirements (Smooth In-Place Accordion) -->
-            <div class="timeline-card__details ${isExpanded ? 'is-expanded' : ''}" id="details-${block.id}">
-              ${
-                block.dressCode
-                  ? `<div>
-                      <span class="detail-chip--dress">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg>
-                        <span>Dress Code: ${block.dressCode}</span>
-                      </span>
-                    </div>`
-                  : ''
-              }
-
-              <!-- Deduplicated Requirements Checklist -->
-              ${
-                cleanReqs.length > 0
-                  ? `<div>
-                      <span class="details-section-label">Requirements Checklist:</span>
-                      <div class="details-checklist">
-                        ${cleanReqs
-                          .map(
-                            (r) => `
-                          <div class="checklist-item">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                              <polyline points="20 6 9 17 4 12"></polyline>
-                            </svg>
-                            <span>${r}</span>
-                          </div>
-                        `
-                          )
-                          .join('')}
-                      </div>
-                    </div>`
-                  : ''
-              }
-
-              <!-- Built-in Fallback for Weather Permitting slots -->
-              ${
-                block.fallback
-                  ? `<div class="fallback-box">
-                      <div class="fallback-box__label">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                        <span>Contingency Fallback Plan</span>
-                      </div>
-                      <p style="margin: 0; font-size: 11px;">${block.fallback}</p>
-                    </div>`
-                  : ''
-              }
-
-              ${
-                block.notes
-                  ? `<p class="detail-notes"><em>Note: ${block.notes}</em></p>`
-                  : ''
-              }
-            </div>
-          </article>
-
-          <!-- Transit Buffer Connector to next scheduled event -->
+          <!-- Thin vertical buffer line beneath the card -->
           ${
             buffer
               ? `
-            <div class="transit-connector ${buffer.isDeficit ? 'transit-connector--warning' : ''}">
-              <div class="transit-connector__info">
-                ${
-                  buffer.isDeficit
-                    ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #DC2626;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`
-                    : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-text-secondary);"><polyline points="9 18 15 12 9 6"></polyline></svg>`
-                }
-                <span class="transit-connector__badge">${Math.max(0, buffer.availableMinutes)}m buffer</span>
-                <span class="transit-mode-text">• ${buffer.transitMode}</span>
+            <div class="timeline-buffer-connector">
+              <div class="timeline-buffer-line"></div>
+              <div class="timeline-buffer-tag ${buffer.isDeficit ? 'timeline-buffer-tag--warning' : ''}">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>${buffer.requiredMinutes}m ${buffer.transitMode || 'Transit'}</span>
+                ${buffer.isDeficit ? `<span class="buffer-tight-label">• Tight Buffer</span>` : ''}
               </div>
-              ${
-                buffer.isDeficit
-                  ? `<span class="transit-warning-pill">${buffer.requiredMinutes}m Needed</span>`
-                  : `<span class="transit-safe-badge">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      <span>Safe Buffer</span>
-                    </span>`
-              }
             </div>
           `
               : ''
@@ -585,28 +699,31 @@ export function createItineraryView() {
       });
     });
 
-    // 5. In-Place Expand / Collapse Details (Preserves scroll position)
+    // 5. Expand / Collapse Card (Toggle between Collapsed and Horizontal Split Expanded state)
     container.querySelectorAll('[data-toggle-details]').forEach((btn) => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         const blockId = btn.getAttribute('data-toggle-details');
-        const detailsEl = container.querySelector(`#details-${blockId}`);
-        const svgIcon = btn.querySelector('svg');
-        const textSpan = btn.querySelector('span');
-
-        if (!detailsEl) return;
-
+        if (!blockId) return;
         if (expandedCardIds.has(blockId)) {
           expandedCardIds.delete(blockId);
-          detailsEl.classList.remove('is-expanded');
-          btn.setAttribute('aria-expanded', 'false');
-          if (textSpan) textSpan.textContent = 'Details';
-          if (svgIcon) svgIcon.style.transform = 'rotate(0deg)';
         } else {
           expandedCardIds.add(blockId);
-          detailsEl.classList.add('is-expanded');
-          btn.setAttribute('aria-expanded', 'true');
-          if (textSpan) textSpan.textContent = 'Hide Details';
-          if (svgIcon) svgIcon.style.transform = 'rotate(180deg)';
+        }
+        render();
+      });
+      btn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          const blockId = btn.getAttribute('data-toggle-details');
+          if (!blockId) return;
+          if (expandedCardIds.has(blockId)) {
+            expandedCardIds.delete(blockId);
+          } else {
+            expandedCardIds.add(blockId);
+          }
+          render();
         }
       });
     });
