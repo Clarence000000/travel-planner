@@ -36,6 +36,7 @@ export function createItineraryView() {
   let itineraryList = getItineraryData();
   let currentDay = 1;
   let expandedCardIds = new Set(['d1-2']); // Card 1 (Hotel) collapsed, Card 2 (Senso-ji) expanded by default
+  const checkedRequirements = new Set();
 
   // Modals
   let statusModal;
