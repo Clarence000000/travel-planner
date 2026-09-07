@@ -24,7 +24,7 @@ import {
 } from '../utils/bufferEngine.js';
 import { createStatusModal } from '../components/itinerary/StatusModal.js';
 import { createAddBlockModal } from '../components/itinerary/AddBlockModal.js';
-import { getThreadById, addMessageToThread } from '../models/chatData.js';
+import { getThreadById, addMessageToThread, getCategoryIconSvg, getDayCalendarIconSvg } from '../models/chatData.js';
 import { setActiveTab } from '../config/navigation.js';
 import { enableDragScroll } from '../utils/dragScroll.js';
 
@@ -843,7 +843,8 @@ export function createItineraryView() {
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-divider); padding-bottom: 8px;">
             <div>
               <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
-                <span class="thread-category-pill thread-category-pill--${catClass}">${catLabel}</span>
+                <span class="thread-day-pill">${getDayCalendarIconSvg(10)} <span>Day ${block.day || currentDay}</span></span>
+                <span class="thread-category-pill thread-category-pill--${catClass}">${getCategoryIconSvg(catClass, 10)} <span>${catLabel}</span></span>
                 <span style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: var(--color-text-secondary);">${thread.location ? thread.location.split(',')[0] : 'Tokyo'}</span>
               </div>
               <h3 id="qt-title" style="font-size: var(--text-sm); font-weight: bold; color: var(--color-text-primary); margin: 0;">${thread.eventTitle || thread.title}</h3>

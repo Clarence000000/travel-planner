@@ -3,6 +3,11 @@
 This document contains all reusable UI components for the Travel Planner app.
 Each component includes its purpose, HTML structure, and CSS styles.
 
+> **Iconography Principle**: Always use crisp, inline SVG vector icons for all
+> components (chips, pills, tags, buttons, badges). **Emojis are strictly discouraged
+> in UI components** because they render inconsistently across platforms and OSes,
+> cannot inherit theme token colors with `currentColor`, and disrupt typographic line-heights.
+
 ---
 
 ## Table of Contents
@@ -86,7 +91,7 @@ Used on Home and Trips pages. Shows location, notification bell, and avatar.
   </div>
   <div class="top-header__actions">
     <button class="icon-btn" aria-label="Notifications">
-      <svg><!-- bell icon --></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- bell icon --></svg>
     </button>
     <div class="avatar avatar--sm">
       <img src="avatar.jpg" alt="User" />
@@ -145,10 +150,10 @@ Used on destination detail pages. Transparent overlay on the hero image.
 ```html
 <header class="detail-header">
   <button class="icon-btn icon-btn--round" aria-label="Go back">
-    <svg><!-- left arrow icon --></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- left arrow icon --></svg>
   </button>
   <button class="icon-btn icon-btn--round" aria-label="Favorite">
-    <svg><!-- heart outline icon --></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- heart outline icon --></svg>
   </button>
 </header>
 ```
@@ -195,7 +200,7 @@ Rounded search input with a filter button.
 ```html
 <div class="search-bar">
   <div class="search-bar__input-wrapper">
-    <svg class="search-bar__icon"><!-- search/magnifier icon --></svg>
+    <svg class="search-bar__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- search icon --></svg>
     <input
       type="search"
       class="search-bar__input"
@@ -204,7 +209,7 @@ Rounded search input with a filter button.
     />
   </div>
   <button class="search-bar__filter-btn" aria-label="Filters">
-    <svg><!-- sliders/filter icon --></svg>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- sliders/filter icon --></svg>
   </button>
 </div>
 ```
@@ -271,20 +276,35 @@ Rounded search input with a filter button.
 
 ---
 
-## 5. Filter Chips
+## 5. Filter Chips & Pills
 
-Horizontal scrollable row of country/category chips.
+Horizontal scrollable row of category/filter chips. Always use inline SVG vector icons instead of emojis.
 
 ```html
-<div class="chip-row">
+<div class="chip-row" role="tablist">
   <button class="chip chip--active">
-    <span class="chip__flag">🇩🇪</span> Germany
+    <svg class="chip__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+    </svg>
+    <span>All</span>
   </button>
   <button class="chip">
-    <span class="chip__flag">🇩🇰</span> Denmark
+    <svg class="chip__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+      <circle cx="12" cy="10" r="3"></circle>
+    </svg>
+    <span>Locations</span>
   </button>
   <button class="chip">
-    <span class="chip__flag">🇸🇪</span> Sweden
+    <svg class="chip__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+      <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+      <line x1="6" y1="1" x2="6" y2="4"></line>
+      <line x1="10" y1="1" x2="10" y2="4"></line>
+      <line x1="14" y1="1" x2="14" y2="4"></line>
+    </svg>
+    <span>Dining</span>
   </button>
   <!-- more chips -->
 </div>
@@ -306,7 +326,7 @@ Horizontal scrollable row of country/category chips.
 }
 
 .chip {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
@@ -322,20 +342,26 @@ Horizontal scrollable row of country/category chips.
   transition: all var(--transition-fast);
 }
 
+.chip svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
 .chip--active {
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--color-text-inverse);
 }
 
+.chip--active svg {
+  stroke: var(--color-text-inverse);
+}
+
 .chip:not(.chip--active):hover {
   background: var(--color-primary-light);
   border-color: var(--color-primary);
-}
-
-.chip__flag {
-  font-size: var(--text-md);
-  line-height: 1;
 }
 ```
 
@@ -387,8 +413,7 @@ Title row with an optional "View all" link.
 
 ## 7. Destination Card (Large)
 
-Vertical card used in the "Popular Destinations" horizontal scroll on the Home
-page.
+Vertical card used in the "Popular Destinations" horizontal scroll on the Home page.
 
 ```html
 <article class="destination-card">
@@ -403,14 +428,15 @@ page.
       <span class="rating-badge__value">4.9</span>
     </div>
     <button class="heart-btn" aria-label="Add to favorites">
-      <svg><!-- heart icon --></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- heart icon --></svg>
     </button>
   </div>
   <div class="destination-card__body">
-    <h3 class="destination-card__name">
-      <span class="destination-card__pin">📍</span> Whispering Fields
-    </h3>
-    <p class="destination-card__country">🇩🇪 Germany</p>
+    <h3 class="destination-card__name">Whispering Fields</h3>
+    <p class="destination-card__country">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      <span>Germany</span>
+    </p>
     <p class="destination-card__description">
       Fictional countryside surrounded by windmills, lakes, and soft green hills.
     </p>
@@ -459,14 +485,13 @@ page.
   margin: 0 0 var(--space-1);
 }
 
-.destination-card__pin {
-  font-size: var(--text-md);
-}
-
 .destination-card__country {
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
   margin: 0 0 var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .destination-card__description {
@@ -491,7 +516,7 @@ page.
 
 ## 8. Trip Card (Grid)
 
-Compact card used in the "My Trips" grid (2 columns) on the Trips page.
+Compact card used in the "My Trips" grid (2 columns) on the Trips page. Uses SVG icons for location and dates.
 
 ```html
 <article class="trip-card">
@@ -504,8 +529,14 @@ Compact card used in the "My Trips" grid (2 columns) on the Trips page.
   </div>
   <div class="trip-card__body">
     <h3 class="trip-card__name">Alpine Meadow Path</h3>
-    <p class="trip-card__country">🇨🇭 Switzerland</p>
-    <p class="trip-card__meta">📅 August 2022 (8 days)</p>
+    <p class="trip-card__country">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+      <span>Switzerland</span>
+    </p>
+    <p class="trip-card__meta">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      <span>August 2022 (8 days)</span>
+    </p>
     <button class="btn btn--primary btn--xs">Show details</button>
   </div>
 </article>
@@ -560,12 +591,18 @@ Compact card used in the "My Trips" grid (2 columns) on the Trips page.
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
   margin: 0 0 var(--space-1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .trip-card__meta {
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
   margin: 0 0 var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
 }
 ```
 
@@ -578,13 +615,13 @@ Horizontal row of small outlined tag pills (Ticket, Hotel, Meal, etc.).
 ```html
 <div class="amenity-tags">
   <span class="amenity-tag">
-    <svg><!-- ticket icon --></svg> Ticket
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><!-- ticket icon --></svg> Ticket
   </span>
   <span class="amenity-tag">
-    <svg><!-- hotel/bed icon --></svg> Hotel
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><!-- hotel/bed icon --></svg> Hotel
   </span>
   <span class="amenity-tag">
-    <svg><!-- fork-knife icon --></svg> Meal
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><!-- meal icon --></svg> Meal
   </span>
 </div>
 ```
@@ -666,7 +703,7 @@ Compact weather display showing an icon, condition text, time, and temperature.
 ```html
 <div class="weather-widget">
   <div class="weather-widget__condition">
-    <svg><!-- cloud/rain icon --></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- cloud/rain icon --></svg>
     <span>Rainy</span>
   </div>
   <span class="weather-widget__time">8:40 AM</span>
@@ -840,23 +877,23 @@ Fixed 5-tab bottom navigation bar.
 ```html
 <nav class="bottom-nav" aria-label="Main navigation">
   <a href="/" class="bottom-nav__tab bottom-nav__tab--active">
-    <svg><!-- home icon --></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- home icon --></svg>
     <span>Home</span>
   </a>
   <a href="/tracks" class="bottom-nav__tab">
-    <svg><!-- compass/track icon --></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- compass/track icon --></svg>
     <span>Tracks</span>
   </a>
   <a href="/trips" class="bottom-nav__tab">
-    <svg><!-- backpack/trip icon --></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- backpack/trip icon --></svg>
     <span>Trips</span>
   </a>
   <a href="/more" class="bottom-nav__tab">
-    <svg><!-- grid/dots icon --></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- grid/dots icon --></svg>
     <span>More</span>
   </a>
   <a href="/settings" class="bottom-nav__tab">
-    <svg><!-- gear icon --></svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- gear icon --></svg>
     <span>Settings</span>
   </a>
 </nav>
@@ -970,10 +1007,10 @@ Floating heart icon on destination cards or detail page header.
 
 ```html
 <button class="heart-btn" aria-label="Add to favorites">
-  <svg><!-- heart outline or filled heart --></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- heart outline --></svg>
 </button>
 <button class="heart-btn heart-btn--active" aria-label="Remove from favorites">
-  <svg><!-- filled heart --></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- filled heart --></svg>
 </button>
 ```
 
@@ -1058,7 +1095,7 @@ Generic transparent icon button used in headers and toolbars.
 
 ```html
 <button class="icon-btn" aria-label="Notifications">
-  <svg><!-- icon --></svg>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><!-- icon --></svg>
 </button>
 ```
 

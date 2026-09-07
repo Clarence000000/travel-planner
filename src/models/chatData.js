@@ -78,6 +78,56 @@ export function getCategoryConfig(categoryId) {
   return THREAD_CATEGORIES.find((c) => c.id === norm) || THREAD_CATEGORIES[4];
 }
 
+export function getCategoryIconSvg(categoryId, size = 14) {
+  const norm = normalizeCategory(categoryId);
+  switch (norm) {
+    case 'food':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>`;
+    case 'location':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>`;
+    case 'hotel':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>`;
+    case 'transit':
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path><path d="m8 19-2 3"></path><path d="m16 19 2 3"></path></svg>`;
+    case 'general':
+    default:
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>`;
+  }
+}
+
+export function getPollsIconSvg(size = 14) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`;
+}
+
+export function getAllIconSvg(size = 14) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>`;
+}
+
+export function getDayCalendarIconSvg(size = 14) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`;
+}
+
+export function getThreadDay(thread) {
+  if (!thread) return null;
+  if (thread.day !== undefined && thread.day !== null) {
+    if (thread.day === 'all' || thread.day === 'trip') return null;
+    const d = parseInt(thread.day, 10);
+    if (!isNaN(d) && d > 0) return d;
+  }
+  if (typeof thread.blockId === 'string') {
+    const m = thread.blockId.match(/^d(\d+)-/);
+    if (m) return parseInt(m[1], 10);
+  }
+  try {
+    const allBlocks = getItineraryData();
+    const b = allBlocks.find((item) => item.id === thread.blockId);
+    if (b && b.day) return b.day;
+  } catch (e) {}
+
+  return null;
+}
+
+
 const INITIAL_THREADS = [
   // ── 1. Food & Dining ──
   {
@@ -340,6 +390,72 @@ const INITIAL_THREADS = [
     ],
   },
 
+  // ── Day 3 Threads ──
+  {
+    blockId: 'd3-1',
+    day: 3,
+    title: 'Shibuya Sky Observatory Deck',
+    eventTitle: 'Shibuya Sky Observatory Deck',
+    category: 'location',
+    location: 'Shibuya Scramble Square',
+    participantCount: 4,
+    poll: {
+      id: 'poll-d3-1',
+      question: 'Which viewing slot should we reserve for Shibuya Sky?',
+      options: [
+        { id: 'opt-sunset', label: 'Golden Hour Sunset (4:40 PM)', votes: 4 },
+        { id: 'opt-neon', label: 'Night Neon Lights (7:30 PM)', votes: 1 },
+      ],
+      userVote: 'opt-sunset',
+    },
+    messages: [
+      {
+        id: 'm-d3-1',
+        sender: 'Wei Gang',
+        avatar: 'WG',
+        text: 'Sunset tickets sell out days in advance! Open-air 360-degree glass view of the scramble crossing.',
+        time: '09:10 AM',
+        isCurrentUser: false,
+      },
+      {
+        id: 'm-d3-2',
+        sender: 'Clarence (You)',
+        avatar: 'CL',
+        text: 'Voted for Golden Hour. Remember they require locking bags in coin lockers before going onto the helipad.',
+        time: '09:15 AM',
+        isCurrentUser: true,
+      },
+    ],
+  },
+  {
+    blockId: 'd3-2',
+    day: 3,
+    title: 'Farewell Wagyu BBQ Feast',
+    eventTitle: 'Farewell Wagyu BBQ Feast',
+    category: 'food',
+    location: 'Shibuya Crossing View Grill',
+    participantCount: 4,
+    poll: null,
+    messages: [
+      {
+        id: 'm-d3-3',
+        sender: 'Sakura K.',
+        avatar: 'SK',
+        text: 'Final group dinner of the trip! The restaurant window overlooks the entire Shibuya Crossing.',
+        time: '01:20 PM',
+        isCurrentUser: false,
+      },
+      {
+        id: 'm-d3-4',
+        sender: 'Clarence (You)',
+        avatar: 'CL',
+        text: 'Table is confirmed for our group. Great way to celebrate before the airport express train.',
+        time: '01:25 PM',
+        isCurrentUser: true,
+      },
+    ],
+  },
+
   // ── 5. General & Planning ──
   {
     blockId: 'general',
@@ -490,7 +606,7 @@ export function addMessageToThread(blockId, text, metadata = {}) {
   return { thread, newMessage };
 }
 
-export function createChatThread({ title, category, location, initialMessage, poll = null }) {
+export function createChatThread({ title, category, day = null, location, initialMessage, poll = null }) {
   const threads = getChatThreads();
   const blockId = 'custom-' + Date.now();
   const normalizedCategory = normalizeCategory(category || 'general');
@@ -509,8 +625,15 @@ export function createChatThread({ title, category, location, initialMessage, po
     });
   }
 
+  let parsedDay = null;
+  if (day !== undefined && day !== null && day !== 'all' && day !== 'trip') {
+    const d = parseInt(day, 10);
+    if (!isNaN(d) && d > 0) parsedDay = d;
+  }
+
   const newThread = {
     blockId,
+    day: parsedDay,
     title: title.trim(),
     eventTitle: title.trim(),
     category: normalizedCategory,
