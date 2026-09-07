@@ -462,7 +462,7 @@ export function createItineraryView() {
         let cardContent = '';
 
         if (!isExpanded) {
-          // Collapsed State: Clean 2-Row Layout with Inline Status Icon and Quick Activity Thread
+          // Collapsed State: Un-truncated Title, Status Pill BEFORE Category Pill, Readable Location Row
           cardContent = `
             <article class="timeline-card timeline-card--collapsed timeline-card--${block.category}">
               <div class="timeline-card__collapsed-split" data-toggle-details="${block.id}" role="button" tabindex="0" aria-expanded="false">
@@ -473,27 +473,33 @@ export function createItineraryView() {
                   <span class="time-col__end">${displayEnd}</span>
                 </div>
 
-                <!-- Right Column: Predictable 2-row layout -->
+                <!-- Right Column: Un-truncated Title, Status Pill BEFORE Category Pill, Dedicated Location Row -->
                 <div class="timeline-card__body-col">
-                  <h3 class="timeline-card__title" title="${block.title}">${block.title}</h3>
-                  <div class="timeline-card__sub-row">
+                  <h3 class="timeline-card__title">${block.title}</h3>
+                  <div class="timeline-card__badges-row">
+                    <!-- Status Pill FIRST -->
+                    <span class="timeline-card__status-pill timeline-card__status-pill--${block.status}" title="Status: ${statusLabel}">
+                      ${statusIconSvg}
+                      <span>${statusLabel}</span>
+                    </span>
+
+                    <!-- Category Pill SECOND -->
                     <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
                       ${catInfo.icon}
                       <span>${catInfo.label}</span>
                     </span>
-
-                    <!-- Inline Status Vector Icon beside Category Badge -->
-                    <span class="timeline-status-icon timeline-status-icon--${block.status}" title="Status: ${statusLabel}">
-                      ${statusIconSvg}
-                    </span>
-
-                    ${block.location ? `
-                      <span class="timeline-card__loc-snippet" title="${block.location}">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                        <span>${block.location}</span>
-                      </span>
-                    ` : ''}
                   </div>
+
+                  <!-- Location Row: Full readable location text -->
+                  ${block.location ? `
+                    <div class="timeline-card__location-row" title="${block.location}">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                      </svg>
+                      <span class="timeline-card__location-text">${block.location}</span>
+                    </div>
+                  ` : ''}
                 </div>
 
                 <!-- Far Right: Thread Pill Button & Chevron Expand Button -->
@@ -527,16 +533,18 @@ export function createItineraryView() {
                 <div class="timeline-card__expanded-header">
                   <div class="timeline-card__expanded-header-left">
                     <span class="timeline-card__time-pill">${displayStart} – ${displayEnd}</span>
-                    <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
-                      ${catInfo.icon}
-                      <span>${catInfo.label}</span>
-                    </span>
+                    <!-- Status Badge FIRST -->
                     <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                       <span>${statusLabel}</span>
                     </button>
+                    <!-- Category Pill SECOND -->
+                    <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
+                      ${catInfo.icon}
+                      <span>${catInfo.label}</span>
+                    </span>
                   </div>
 
                   <button type="button" class="timeline-card__chevron-btn timeline-card__chevron-btn--active" data-toggle-details="${block.id}" aria-label="Collapse details">

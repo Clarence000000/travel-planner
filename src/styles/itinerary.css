@@ -167,7 +167,7 @@
 .timeline-card__collapsed-split {
   padding: 12px 14px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   outline: none;
   cursor: pointer;
@@ -187,10 +187,11 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 1px;
   border-right: 1px solid rgba(15, 23, 42, 0.08);
   padding-right: 8px;
+  padding-top: 1px;
   flex-shrink: 0;
 }
 
@@ -228,19 +229,17 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .timeline-card__title {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #0F172A;
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.25;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.35;
   letter-spacing: -0.15px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
@@ -252,37 +251,67 @@
   white-space: normal;
 }
 
-.timeline-card__sub-row {
+.timeline-card__badges-row {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-width: 0;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
-.timeline-status-icon {
+.timeline-card__status-pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 17px;
-  height: 17px;
-  border-radius: 50%;
+  gap: 3.5px;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 2.5px 7px;
+  border-radius: 6px;
+  line-height: 1.2;
+  white-space: nowrap;
   flex-shrink: 0;
 }
 
-.timeline-status-icon--confirmed {
-  background: rgba(209, 250, 229, 0.9);
-  border: 1px solid rgba(16, 185, 129, 0.4);
+.timeline-card__status-pill--confirmed {
+  background-color: #ECFDF5;
+  color: #047857;
+  border: 1px solid #A7F3D0;
 }
 
-.timeline-status-icon--proposed {
-  background: rgba(254, 243, 199, 0.9);
-  border: 1px solid rgba(245, 158, 11, 0.4);
+.timeline-card__status-pill--proposed {
+  background-color: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FDE68A;
 }
 
-.timeline-status-icon--tentative {
-  background: rgba(254, 226, 226, 0.9);
-  border: 1px solid rgba(239, 68, 68, 0.4);
+.timeline-card__status-pill--tentative {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  border: 1px solid #FECACA;
+}
+
+.timeline-card__location-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748B;
+  line-height: 1.35;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.timeline-card__location-row svg {
+  stroke: #64748B;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.timeline-card__location-text {
+  flex: 1;
+  min-width: 0;
 }
 
 .timeline-card__category-badge {
@@ -343,6 +372,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  padding-top: 1px;
 }
 
 .timeline-card__thread-pill-btn {
