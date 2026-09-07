@@ -844,8 +844,6 @@ export function createItineraryView() {
             <div>
               <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 3px;">
                 <span class="thread-day-pill">${getDayCalendarIconSvg(10)} <span>Day ${block.day || currentDay}</span></span>
-                <span class="thread-category-pill thread-category-pill--${catClass}">${getCategoryIconSvg(catClass, 10)} <span>${catLabel}</span></span>
-                <span style="font-size: 10px; font-weight: bold; text-transform: uppercase; color: var(--color-text-secondary);">${thread.location ? thread.location.split(',')[0] : 'Tokyo'}</span>
               </div>
               <h3 id="qt-title" style="font-size: var(--text-sm); font-weight: bold; color: var(--color-text-primary); margin: 0;">${thread.eventTitle || thread.title}</h3>
             </div>

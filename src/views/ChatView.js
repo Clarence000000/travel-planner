@@ -371,25 +371,11 @@ export function createChatView(initialBlockId = null) {
               ${getDayCalendarIconSvg(10)}
               <span>${dayLabel}</span>
             </span>
-            <span class="thread-category-pill thread-category-pill--${normCat}">
-              ${getCategoryIconSvg(normCat, 10)}
-              <span>${catConfig.label}</span>
-            </span>
-            ${
-              shortLoc
-                ? `
-              <span class="thread-item-card__badge thread-item-card__badge--loc" title="${escapeHtml(t.location)}">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                <span>${escapeHtml(shortLoc)}</span>
-              </span>`
-                : ''
-            }
             ${
               t.poll
                 ? `
-              <span class="thread-item-card__badge thread-item-card__badge--poll">
+              <span class="thread-item-card__badge thread-item-card__badge--poll" title="Group Decision Poll Active" aria-label="Group Decision Poll Active">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                <span>Poll</span>
               </span>`
                 : ''
             }
@@ -435,7 +421,6 @@ export function createChatView(initialBlockId = null) {
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
             <h2 class="thread-conv-header__title" style="margin: 0; font-size: var(--text-base);">${escapeHtml(thread.eventTitle || thread.title)}</h2>
             <span class="thread-day-pill">${getDayCalendarIconSvg(10)} <span>${dayLabel}</span></span>
-            <span class="thread-category-pill thread-category-pill--${normCat}">${getCategoryIconSvg(normCat, 10)} <span>${catConfig.label}</span></span>
           </div>
           <span class="thread-conv-header__meta">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -473,10 +458,19 @@ export function createChatView(initialBlockId = null) {
       </div>
 
       <!-- Quick Context-Aware Action Prompts -->
-      <div class="chat-quick-actions" style="margin-top: 8px; margin-bottom: 8px;">
-        <button type="button" class="btn-quick-reply" data-reply="Sounds great to me! 👍">Sounds great! 👍</button>
-        <button type="button" class="btn-quick-reply" data-reply="What time are we meeting there?">What time? ⏰</button>
-        <button type="button" class="btn-quick-reply" data-reply="Do we need advance reservations for this?">Need reservations? 🎟️</button>
+      <div class="chat-quick-actions">
+        <button type="button" class="btn-quick-reply" data-reply="Sounds great to me!">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>
+          <span>Sounds great!</span>
+        </button>
+        <button type="button" class="btn-quick-reply" data-reply="What time are we meeting there?">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>What time?</span>
+        </button>
+        <button type="button" class="btn-quick-reply" data-reply="Do we need advance reservations for this?">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          <span>Need reservations?</span>
+        </button>
       </div>
 
       <!-- Message Compose Input Bar -->

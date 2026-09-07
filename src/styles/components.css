@@ -691,9 +691,20 @@
 }
 
 .thread-item-card__badge--poll {
-  background-color: var(--color-secondary-light);
-  color: var(--color-secondary);
-  font-weight: var(--font-bold);
+  background-color: #EDE9FE;
+  color: #7C3AED;
+  padding: 3px 6px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.thread-item-card__badge--poll svg {
+  stroke: #7C3AED;
+  width: 12px;
+  height: 12px;
 }
 
 .thread-item-card__arrow {
@@ -3629,3 +3640,56 @@
   box-shadow: 0 2px 8px rgba(26, 26, 26, 0.2);
 }
 
+
+/* Quick Reply Action Pills in Thread Conversation */
+.chat-quick-actions {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding: 6px 2px 8px 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-quick-actions::-webkit-scrollbar {
+  display: none;
+}
+
+.btn-quick-reply {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-fast);
+  min-height: 32px;
+}
+
+.btn-quick-reply svg {
+  stroke: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: stroke var(--transition-fast);
+}
+
+.btn-quick-reply:hover {
+  background-color: var(--color-surface-alt);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn-quick-reply:hover svg {
+  stroke: var(--color-primary);
+}
+
+.btn-quick-reply:active {
+  transform: scale(0.97);
+}
