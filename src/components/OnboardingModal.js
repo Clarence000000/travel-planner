@@ -783,26 +783,36 @@ export function createOnboardingModal(options = {}) {
 
       // 2. Wishlist Anchoring: Pull top-voted wishlist items into schedule
       if (survey.anchorWishlist) {
-        const topWishlist = getTopVotedWishlistItems(2);
-        if (topWishlist.length > 0) {
-          // Anchor 1: Slot into Day 1 Lunch/Afternoon
-          list[2].title = topWishlist[0].title;
-          list[2].location = 'Tsukiji Outer Market, Chuo City';
-          list[2].notes = `Group Wishlist anchor item voted by ${topWishlist[0].addedBy}.`;
+        const topWishlist = getTopVotedWishlistItems(4);
+        const tokyoItem = topWishlist.find(
+          (item) => !item.title.toLowerCase().includes('kyoto') && !item.title.toLowerCase().includes('inari')
+        );
+        const kyotoItem = topWishlist.find(
+          (item) => item.title.toLowerCase().includes('kyoto') || item.title.toLowerCase().includes('inari')
+        );
+
+        if (tokyoItem && list[2]) {
+          list[2].title = tokyoItem.title;
+          list[2].location = tokyoItem.title.toLowerCase().includes('tsukiji')
+            ? 'Tsukiji Outer Market, Chuo City'
+            : (tokyoItem.title.toLowerCase().includes('ghibli') ? 'Mitaka, Tokyo' : 'Shinjuku, Tokyo');
+          list[2].category = tokyoItem.category === 'food' ? 'meal' : 'activity';
+          list[2].notes = `Group Wishlist anchor item voted by ${tokyoItem.addedBy}.`;
           list[2].source = 'wishlist';
-          list[2].sourceVotes = topWishlist[0].votes;
-          list[2].sourceAuthor = topWishlist[0].addedBy;
-          markWishlistScheduled(topWishlist[0].id, { day: 1, time: list[2].startTime });
+          list[2].sourceVotes = tokyoItem.votes;
+          list[2].sourceAuthor = tokyoItem.addedBy;
+          markWishlistScheduled(tokyoItem.id, { day: 1, time: list[2].startTime });
         }
 
-        if (topWishlist.length > 1) {
-          // Anchor 2: Slot into Day 2 Cultural stop
-          list[6].title = topWishlist[1].title;
-          list[6].notes = `Group Wishlist anchor item voted by ${topWishlist[1].addedBy}.`;
+        if (kyotoItem && list[6]) {
+          list[6].title = kyotoItem.title;
+          list[6].location = 'Fushimi Ward, Kyoto';
+          list[6].category = 'activity';
+          list[6].notes = `Group Wishlist anchor item voted by ${kyotoItem.addedBy}.`;
           list[6].source = 'wishlist';
-          list[6].sourceVotes = topWishlist[1].votes;
-          list[6].sourceAuthor = topWishlist[1].addedBy;
-          markWishlistScheduled(topWishlist[1].id, { day: 2, time: list[6].startTime });
+          list[6].sourceVotes = kyotoItem.votes;
+          list[6].sourceAuthor = kyotoItem.addedBy;
+          markWishlistScheduled(kyotoItem.id, { day: 2, time: list[6].startTime });
         }
       }
     }

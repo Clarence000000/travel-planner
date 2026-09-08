@@ -50,17 +50,12 @@ export function createIdeasView() {
           </svg>
         </button>
         <div class="view-banner__scrim">
-          <span class="view-banner__badge">💡 Creative Workshop</span>
-          <h2 class="view-banner__title">Trip Idea Wishlist</h2>
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7zM9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1z"></path></svg> Tokyo Ideas</span>
+          <h2 class="view-banner__title">Wishlist & Notes</h2>
         </div>
       </div>
 
       <div class="view-header">
-        <div class="view-header__meta">
-          <span class="view-badge">Collaborative Ideation</span>
-          <p class="view-subtitle">Brainstorm stops, drop links & photos, and sketch ideas before locking them in</p>
-        </div>
-
         <!-- Segmented Sub-view Switcher -->
         <div class="segmented-control" role="tablist">
           <button 
