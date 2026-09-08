@@ -12,7 +12,7 @@ flowchart TD
     subgraph Step1 ["1. Barebones Setup (Trip Genesis)"]
         A["User opens WanderSync<br>(Clean zero-state timeline)"] --> B["Open Onboarding / Trip Setup"]
         B --> C["Enter Destination & Custom Date Range<br>(e.g. 2, 3, or 6 days with date picker)"]
-        C --> D["Custom Trip Cover & Name applied<br>(Sidebar Appearance setting)"]
+        C --> D["Custom Trip Cover applied<br>(Sidebar Appearance setting)"]
     end
 
     %% Phase 2: Collaboration & Influx
@@ -43,7 +43,7 @@ flowchart TD
         O --> P["View Live Spot + QR Pass Modal"]
         P --> Q{"Contingency Test"}
         Q -- "Delay (+30m)" --> R["1-Tap Shift cascades flexible slots"]
-        Q -- "Rain / Cancellation" --> S["Cancel Event:<br>Choice of 'Free Time Pocket' or 'Reflow'"]
+        Q -- "Rain / Cancellation" --> S["Cancel Event (Day-Of):<br>Choice of 'Free Time Pocket' or 'Reflow'"]
         R & S --> T["Live HUD & Timeline sync automatically"]
     end
 
@@ -58,21 +58,23 @@ flowchart TD
 | :--- | :--- | :--- | :--- |
 | **01. Genesis** | Onboarding Modal | Select destination (*Tokyo*) and pick custom start/end dates (e.g. *Oct 12 – Oct 14*). Timeline initializes with day tabs. | *"Unlike rigid tools that force 3 or 7-day templates, WanderSync lets groups define any arbitrary range and dynamically adds or removes days."* |
 | **02. Social Import** | Wishlist / Ideas | Paste or click sample Instagram Reel link. Card generates with video thumbnail, creator handle, and glowing gradient badge. | *"Travel inspiration starts on TikTok and Reels. WanderSync extracts venue data directly into the group pool without copy-pasting notes."* |
-| **03. Live Simulation** | Contextual Thread & Mini-Poll | Trigger "Simulate Group Discussion": Messages from Tony & Wei Gang pop in, followed by an interactive poll for timing. | *"No more lost decisions in WhatsApp group chats. The discussion is anchored directly to the activity, and winning polls commit to the schedule."* |
+| **03. Live Simulation** | Contextual Thread & Mini-Poll | Live incoming discussion: Messages from Tony & Wei Gang pop in smoothly, followed by an interactive poll for timing. | *"No more lost decisions in WhatsApp group chats. The discussion is anchored directly to the activity, and winning polls commit to the schedule."* |
 | **04. Itinerary Reflow** | Day 1 Timeline | Winner is promoted to Day 1. Dragging the card reorders the day and dynamically updates subway transit buffers. | *"Our buffer engine ensures you never allocate 10 minutes for a 30-minute cross-town train ride. Reordering updates times automatically."* |
 | **05. Live Day HUD** | Live HUD View | Tap "Live HUD" in sidebar/header. Screen narrows to active spot, countdown timer, and 1-tap QR transit pass. | *"On the trip day, planners get overwhelmed. Live HUD strips out planning clutter so travelers see only what matters: where to be right now."* |
-| **06. Cancellation** | Card / Status Modal | Tap status pill on an event → Choose **"Cancel Event"**. Choose between keeping a **Free-Time Pocket** vs **Reflowing Schedule**. | *"Plans change. If rain hits or someone is exhausted, WanderSync lets you either preserve dinner times as free time or instantly snap the schedule forward."* |
+| **06. Cancellation vs Delete** | Card / Status Modal | Planning phase allows quick **Delete / Remove**. During Day-of HUD execution, **"Cancel Event"** provides a choice between keeping a **Free-Time Pocket** vs **Reflowing Schedule**. | *"In planning, you simply delete. On the day itself, cancelling lets you either hold a relaxing café break without pushing back dinner, or snap the day forward."* |
 
 ---
 
-## 3. Implementation Requirements for Demo Flow
+## 3. Implementation Architecture for Demo Simulation
 
-1. **State Machine (`demoEngine.js`)**:
-   - Manages a sequence of simulation states (`zero-state` → `reels-imported` → `chat-active` → `poll-resolved` → `itinerary-populated`).
-   - Includes a discreet floating "Demo Controller" bar (or sidebar toggle) with `Next Step` and `Reset Demo` buttons for reliable presentation delivery.
+1. **Configurable Simulation Script (`src/config/demoScript.js`)**:
+   - Every simulated action (messages, reels incoming, poll votes) has an easily tunable delay (`delayMs`), trigger condition, and sequence order.
+   - Run purely in the background without intrusive floating overlays that obstruct the UI.
+   - Can be triggered automatically on app start or via invisible presenter hotkeys / console commands (`window.demoEngine.next()`, `window.demoEngine.reset()`).
 2. **Dynamic Day Manager**:
    - Allows users to add or remove days with `+ Add Day` button on the date navigation bar.
 3. **Dedicated Live HUD Mode**:
    - Clean, decluttered view focused exclusively on the current spot, next departure, and ticket QR code.
-4. **Card Cancellation & Reflow Engine**:
-   - Status modal support for `cancelled` with dual resolution: Strikethrough Free Time vs Reflow.
+4. **Planning vs Day-Of Cancellation Engine**:
+   - **Planning Phase**: Direct `Delete / Remove` block.
+   - **Day-Of Phase**: `Cancel Event` with dual resolution: Strikethrough Free-Time Pocket vs Chronological Reflow.
