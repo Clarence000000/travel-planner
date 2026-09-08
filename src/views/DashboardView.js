@@ -432,20 +432,17 @@ export function createDashboardView() {
           </svg>
         </button>
         <div class="view-banner__scrim">
-          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Cozy Live HUD</span>
-          <h2 class="view-banner__title">Now & Next Dashboard</h2>
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> Tokyo • Day 1</span>
+          <h2 class="view-banner__title">Today's Schedule</h2>
         </div>
       </div>
 
       <div class="view-header">
-        <div class="view-header__meta">
-          <div class="dash-header-row">
-            <span class="view-badge">Day-of-Trip HUD</span>
-            <button type="button" class="btn-sim-arrival" id="btn-sim-arrival" title="Simulate Destination Arrival" aria-label="Simulate Destination Arrival">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
-            </button>
-          </div>
-          <p class="view-subtitle">Real-time status, upcoming transit directions, and delay controls</p>
+        <div class="dash-header-row">
+          <span class="itinerary-count-badge">Live Day-of-Trip HUD</span>
+          <button type="button" class="btn-sim-arrival" id="btn-sim-arrival" title="Simulate Destination Arrival" aria-label="Simulate Destination Arrival">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+          </button>
         </div>
       </div>
 

@@ -188,22 +188,12 @@ export function createItineraryView() {
           </svg>
         </button>
         <div class="view-banner__scrim">
-          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Interactive Master Timeline</span>
-          <h2 class="view-banner__title">Drag-and-Drop Itinerary</h2>
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Tokyo • Day ${currentDay} of 3 • ${rawBlocks.length} Stops</span>
+          <h2 class="view-banner__title">Trip Itinerary</h2>
         </div>
       </div>
 
       <div class="view-header">
-        <div class="view-header__meta">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <span class="view-badge">Interactive Timeline</span>
-            <span class="itinerary-count-badge">${rawBlocks.length} Scheduled Stops</span>
-          </div>
-          <p class="view-subtitle">
-            Drag or use arrows to reorder. Schedule times & buffers recalculate automatically.
-          </p>
-        </div>
-        
         <!-- Day Selector Chips -->
         <div class="day-chip-row" role="tablist" aria-label="Trip Days">
           <button type="button" class="day-chip ${currentDay === 1 ? 'day-chip--active' : ''}" data-day="1">
@@ -240,14 +230,16 @@ export function createItineraryView() {
 
       <!-- Action Toolbar -->
       <div class="itinerary-actions-bar">
-        <button type="button" class="btn btn--primary btn--sm" id="propose-block-btn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-          <span>Propose Activity</span>
-        </button>
-        <button type="button" class="btn btn--secondary btn--sm" id="reset-itinerary-btn" title="Reset to default schedule">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-          <span>Reset Trip</span>
-        </button>
+        <div class="itinerary-btn-group">
+          <button type="button" class="btn btn--primary btn--sm" id="propose-block-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Propose Activity</span>
+          </button>
+          <button type="button" class="btn btn--secondary btn--sm" id="reset-itinerary-btn" title="Reset to default schedule">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            <span>Reset Trip</span>
+          </button>
+        </div>
       </div>
 
       <!-- Draggable Timeline Blocks Container with Vertical Spine -->

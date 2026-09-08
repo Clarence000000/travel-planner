@@ -97,8 +97,8 @@ export function createChatView(initialBlockId = null) {
           </svg>
         </button>
         <div class="view-banner__scrim">
-          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Boxed Buddies Chat</span>
-          <h2 class="view-banner__title">Per-Activity Chat</h2>
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Tokyo Discussions</span>
+          <h2 class="view-banner__title">Activity Chat</h2>
         </div>
       </div>
     `;
@@ -110,11 +110,8 @@ export function createChatView(initialBlockId = null) {
 
     hubElem.innerHTML = `
       <div class="view-header">
-        <div class="view-header__top-row" style="display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
-          <div class="view-header__meta">
-            <span class="view-badge">Categorised Discussions</span>
-          </div>
-          <button type="button" class="btn btn--primary btn--sm" id="btn-open-new-thread" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius-pill); padding: 8px 14px; font-weight: var(--font-semibold); min-height: 40px;" aria-label="Start new discussion thread">
+        <div class="view-header__top-row" style="display: flex; justify-content: flex-end; align-items: center; gap: var(--space-2); margin-bottom: var(--space-1);">
+          <button type="button" class="btn btn--primary btn--sm" id="btn-open-new-thread" style="flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; border-radius: var(--radius-pill); padding: 7px 14px; font-weight: var(--font-semibold); min-height: 36px;" aria-label="Start new discussion thread">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span>New Thread</span>
           </button>

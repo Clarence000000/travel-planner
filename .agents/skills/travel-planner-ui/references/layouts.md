@@ -82,7 +82,7 @@ The fixed occlusion guards (`.app-shell__top-guard`, `.app-shell__bottom-guard`)
 
 ## 1. Itinerary View (Master Timeline)
 
-- **Banner**: `🐱 Interactive Master Timeline` (`bg-itinerary.png`).
+- **Banner**: Contextual badge (`Tokyo • Day X of 3`) and clean view title (`Trip Itinerary`) over `bg-itinerary.png`.
 - **Day Selector**: Horizontally scrollable chip row (Day 1 Tokyo, Day 2 Kyoto, Day 3 Shibuya).
 - **Transit Buffer Alerts**: Displays warnings when consecutive blocks have deficit travel windows.
 - **Timeline Feed**: Draggable cards connected by a vertical electric blue spine (`#2563EB`) with clear white node pins.
