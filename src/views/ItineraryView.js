@@ -526,21 +526,21 @@ export function createItineraryView() {
                       : ''
                   }
                 </div>
-              </div>
 
-              <!-- Right Edge Controls -->
-              <div class="timeline-card__collapsed-actions">
-                <button type="button" class="btn-card-chevron" data-toggle-details="${block.id}" aria-label="Expand details">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                  </svg>
-                </button>
-                <button type="button" class="btn-thread-badge" data-thread-btn="${block.id}" title="Open Activity Discussion">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  ${threadMsgCount > 0 ? `<span class="thread-badge-count">${threadMsgCount}</span>` : ''}
-                </button>
+                <!-- Right Edge Controls (inside 3-column split layout) -->
+                <div class="timeline-card__right-actions">
+                  <button type="button" class="timeline-card__chevron-btn" data-toggle-details="${block.id}" aria-label="Expand details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
+                  <button type="button" class="timeline-card__thread-pill-btn" data-thread-btn="${block.id}" title="Open Activity Discussion">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    ${threadMsgCount > 0 ? `<span class="thread-badge-count">${threadMsgCount}</span>` : ''}
+                  </button>
+                </div>
               </div>
             </article>
           `;
@@ -548,11 +548,10 @@ export function createItineraryView() {
           // Expanded State
           cardContent = `
             <article class="timeline-card timeline-card--expanded timeline-card--${block.category} ${isCancelled ? 'timeline-card--cancelled' : ''} ${isReel ? 'timeline-card--has-reel' : ''}">
-              <div class="timeline-card__expanded-split">
-                <!-- Left Details Column (260px) -->
-                <div class="timeline-card__split-left">
-                  <!-- Header: Badges & Shift Controls -->
-                  <div class="split-left__header">
+              <div class="timeline-card__expanded-inner">
+                <!-- Header: Badges & Shift / Collapse Controls -->
+                <div class="timeline-card__expanded-header">
+                  <div class="timeline-card__expanded-header-left">
                     <div class="timeline-card__expanded-badges">
                       <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Tap to change status lifecycle">
                         ${statusIconSvg}
@@ -562,28 +561,36 @@ export function createItineraryView() {
                         ${catInfo.icon}
                         <span>${catInfo.label}</span>
                       </span>
-                    </div>
-
-                    <!-- Keyboard/Accessible Shift Buttons -->
-                    <div class="split-left__shift-controls">
-                      <button type="button" class="shift-btn shift-up-btn" data-id="${block.id}" title="Shift event earlier" ${index === 0 ? 'disabled' : ''}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-                      </button>
-                      <button type="button" class="shift-btn shift-down-btn" data-id="${block.id}" title="Shift event later" ${index === blocks.length - 1 ? 'disabled' : ''}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-                      </button>
-                      <button type="button" class="btn-card-chevron btn-card-chevron--expanded" data-toggle-details="${block.id}" aria-label="Collapse details">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="18 15 12 9 6 15"></polyline>
-                        </svg>
-                      </button>
+                      <span class="timeline-card__time-pill">
+                        ${displayStart} – ${displayEnd}
+                      </span>
                     </div>
                   </div>
 
-                  <!-- Title, Reel Badge & Location -->
-                  <div class="split-left__heading">
+                  <!-- Shift Buttons and Collapse Chevron -->
+                  <div class="split-left__shift-controls" style="display: flex; align-items: center; gap: 4px;">
+                    <button type="button" class="shift-btn shift-up-btn" data-id="${block.id}" title="Shift event earlier" ${index === 0 ? 'disabled' : ''}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                    </button>
+                    <button type="button" class="shift-btn shift-down-btn" data-id="${block.id}" title="Shift event later" ${index === blocks.length - 1 ? 'disabled' : ''}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </button>
+                    <button type="button" class="timeline-card__chevron-btn timeline-card__chevron-btn--active" data-toggle-details="${block.id}" aria-label="Collapse details">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="18 15 12 9 6 15"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Showcase Hero Row: Venue Artwork Circle + Title + Reel Pick + Location -->
+                <div class="timeline-card__showcase-row">
+                  <div class="detail-panel__photo-wrapper">
+                    ${getVenueThumbnail(block)}
+                  </div>
+                  <div class="timeline-card__showcase-info">
                     <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
-                      <h3 class="split-left__title">${block.title}</h3>
+                      <h3 class="timeline-card__title timeline-card__title--expanded">${block.title}</h3>
                       ${
                         isReel
                           ? `
@@ -598,7 +605,7 @@ export function createItineraryView() {
                     ${
                       block.location
                         ? `
-                      <div class="split-left__location" title="${block.location}">
+                      <div class="detail-panel__location" title="${block.location}">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                           <circle cx="12" cy="10" r="3"></circle>
@@ -609,74 +616,70 @@ export function createItineraryView() {
                         : ''
                     }
                   </div>
-
-                  <!-- Metadata Strip: Time, Transit & Dress Code -->
-                  <div class="split-left__meta-strip">
-                    <div class="meta-strip__item">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                      <span>${displayStart} – ${displayEnd}</span>
-                    </div>
-
-                    ${
-                      block.transitToNextMinutes > 0
-                        ? `
-                      <div class="meta-strip__item">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path></svg>
-                        <span>${block.transitToNextMinutes}m transit (${block.transitMode || 'Metro'})</span>
-                      </div>
-                    `
-                        : ''
-                    }
-
-                    ${
-                      block.dressCode
-                        ? `
-                      <div class="meta-strip__item">
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
-                        <span>${block.dressCode}</span>
-                      </div>
-                    `
-                        : ''
-                    }
-                  </div>
                 </div>
 
-                <!-- Right Detail Panel (Collapsible content) -->
-                <div class="timeline-card__split-right">
+                <!-- Details Content Strip -->
+                <div class="timeline-card__details-content">
                   ${
-                    block.notes
-                      ? `<p class="detail-panel__notes">${block.notes}</p>`
+                    block.transitToNextMinutes > 0
+                      ? `
+                    <div class="detail-panel__note-tag">
+                      <span class="detail-panel__note-label">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path></svg>
+                        <span>Transit:</span>
+                      </span>
+                      <span>${block.transitToNextMinutes}m (${block.transitMode || 'Metro'})</span>
+                    </div>
+                  `
                       : ''
                   }
 
                   ${
+                    block.dressCode
+                      ? `
+                    <div class="detail-panel__note-tag">
+                      <span class="detail-panel__note-label">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                        <span>Dress Code:</span>
+                      </span>
+                      <span>${block.dressCode}</span>
+                    </div>
+                  `
+                      : ''
+                  }
+
+                  ${block.notes ? `<p class="detail-panel__notes">${block.notes}</p>` : ''}
+
+                  ${
                     cleanReqs.length > 0
-                      ? `<div class="detail-panel__checklist-section">
-                          <div class="checklist-section__header">
-                            <span class="checklist-section__title">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M9 11l3 3L22 4"/>
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
-                              </svg>
-                              <span>Requirements (${completedCount}/${cleanReqs.length})</span>
-                            </span>
-                          </div>
-                          <div class="detail-panel__checklist">
-                            ${cleanReqs
-                              .map((r, idx) => {
-                                const isChecked = checkedRequirements.has(`${block.id}-${idx}`);
-                                return `
-                                  <div class="checklist-item ${isChecked ? 'checklist-item--checked' : ''}" data-req-toggle="${block.id}" data-req-idx="${idx}" role="checkbox" aria-checked="${isChecked}" tabindex="0">
-                                    <span class="checklist-checkbox ${isChecked ? 'checklist-checkbox--checked' : ''}">
-                                      ${isChecked ? '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
-                                    </span>
-                                    <span class="checklist-item__text">${r}</span>
-                                  </div>
-                                `;
-                              })
-                              .join('')}
-                          </div>
-                        </div>`
+                      ? `
+                    <div class="detail-panel__checklist-section">
+                      <div class="checklist-section__header">
+                        <span class="checklist-section__title">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 11l3 3L22 4"/>
+                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                          </svg>
+                          <span>Requirements (${completedCount}/${cleanReqs.length})</span>
+                        </span>
+                      </div>
+                      <div class="detail-panel__checklist">
+                        ${cleanReqs
+                          .map((r, idx) => {
+                            const isChecked = checkedRequirements.has(`${block.id}-${idx}`);
+                            return `
+                            <div class="checklist-item ${isChecked ? 'checklist-item--checked' : ''}" data-req-toggle="${block.id}" data-req-idx="${idx}" role="checkbox" aria-checked="${isChecked}" tabindex="0">
+                              <span class="checklist-checkbox ${isChecked ? 'checklist-checkbox--checked' : ''}">
+                                ${isChecked ? '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+                              </span>
+                              <span class="checklist-item__text">${r}</span>
+                            </div>
+                          `;
+                          })
+                          .join('')}
+                      </div>
+                    </div>
+                  `
                       : ''
                   }
 
@@ -696,47 +699,49 @@ export function createItineraryView() {
                             reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>';
                           }
 
-                          return `<div class="contingency-card">
+                          return `
+                          <div class="contingency-card">
                             <div class="contingency-card__header">
                               <span class="contingency-card__badge contingency-card__badge--${block.fallbackReason || 'default'}">
                                 ${reasonIcon}
                                 <span>${reasonLabel}</span>
                               </span>
                               <button type="button" class="contingency-card__swap-btn" data-swap-fallback="${block.id}" title="Swap active event with this backup">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                  <path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-                                </svg>
+                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
                                 <span>Swap to Backup</span>
                               </button>
                             </div>
                             <div class="contingency-card__body">
                               <span class="contingency-card__title">${block.fallback}</span>
                             </div>
-                          </div>`;
+                          </div>
+                        `;
                         })()
                       : ''
                   }
 
-                  <!-- Expanded Action Row: Thread, Cancel Event, Delete, and Drag Handle -->
+                  <!-- Bottom Action Row: Thread, Cancel Event, Delete, and Drag Handle -->
                   <div class="detail-panel__bottom-row">
-                    <button type="button" class="btn-thread-badge btn-thread-badge--inline" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                      </svg>
-                      <span>Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
-                    </button>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                      <button type="button" class="btn-thread-badge btn-thread-badge--inline" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span>Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
+                      </button>
 
-                    <!-- Cancel Event (Day-Of Execution) -->
-                    <button type="button" class="btn-card-action btn-card-action--cancel" data-cancel-block="${block.id}" title="Cancel event (Day-Of Contingency)">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                      <span>Cancel</span>
-                    </button>
+                      <!-- Cancel Event (Day-Of Execution) -->
+                      <button type="button" class="btn-card-action btn-card-action--cancel" data-cancel-block="${block.id}" title="Cancel event (Day-Of Contingency)">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                        <span>Cancel</span>
+                      </button>
 
-                    <!-- Delete Block (Planning Phase) -->
-                    <button type="button" class="btn-card-action btn-card-action--delete" data-delete-block="${block.id}" title="Delete block from schedule">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                      <span>Delete</span>
-                    </button>
+                      <!-- Delete Block (Planning Phase) -->
+                      <button type="button" class="btn-card-action btn-card-action--delete" data-delete-block="${block.id}" title="Delete block from schedule">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        <span>Delete</span>
+                      </button>
+                    </div>
 
                     <div class="drag-grip drag-grip--inline" data-id="${block.id}" title="Hold and drag to reorder schedule" aria-label="Drag handle">
                       <svg width="12" height="14" viewBox="0 0 16 20" fill="currentColor" opacity="0.65">
