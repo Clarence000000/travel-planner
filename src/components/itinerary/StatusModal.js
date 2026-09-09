@@ -1,7 +1,7 @@
 /**
  * Status Lifecycle Modal Component
  * Allows travelers to switch a block's status between Proposed, Confirmed,
- * and Tentative/Weather Permitting (with an attached fallback plan).
+ * Tentative/Weather Permitting, or Cancelled (with Free Time vs Reflow choice).
  */
 
 export function createStatusModal({ onSave }) {
@@ -56,6 +56,17 @@ export function createStatusModal({ onSave }) {
               <span class="lifecycle-option__desc">Contingent outdoor plan with a built-in fallback attached.</span>
             </div>
           </label>
+
+          <!-- Cancelled / Day-of Contingency (Slate/Muted) -->
+          <label class="lifecycle-option" id="option-cancelled">
+            <input type="radio" name="slotStatus" value="cancelled" />
+            <div class="lifecycle-option__text">
+              <span class="lifecycle-option__name" style="color: #64748B; display: flex; align-items: center;">
+                <span class="status-dot" style="background-color: #64748B;"></span> Cancelled (Day-of Execution)
+              </span>
+              <span class="lifecycle-option__desc">Unforeseen closure or change during live trip.</span>
+            </div>
+          </label>
         </div>
 
         <!-- Fallback Activity Input (Shown when Weather Permitting is selected) -->
@@ -67,6 +78,25 @@ export function createStatusModal({ onSave }) {
             id="fallback-input" 
             placeholder="e.g. Indoor Asakusa Underground Ramen Arcade"
           />
+        </div>
+
+        <!-- Cancellation Resolution Options (Shown when Cancelled is selected) -->
+        <div class="form-group" id="cancellation-mode-group" style="display: none; background: rgba(241, 245, 249, 0.7); padding: 12px; border-radius: 12px; border: 1px dashed #CBD5E1;">
+          <label class="form-label" style="margin-bottom: 6px;">Day-of Cancellation Resolution:</label>
+          <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; margin-bottom: 8px; cursor: pointer;">
+            <input type="radio" name="cancelResolution" value="free-time" checked style="margin-top: 2px;" />
+            <div>
+              <strong>Hold as Free Time / Relax Pocket</strong>
+              <div style="color: #64748B; font-size: 11px;">Keeps slot on timeline as open buffer; later dinner & bookings remain untouched.</div>
+            </div>
+          </label>
+          <label style="display: flex; align-items: flex-start; gap: 8px; font-size: 12px; cursor: pointer;">
+            <input type="radio" name="cancelResolution" value="reflow" style="margin-top: 2px;" />
+            <div>
+              <strong>Reflow Schedule Chronologically</strong>
+              <div style="color: #64748B; font-size: 11px;">Deletes slot and snaps subsequent activities forward to eliminate gap.</div>
+            </div>
+          </label>
         </div>
 
         <div style="display: flex; gap: 8px; margin-top: 8px;">
@@ -85,23 +115,32 @@ export function createStatusModal({ onSave }) {
   const titleEl = backdrop.querySelector('#status-modal-title');
   const fallbackGroup = backdrop.querySelector('#fallback-input-group');
   const fallbackInput = backdrop.querySelector('#fallback-input');
+  const cancelModeGroup = backdrop.querySelector('#cancellation-mode-group');
 
   const radioInputs = backdrop.querySelectorAll('input[name="slotStatus"]');
   const options = backdrop.querySelectorAll('.lifecycle-option');
 
   function updateSelectedStyles() {
+    let selectedValue = 'confirmed';
     radioInputs.forEach((radio, idx) => {
       if (radio.checked) {
+        selectedValue = radio.value;
         options[idx].classList.add('is-selected');
-        if (radio.value === 'tentative') {
-          fallbackGroup.style.display = 'flex';
-        } else {
-          fallbackGroup.style.display = 'none';
-        }
       } else {
         options[idx].classList.remove('is-selected');
       }
     });
+
+    if (selectedValue === 'tentative') {
+      fallbackGroup.style.display = 'flex';
+      cancelModeGroup.style.display = 'none';
+    } else if (selectedValue === 'cancelled') {
+      fallbackGroup.style.display = 'none';
+      cancelModeGroup.style.display = 'flex';
+    } else {
+      fallbackGroup.style.display = 'none';
+      cancelModeGroup.style.display = 'none';
+    }
   }
 
   radioInputs.forEach((radio) => {
@@ -139,9 +178,11 @@ export function createStatusModal({ onSave }) {
     const selectedRadio = backdrop.querySelector('input[name="slotStatus"]:checked');
     const newStatus = selectedRadio ? selectedRadio.value : currentBlock.status;
     const fallbackVal = fallbackInput.value.trim();
+    const cancelRes = backdrop.querySelector('input[name="cancelResolution"]:checked');
+    const cancelMode = cancelRes ? cancelRes.value : 'free-time';
 
-    if (onSave) {
-      onSave(currentBlock.id, newStatus, newStatus === 'tentative' ? fallbackVal : null);
+    if (typeof onSave === 'function') {
+      onSave(currentBlock.id, newStatus, fallbackVal, cancelMode);
     }
     close();
   });

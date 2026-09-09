@@ -1,7 +1,7 @@
 /**
  * Component: Onboarding & Data Import Modal
  * Provides an interactive welcome experience allowing travelers to:
- * 1. Configure Destination & Timing (Step 1)
+ * 1. Configure Destination & Arbitrary Date Range (Step 1)
  * 2. Answer quick AI questions on Vibe, Pace, and anchor top-voted Wishlist spots (Step 2)
  * 3. Import travel data from Instagram Reels / TikTok links
  * 4. Review Trip Reveal Summary Sheet (Step 3) before editing timeline
@@ -15,6 +15,12 @@ import {
   markWishlistScheduled,
 } from '../models/wishlistData.js';
 import { setActiveTab } from '../config/navigation.js';
+import {
+  getTripSettings,
+  saveTripSettings,
+  calculateDaysBetween,
+  formatDateRange,
+} from '../models/tripSettings.js';
 
 export function createOnboardingModal(options = {}) {
   const { onComplete } = options;
@@ -32,12 +38,15 @@ export function createOnboardingModal(options = {}) {
   let processingType = 'questions'; // 'questions' | 'reels'
   let processingStep = 0;
 
-  // Questionnaire state
+  // Questionnaire state loaded from trip settings
+  const initialSettings = getTripSettings();
   const survey = {
-    destination: 'Tokyo & Kyoto, Japan',
-    duration: 3,
-    vibe: 'food', // 'food' | 'culture' | 'modern' | 'scenic'
-    pace: 'balanced', // 'chill' | 'balanced' | 'turbo'
+    destination: initialSettings.destination || 'Tokyo & Kyoto, Japan',
+    startDate: initialSettings.startDate || '2026-07-14',
+    endDate: initialSettings.endDate || '2026-07-16',
+    duration: initialSettings.totalDays || 3,
+    vibe: initialSettings.vibe || 'food', // 'food' | 'culture' | 'modern' | 'scenic'
+    pace: initialSettings.pace || 'balanced', // 'chill' | 'balanced' | 'turbo'
     travelers: 'duo', // 'duo' | 'squad' | 'solo'
     anchorWishlist: true,
   };
@@ -81,71 +90,57 @@ export function createOnboardingModal(options = {}) {
     }
   }
 
-  // ── Step 0: Main Menu ──────────────────────────────────────────────
+  // ── Step 0: Welcome Choice Menu ─────────────────────────────
   function renderMenuView() {
     return `
       <div class="onboarding-header">
-        <div class="onboarding-icon-badge">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
+        <div class="onboarding-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          <span>WanderSync Initializer</span>
         </div>
-        <h2 class="onboarding-title" id="onboarding-title">Plan Your Adventure</h2>
-        <p class="onboarding-subtitle">Choose how you would like to build or import your trip itinerary:</p>
+        <h2 class="onboarding-title" id="onboarding-title">How do you want to start?</h2>
+        <p class="onboarding-subtitle">Choose a smart path to craft your collaborative schedule</p>
       </div>
 
       <div class="onboarding-options">
-        <!-- Option 1: AI Questions with Destination & Wishlist -->
+        <!-- Option 1: AI Vibe & Pace Assistant -->
         <button type="button" class="onboarding-option-card" id="btn-select-questions">
-          <div class="onboarding-option-card__icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-              <line x1="9" y1="10" x2="15" y2="10"></line>
-            </svg>
+          <div class="onboarding-option-card__icon onboarding-option-card__icon--primary">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
           </div>
-          <div class="onboarding-option-card__info">
-            <div class="onboarding-option-card__top">
-              <h3 class="onboarding-option-card__title">Trip Setup & Questionnaire</h3>
-              <span class="onboarding-option-card__badge">Smart AI</span>
-            </div>
-            <p class="onboarding-option-card__desc">Set destination, customize vibe & pace, and anchor top-voted group wishlist spots.</p>
+          <div class="onboarding-option-card__text">
+            <h3 class="onboarding-option-card__title">Dates, Vibe & Preferences</h3>
+            <p class="onboarding-option-card__desc">Define custom calendar dates, party pace, and auto-anchor top wishlist spots.</p>
           </div>
-          <div class="onboarding-option-card__arrow">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </div>
+          <svg class="onboarding-option-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
 
-        <!-- Option 2: Social Media Reels Import -->
+        <!-- Option 2: IG Reels / Social Importer -->
         <button type="button" class="onboarding-option-card" id="btn-select-reels">
-          <div class="onboarding-option-card__icon" style="color: #BE185D; background-color: #FDF2F8; border-color: #FBCFE8;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="onboarding-option-card__icon onboarding-option-card__icon--reel">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
               <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
             </svg>
           </div>
-          <div class="onboarding-option-card__info">
-            <div class="onboarding-option-card__top">
-              <h3 class="onboarding-option-card__title">Import from IG Reels / TikTok</h3>
-              <span class="onboarding-option-card__badge" style="background-color: #FDF2F8; color: #BE185D;">Auto-Extract</span>
-            </div>
-            <p class="onboarding-option-card__desc">Scan video links to schedule hero spots and save candidate venues into your wishlist.</p>
+          <div class="onboarding-option-card__text">
+            <h3 class="onboarding-option-card__title">Import from Social Reels</h3>
+            <p class="onboarding-option-card__desc">Paste an Instagram Reel or TikTok link to extract venues directly into Day 1 & Wishlist.</p>
           </div>
-          <div class="onboarding-option-card__arrow">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-          </div>
+          <svg class="onboarding-option-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
       </div>
 
       <div class="onboarding-footer">
         <button type="button" class="onboarding-skip-btn" id="btn-skip-onboarding">
-          Explore Curated Tokyo & Kyoto Itinerary
+          Skip and explore existing timeline
         </button>
       </div>
     `;
   }
 
-  // ── Step 1: Destination & Duration ─────────────────────────────────
+  // ── Step 1: Destination & Custom Date Range ─────────────────
   function renderDestinationView() {
     const popularDestinations = [
       'Tokyo & Kyoto, Japan',
@@ -155,11 +150,7 @@ export function createOnboardingModal(options = {}) {
       'Rome, Italy',
     ];
 
-    const durations = [
-      { days: 3, label: '3 Days (Weekend)' },
-      { days: 5, label: '5 Days (Standard)' },
-      { days: 7, label: '7 Days (Full Week)' },
-    ];
+    const rangeLabel = formatDateRange(survey.startDate, survey.endDate, survey.duration);
 
     return `
       <div class="onboarding-header">
@@ -168,7 +159,7 @@ export function createOnboardingModal(options = {}) {
           <span>Back</span>
         </button>
         <h2 class="onboarding-title" style="margin-top: 8px;">Where & When?</h2>
-        <p class="onboarding-subtitle">Step 1 of 2: Set your trip destination and duration</p>
+        <p class="onboarding-subtitle">Step 1 of 2: Set trip destination and arbitrary date range</p>
       </div>
 
       <div class="onboarding-form">
@@ -204,24 +195,43 @@ export function createOnboardingModal(options = {}) {
           </div>
         </div>
 
-        <!-- Duration Presets -->
+        <!-- Flexible Date Range Selection -->
         <div class="onboarding-field">
-          <label class="onboarding-field__label">Trip Duration</label>
-          <div class="onboarding-chip-group">
-            ${durations
-              .map(
-                (d) => `
-              <button
-                type="button"
-                class="onboarding-chip ${survey.duration === d.days ? 'onboarding-chip--active' : ''}"
-                data-duration="${d.days}"
-              >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span>${d.label}</span>
-              </button>
-            `
-              )
-              .join('')}
+          <label class="onboarding-field__label">Trip Dates & Flexible Duration</label>
+          
+          <div class="onboarding-date-inputs-row">
+            <div class="onboarding-date-field">
+              <span class="onboarding-date-label">Start Date</span>
+              <input 
+                type="date" 
+                class="onboarding-date-picker" 
+                id="trip-start-date" 
+                value="${survey.startDate}" 
+              />
+            </div>
+            <div class="onboarding-date-arrow">→</div>
+            <div class="onboarding-date-field">
+              <span class="onboarding-date-label">End Date</span>
+              <input 
+                type="date" 
+                class="onboarding-date-picker" 
+                id="trip-end-date" 
+                value="${survey.endDate}" 
+              />
+            </div>
+          </div>
+
+          <!-- Duration Stepper & Summary Pill -->
+          <div class="onboarding-duration-stepper-wrap">
+            <div class="onboarding-stepper">
+              <button type="button" class="onboarding-stepper-btn" id="btn-duration-minus" aria-label="Decrease days">−</button>
+              <span class="onboarding-stepper-value" id="stepper-duration-val">${survey.duration} Days</span>
+              <button type="button" class="onboarding-stepper-btn" id="btn-duration-plus" aria-label="Increase days">+</button>
+            </div>
+            <div class="onboarding-duration-calc-tag">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              <span id="range-display-label">${rangeLabel}</span>
+            </div>
           </div>
         </div>
 
@@ -233,7 +243,7 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Step 2: Vibe, Pace & Wishlist Anchors ───────────────────────────
+  // ── Step 2: Vibe, Pace & Wishlist Anchors ───────────────────
   function renderQuestionsView() {
     const topWishlist = getTopVotedWishlistItems(3);
 
@@ -340,7 +350,7 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Step 2B: IG Reels / Social Import Form ──────────────────────────
+  // ── Step 2B: IG Reels / Social Import Form ───────────────────
   function renderReelsView() {
     return `
       <div class="onboarding-header">
@@ -396,7 +406,7 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Step 3: AI Processing Animation ────────────────────────────────
+  // ── Step 3: AI Processing Animation ─────────────────────────
   function renderProcessingView() {
     const isReel = processingType === 'reels';
     const steps = isReel
@@ -410,7 +420,7 @@ export function createOnboardingModal(options = {}) {
           'Aligning travel vibe and group pace preferences...',
           'Extracting top-voted spots from Trip Wishlist as anchors...',
           'Balancing transit travel windows & weather contingencies...',
-          'Synthesizing your optimized 3-day itinerary!',
+          `Synthesizing your optimized ${survey.duration}-day itinerary!`,
         ];
 
     const currentText = steps[Math.min(processingStep, steps.length - 1)];
@@ -454,7 +464,7 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Step 4: Trip Reveal Summary Sheet ───────────────────────────────
+  // ── Step 4: Trip Reveal Summary Sheet ───────────────────────
   function renderRevealView() {
     const isReel = processingType === 'reels';
     const topWishlist = getTopVotedWishlistItems(2);
@@ -483,7 +493,7 @@ export function createOnboardingModal(options = {}) {
           </div>
         </div>
 
-        <!-- 3-Day Snapshot List -->
+        <!-- Dynamic Day Snapshot List -->
         <div class="reveal-days-list">
           <div class="reveal-day-card">
             <div class="reveal-day-num">D1</div>
@@ -501,13 +511,19 @@ export function createOnboardingModal(options = {}) {
             </div>
           </div>
 
-          <div class="reveal-day-card">
-            <div class="reveal-day-num">D3</div>
-            <div class="reveal-day-info">
-              <h4 class="reveal-day-title">Modern Cityscape, Skyline & Farewell BBQ</h4>
-              <span class="reveal-day-meta">2 activities • Direct airport transit linked</span>
+          ${
+            survey.duration >= 3
+              ? `
+            <div class="reveal-day-card">
+              <div class="reveal-day-num">D3</div>
+              <div class="reveal-day-info">
+                <h4 class="reveal-day-title">Modern Cityscape, Skyline & Farewell BBQ</h4>
+                <span class="reveal-day-meta">2 activities • Direct airport transit linked</span>
+              </div>
             </div>
-          </div>
+          `
+              : ''
+          }
         </div>
 
         <!-- Anchors Summary Box -->
@@ -525,7 +541,7 @@ export function createOnboardingModal(options = {}) {
             `
                 : survey.anchorWishlist && topWishlist.length > 0
                 ? topWishlist.map((item) => `<span class="reveal-anchor-tag">${item.title}</span>`).join('')
-                : `<span class="reveal-anchor-tag">Curated AI Highlights</span>`
+                : `<span class="reveal-anchor-tag">Curated Highlights</span>`
             }
           </div>
         </div>
@@ -544,7 +560,7 @@ export function createOnboardingModal(options = {}) {
     `;
   }
 
-  // ── Event Handlers ──────────────────────────────────────────────────
+  // ── Event Handlers ──────────────────────────────────────────
   function bindEvents() {
     // Close / Skip
     const closeBtn = overlay.querySelector('#btn-close-onboarding');
@@ -593,12 +609,56 @@ export function createOnboardingModal(options = {}) {
       });
     });
 
-    overlay.querySelectorAll('[data-duration]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        survey.duration = Number(btn.getAttribute('data-duration'));
+    // Date Pickers
+    const startDateInput = overlay.querySelector('#trip-start-date');
+    const endDateInput = overlay.querySelector('#trip-end-date');
+    const rangeDisplay = overlay.querySelector('#range-display-label');
+    const stepperVal = overlay.querySelector('#stepper-duration-val');
+
+    function syncDates() {
+      if (startDateInput && endDateInput) {
+        survey.startDate = startDateInput.value;
+        survey.endDate = endDateInput.value;
+        survey.duration = calculateDaysBetween(survey.startDate, survey.endDate);
+        if (stepperVal) stepperVal.textContent = `${survey.duration} Days`;
+        if (rangeDisplay) rangeDisplay.textContent = formatDateRange(survey.startDate, survey.endDate, survey.duration);
+      }
+    }
+
+    if (startDateInput) {
+      startDateInput.addEventListener('change', syncDates);
+    }
+    if (endDateInput) {
+      endDateInput.addEventListener('change', syncDates);
+    }
+
+    // Duration Stepper Buttons
+    const btnMinus = overlay.querySelector('#btn-duration-minus');
+    const btnPlus = overlay.querySelector('#btn-duration-plus');
+
+    if (btnMinus) {
+      btnMinus.addEventListener('click', () => {
+        if (survey.duration > 1) {
+          survey.duration--;
+          // Shift end date back by 1 day
+          const end = new Date(survey.endDate);
+          end.setDate(end.getDate() - 1);
+          survey.endDate = end.toISOString().split('T')[0];
+          render();
+        }
+      });
+    }
+
+    if (btnPlus) {
+      btnPlus.addEventListener('click', () => {
+        survey.duration++;
+        // Shift end date forward by 1 day
+        const end = new Date(survey.endDate);
+        end.setDate(end.getDate() + 1);
+        survey.endDate = end.toISOString().split('T')[0];
         render();
       });
-    });
+    }
 
     const nextPrefBtn = overlay.querySelector('#btn-next-preferences');
     if (nextPrefBtn) {
@@ -690,7 +750,7 @@ export function createOnboardingModal(options = {}) {
     }
   }
 
-  // ── Processing Animation ────────────────────────────────────────────
+  // ── Processing Animation ────────────────────────────────────
   function startProcessing(type) {
     processingType = type;
     currentStep = 'processing';
@@ -710,7 +770,7 @@ export function createOnboardingModal(options = {}) {
     }, 550);
   }
 
-  // ── Finalization & Cross-Tab Ecosystem Propagation ──────────────────
+  // ── Finalization & Cross-Tab Ecosystem Propagation ─────────
   function finishOnboarding(type) {
     applyGeneratedData(type);
 
@@ -721,7 +781,7 @@ export function createOnboardingModal(options = {}) {
     setActiveTab('itinerary');
 
     // Show clean celebration toast
-    showToastNotice('Itinerary generated! Wishlist anchors synced and transit buffers optimized.');
+    showToastNotice('Itinerary generated! Dates synced and transit buffers optimized.');
 
     if (typeof onComplete === 'function') {
       onComplete(type);
@@ -729,10 +789,20 @@ export function createOnboardingModal(options = {}) {
   }
 
   function applyGeneratedData(type) {
+    // Save updated dates, pace, destination
+    saveTripSettings({
+      destination: survey.destination,
+      startDate: survey.startDate,
+      endDate: survey.endDate,
+      totalDays: survey.duration,
+      pace: survey.pace,
+      vibe: survey.vibe,
+    });
+
     const list = getItineraryData();
 
     if (type === 'reels') {
-      // 1. Injected Primary Reel Spot into Day 1 Schedule
+      // Injected Primary Reel Spot into Day 1 Schedule
       const newSpot = {
         id: `reel-${Date.now()}`,
         day: 1,
@@ -749,10 +819,12 @@ export function createOnboardingModal(options = {}) {
         notes: `Extracted via Instagram Reel import: ${reelUrl}. Automatically synced with group schedule.`,
         dressCode: 'Casual comfortable',
         source: 'reel',
+        reelUrl: reelUrl,
+        reelCreator: '@tokyofoodie',
       };
       list.splice(3, 0, newSpot);
 
-      // 2. Deposit detected secondary venues into Trip Wishlist
+      // Deposit detected secondary venues into Trip Wishlist
       addWishlistItem({
         title: 'Uobei Shibuya Conveyor Belt Sushi',
         category: 'food',
@@ -760,6 +832,7 @@ export function createOnboardingModal(options = {}) {
         estimatedCost: '¥1,500 (~$10)',
         votes: 2,
         addedBy: 'IG Reel Import',
+        source: 'reel',
       });
       addWishlistItem({
         title: 'Nonbei Yokocho Micro-Izakaya Alleys',
@@ -768,20 +841,23 @@ export function createOnboardingModal(options = {}) {
         estimatedCost: '¥2,800 (~$19)',
         votes: 3,
         addedBy: 'IG Reel Import',
+        source: 'reel',
       });
     } else {
       // 1. Tailor Itinerary based on Vibe & Pace
-      list[1].title =
-        survey.vibe === 'food'
-          ? 'Nakamise Street Food Crawl & Matcha Tasting'
-          : survey.vibe === 'scenic'
-          ? 'Sumida Riverfront Scenic Walk & Gardens'
-          : survey.vibe === 'modern'
-          ? 'Ginza Skyline Architecture & Art Walk'
-          : 'Senso-ji Traditional Shrine & Garden Walk';
-      list[1].notes = `Tailored by AI for ${survey.travelers === 'duo' ? 'Clarence & Wei Gang' : 'Group'} (${survey.pace} pace, ${survey.vibe} focus).`;
+      if (list[1]) {
+        list[1].title =
+          survey.vibe === 'food'
+            ? 'Nakamise Street Food Crawl & Matcha Tasting'
+            : survey.vibe === 'scenic'
+            ? 'Sumida Riverfront Scenic Walk & Gardens'
+            : survey.vibe === 'modern'
+            ? 'Ginza Skyline Architecture & Art Walk'
+            : 'Senso-ji Traditional Shrine & Garden Walk';
+        list[1].notes = `Tailored by AI for ${survey.travelers === 'duo' ? 'Clarence & Wei Gang' : 'Group'} (${survey.pace} pace, ${survey.vibe} focus).`;
+      }
 
-      // 2. Wishlist Anchoring: Pull top-voted wishlist items into schedule
+      // 2. Wishlist Anchoring
       if (survey.anchorWishlist) {
         const topWishlist = getTopVotedWishlistItems(4);
         const tokyoItem = topWishlist.find(
@@ -818,26 +894,21 @@ export function createOnboardingModal(options = {}) {
     }
 
     saveItineraryData(list);
-
-    // Update Header Trip Title if destination was customized
-    const headerTitleEl = document.querySelector('.top-header__title');
-    if (headerTitleEl && survey.destination) {
-      const mainCity = survey.destination.split(',')[0].trim();
-      headerTitleEl.textContent = `${mainCity} 2026`;
-    }
   }
 
-  function showToastNotice(message) {
-    const existing = document.querySelector('.toast-notice');
-    if (existing) existing.remove();
-
+  function showToastNotice(msg) {
     const toast = document.createElement('div');
-    toast.className = 'toast-notice';
-    toast.textContent = message;
+    toast.className = 'dash-toast dash-toast--success dash-toast--visible';
+    toast.innerHTML = `
+      <span class="dash-toast__icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </span>
+      <span class="dash-toast__msg">${msg}</span>
+    `;
     document.body.appendChild(toast);
-
     setTimeout(() => {
-      if (toast.parentElement) toast.remove();
+      toast.classList.add('dash-toast--exit');
+      setTimeout(() => toast.remove(), 350);
     }, 3200);
   }
 
@@ -847,8 +918,8 @@ export function createOnboardingModal(options = {}) {
     processingStep = 0;
   }
 
-  function openModal() {
-    currentStep = 'menu';
+  function openModal(step = 'menu') {
+    currentStep = step;
     processingStep = 0;
     render();
     overlay.style.display = 'flex';
@@ -860,6 +931,7 @@ export function createOnboardingModal(options = {}) {
   return {
     element: overlay,
     open: openModal,
+    openReelImporter: () => openModal('reels'),
     close: closeModal,
   };
 }

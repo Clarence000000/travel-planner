@@ -6,14 +6,21 @@
  * 3. Automatic schedule time recalculation preserving activity durations and transit buffers.
  * 4. Deduplicated requirements and non-repeating tags.
  * 5. In-place card details expansion preserving scroll position.
- * 6. Slot status lifecycle (Proposed, Confirmed, Weather Permitting with Fallback).
- * 7. Transit buffer recalculation and warning alerts.
+ * 6. Slot status lifecycle (Proposed, Confirmed, Weather Permitting, and Day-of Cancellation).
+ * 7. Dynamic days with "+ Add Day" and empty day canvases.
+ * 8. Social Reels spotlight and interactive preview modal.
+ * 9. Planning delete vs Day-of cancellation (Free-time pocket vs Chronological reflow).
  */
 
 import {
   getItineraryData,
   saveItineraryData,
   resetItineraryData,
+  getItineraryDayList,
+  addItineraryDay,
+  removeItineraryDay,
+  deleteItineraryBlock,
+  cancelItineraryBlock,
 } from '../models/itineraryData.js';
 import {
   calculateItineraryBuffers,
@@ -23,6 +30,7 @@ import {
   formatDuration,
   timeToMinutes,
 } from '../utils/bufferEngine.js';
+import { getTripSettings, formatDateRange } from '../models/tripSettings.js';
 import { createStatusModal } from '../components/itinerary/StatusModal.js';
 import { createAddBlockModal } from '../components/itinerary/AddBlockModal.js';
 import { getThreadById, addMessageToThread, getCategoryIconSvg, getDayCalendarIconSvg } from '../models/chatData.js';
@@ -49,7 +57,6 @@ export function createItineraryView() {
 
   function startDragSession() {
     savedScrollBehavior = document.documentElement.style.scrollBehavior || '';
-    // Disable smooth-scrolling during drag so window.scrollBy updates instantly without 60fps throttling
     document.documentElement.style.scrollBehavior = 'auto';
   }
 
@@ -60,17 +67,14 @@ export function createItineraryView() {
 
   function updateAutoScroll(pointerY) {
     const vh = window.innerHeight;
-    const topThreshold = 150; // 150px from viewport top (covers header + chips)
-    const bottomThreshold = vh - 130; // 130px from viewport bottom (~64px bottom nav + 66px zone)
+    const topThreshold = 150;
+    const bottomThreshold = vh - 130;
 
     if (pointerY > bottomThreshold) {
-      // Near bottom edge -> scroll down briskly
       const distanceIntoZone = pointerY - bottomThreshold;
       const ratio = Math.min(1.8, Math.max(0, distanceIntoZone / 80));
-      // Responsive speed: starts at 12px/frame, ramps up smoothly to 40px/frame (~720px/s to 2400px/s)
       autoScrollDelta = Math.round(12 + Math.pow(ratio, 1.1) * 28);
     } else if (pointerY < topThreshold) {
-      // Near top edge -> scroll up briskly
       const distanceIntoZone = topThreshold - pointerY;
       const ratio = Math.min(1.8, Math.max(0, distanceIntoZone / 80));
       autoScrollDelta = -Math.round(12 + Math.pow(ratio, 1.1) * 28);
@@ -81,7 +85,6 @@ export function createItineraryView() {
     if (autoScrollDelta !== 0 && !autoScrollRaf) {
       const loop = () => {
         if (autoScrollDelta !== 0) {
-          // Instant behavior ensures each frame advances immediately without waiting on CSS animations
           window.scrollBy({ top: autoScrollDelta, left: 0, behavior: 'instant' });
           autoScrollRaf = requestAnimationFrame(loop);
         } else {
@@ -122,22 +125,31 @@ export function createItineraryView() {
   }
 
   function initModals() {
-    // Prevent DOM accumulation by removing existing itinerary modals
     document.querySelectorAll('.itinerary-modal-backdrop').forEach((el) => el.remove());
 
     statusModal = createStatusModal({
-      onSave: (blockId, newStatus, newFallback) => {
-        itineraryList = itineraryList.map((b) => {
-          if (b.id === blockId) {
-            return {
-              ...b,
-              status: newStatus,
-              fallback: newFallback !== undefined ? newFallback : b.fallback,
-            };
-          }
-          return b;
-        });
-        saveItineraryData(itineraryList);
+      onSave: (blockId, newStatus, newFallback, cancelMode) => {
+        if (newStatus === 'cancelled') {
+          itineraryList = cancelItineraryBlock(blockId, cancelMode);
+          showScheduleToast(
+            cancelMode === 'free-time'
+              ? 'Event cancelled • Window held as free time'
+              : 'Event cancelled • Schedule reflowed forward'
+          );
+        } else {
+          itineraryList = itineraryList.map((b) => {
+            if (b.id === blockId) {
+              return {
+                ...b,
+                status: newStatus,
+                fallback: newFallback !== undefined ? newFallback : b.fallback,
+              };
+            }
+            return b;
+          });
+          saveItineraryData(itineraryList);
+          showScheduleToast(`Status updated to ${newStatus}`);
+        }
         render();
       },
     });
@@ -146,40 +158,45 @@ export function createItineraryView() {
       onAdd: (newBlock) => {
         const dayBlocks = getDayBlocks();
         dayBlocks.push(newBlock);
-        // Automatically calculate chronological times
         const recomputed = recalculateDaySchedule(dayBlocks);
         setDayBlocks(recomputed);
+        expandedCardIds.add(newBlock.id);
         render();
-        showScheduleToast('New activity added & schedule recomputed.');
+        showScheduleToast('Activity added to timeline');
       },
     });
-
-    document.body.appendChild(statusModal.element);
-    document.body.appendChild(addBlockModal.element);
   }
 
   function getDayBlocks() {
-    return itineraryList.filter((b) => b.day === currentDay);
+    itineraryList = getItineraryData();
+    return itineraryList
+      .filter((b) => b.day === currentDay)
+      .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
   }
 
-  function setDayBlocks(updatedDayBlocks) {
+  function setDayBlocks(updatedBlocks) {
     const otherDays = itineraryList.filter((b) => b.day !== currentDay);
-    itineraryList = [...otherDays, ...updatedDayBlocks];
+    itineraryList = [...otherDays, ...updatedBlocks];
     saveItineraryData(itineraryList);
   }
 
   function render() {
     const rawBlocks = getDayBlocks();
     const blocksWithBuffers = calculateItineraryBuffers(rawBlocks);
+    const dayList = getItineraryDayList();
+    const settings = getTripSettings();
 
     // Check if any buffer warnings exist on this day
     const activeWarnings = blocksWithBuffers.filter(
       (b) => b.transitBuffer && b.transitBuffer.isDeficit
     );
 
+    const bannerImg = settings.coverImage || './src/assets/hero-banner.jpg';
+    const cityTitle = settings.destination.split(',')[0];
+
     container.innerHTML = `
-      <!-- Atmospheric Vertical Asset Banner (Sticky Cat Photo Header) -->
-      <div class="view-banner" style="background-image: url('./src/assets/bg-itinerary.png');">
+      <!-- Atmospheric Vertical Asset Banner -->
+      <div class="view-banner" style="background-image: url('${bannerImg}');">
         <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -188,22 +205,49 @@ export function createItineraryView() {
           </svg>
         </button>
         <div class="view-banner__scrim">
-          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Tokyo • Day ${currentDay} of 3 • ${rawBlocks.length} Stops</span>
-          <h2 class="view-banner__title">Trip Itinerary</h2>
+          <span class="view-banner__badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            ${cityTitle} • Day ${currentDay} of ${dayList.length} • ${rawBlocks.length} Stops
+          </span>
+          <h2 class="view-banner__title">${settings.title || 'Trip Itinerary'}</h2>
         </div>
       </div>
 
       <div class="view-header">
-        <!-- Day Selector Chips -->
+        <!-- Day Selector Chips Row with dynamic Add Day button -->
         <div class="day-chip-row" role="tablist" aria-label="Trip Days">
-          <button type="button" class="day-chip ${currentDay === 1 ? 'day-chip--active' : ''}" data-day="1">
-            Day 1 • Tokyo Arrival
+          ${dayList
+            .map(
+              (d) => `
+            <button type="button" class="day-chip ${currentDay === d ? 'day-chip--active' : ''}" data-day="${d}">
+              Day ${d}
+            </button>
+          `
+            )
+            .join('')}
+          <button type="button" class="day-chip day-chip--add" id="btn-add-day" title="Add next trip day">
+            + Add Day
           </button>
-          <button type="button" class="day-chip ${currentDay === 2 ? 'day-chip--active' : ''}" data-day="2">
-            Day 2 • Kyoto Heritage
+        </div>
+      </div>
+
+      <!-- Action Toolbar -->
+      <div class="itinerary-actions-bar">
+        <div class="itinerary-btn-group">
+          <button type="button" class="btn btn--primary btn--sm" id="propose-block-btn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <span>Propose Activity</span>
           </button>
-          <button type="button" class="day-chip ${currentDay === 3 ? 'day-chip--active' : ''}" data-day="3">
-            Day 3 • Modern Shibuya
+
+          <!-- Day 1 Quick Live HUD Trigger -->
+          <button type="button" class="btn btn--secondary btn--sm btn-live-hud-trigger" id="btn-open-live-hud" title="Launch focused Day-of HUD execution mode">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <span style="color: #2563EB; font-weight: 700;">Live HUD</span>
+          </button>
+
+          <button type="button" class="btn btn--secondary btn--sm" id="reset-itinerary-btn" title="Reset to default schedule">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+            <span>Reset Trip</span>
           </button>
         </div>
       </div>
@@ -228,24 +272,45 @@ export function createItineraryView() {
           : ''
       }
 
-      <!-- Action Toolbar -->
-      <div class="itinerary-actions-bar">
-        <div class="itinerary-btn-group">
-          <button type="button" class="btn btn--primary btn--sm" id="propose-block-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Propose Activity</span>
-          </button>
-          <button type="button" class="btn btn--secondary btn--sm" id="reset-itinerary-btn" title="Reset to default schedule">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-            <span>Reset Trip</span>
-          </button>
+      <!-- Timeline Feed or Empty Day Canvas -->
+      ${
+        rawBlocks.length === 0
+          ? `
+        <div class="empty-day-canvas">
+          <div class="empty-day-canvas__icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h3 class="empty-day-canvas__title">Day ${currentDay} is Open</h3>
+          <p class="empty-day-canvas__desc">No activities scheduled yet for this day. Propose stops, import from reels, or add from group wishlist.</p>
+          <div class="empty-day-canvas__actions">
+            <button type="button" class="btn btn--primary btn--sm" id="btn-empty-propose">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Propose Activity</span>
+            </button>
+            ${
+              dayList.length > 1
+                ? `
+              <button type="button" class="btn btn--secondary btn--sm" id="btn-empty-remove-day" style="color: #DC2626;">
+                <span>Remove Day ${currentDay}</span>
+              </button>
+            `
+                : ''
+            }
+          </div>
         </div>
-      </div>
-
-      <!-- Draggable Timeline Blocks Container with Vertical Spine -->
-      <div class="timeline-feed" id="timeline-feed-target">
-        ${renderTimelineItems(blocksWithBuffers)}
-      </div>
+      `
+          : `
+        <!-- Draggable Timeline Blocks Container with Vertical Spine -->
+        <div class="timeline-feed" id="timeline-feed-target">
+          ${renderTimelineItems(blocksWithBuffers)}
+        </div>
+      `
+      }
     `;
 
     attachEvents(rawBlocks);
@@ -254,149 +319,89 @@ export function createItineraryView() {
   function getVenueThumbnail(block) {
     const idSuffix = block.id || Math.random().toString(36).slice(2, 6);
 
-    // 1. Senso-ji Temple Gate (Iconic Kaminarimon with curved eaves, red pillars, giant red lantern)
     if (block.id === 'd1-2' || (block.title && (block.title.includes('Senso-ji') || block.title.includes('Shrine')))) {
       return `
         <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Traditional Shrine">
-          <defs>
-            <linearGradient id="skyGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#3B82F6"/>
-              <stop offset="55%" stop-color="#93C5FD"/>
-              <stop offset="100%" stop-color="#EFF6FF"/>
-            </linearGradient>
-            <linearGradient id="lanternGrad-${idSuffix}" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#EF4444"/>
-              <stop offset="45%" stop-color="#DC2626"/>
-              <stop offset="100%" stop-color="#991B1B"/>
-            </linearGradient>
-            <linearGradient id="roofGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#374151"/>
-              <stop offset="100%" stop-color="#111827"/>
-            </linearGradient>
-          </defs>
-          <rect width="64" height="64" fill="url(#skyGrad-${idSuffix})"/>
-          <ellipse cx="48" cy="18" rx="10" ry="4" fill="#FFFFFF" opacity="0.6"/>
-          <ellipse cx="16" cy="16" rx="8" ry="3" fill="#FFFFFF" opacity="0.5"/>
-          <path d="M4 22 C18 16 46 16 60 22 L57 26 L7 26 Z" fill="url(#roofGrad-${idSuffix})"/>
-          <path d="M8 23 C20 18 44 18 56 23" stroke="#F59E0B" stroke-width="1.5" fill="none"/>
-          <rect x="10" y="26" width="44" height="5" fill="#991B1B"/>
-          <rect x="12" y="30" width="5" height="34" fill="#DC2626"/>
-          <rect x="47" y="30" width="5" height="34" fill="#DC2626"/>
-          <ellipse cx="32" cy="39" rx="11" ry="13" fill="url(#lanternGrad-${idSuffix})"/>
-          <line x1="32" y1="26" x2="32" y2="30" stroke="#111827" stroke-width="2.5"/>
-          <rect x="25" y="29" width="14" height="3" fill="#111827" rx="1"/>
-          <rect x="25" y="48" width="14" height="3" fill="#111827" rx="1"/>
-          <circle cx="32" cy="39" r="5.5" fill="#FBBF24" opacity="0.9"/>
-          <text x="32" y="42" font-size="6.5" font-family="'Inter', sans-serif" font-weight="900" fill="#111827" text-anchor="middle">雷</text>
-          <rect x="0" y="56" width="64" height="8" fill="#E2E8F0"/>
+          <circle cx="32" cy="32" r="32" fill="#FEF2F2" />
+          <path d="M12 24 L52 24 L48 20 L16 20 Z" fill="#DC2626" />
+          <rect x="20" y="24" width="4" height="24" fill="#B91C1C" rx="1" />
+          <rect x="40" y="24" width="4" height="24" fill="#B91C1C" rx="1" />
+          <ellipse cx="32" cy="34" rx="8" ry="10" fill="#EF4444" />
+          <rect x="28" y="23" width="8" height="2" fill="#1E293B" />
+          <rect x="29" y="44" width="6" height="2" fill="#1E293B" />
         </svg>
       `;
     }
 
-    // 2. Hotel Check-in / Rest
-    if (block.category === 'rest') {
+    if (block.id === 'd1-4' || (block.title && (block.title.includes('teamLab') || block.title.includes('Digital')))) {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Hotel Lobby">
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="teamLab Borderless">
+          <circle cx="32" cy="32" r="32" fill="#0F172A" />
           <defs>
-            <linearGradient id="hotelGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#EEF2FF"/>
-              <stop offset="100%" stop-color="#C7D2FE"/>
-            </linearGradient>
+            <radialGradient id="beamGrad-${idSuffix}" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.9" />
+              <stop offset="50%" stop-color="#A855F7" stop-opacity="0.6" />
+              <stop offset="100%" stop-color="#0F172A" stop-opacity="0" />
+            </radialGradient>
           </defs>
-          <rect width="64" height="64" fill="url(#hotelGrad-${idSuffix})"/>
-          <rect x="18" y="16" width="28" height="48" fill="#4338CA" rx="3"/>
-          <rect x="23" y="21" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="36" y="21" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="23" y="30" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="36" y="30" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="23" y="39" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="36" y="39" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <polygon points="16,50 48,50 44,55 20,55" fill="#E8621A"/>
+          <circle cx="32" cy="32" r="22" fill="url(#beamGrad-${idSuffix})" />
+          <circle cx="32" cy="32" r="7" fill="#FFFFFF" opacity="0.9" />
+          <circle cx="20" cy="22" r="2.5" fill="#38BDF8" />
+          <circle cx="44" cy="26" r="2.5" fill="#F472B6" />
+          <circle cx="26" cy="42" r="3" fill="#C084FC" />
         </svg>
       `;
     }
 
-    // 3. Meals & Street Food
     if (block.category === 'meal') {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Street Food & Matcha">
-          <defs>
-            <linearGradient id="mealBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#FEF3C7"/>
-              <stop offset="100%" stop-color="#FDE68A"/>
-            </linearGradient>
-          </defs>
-          <rect width="64" height="64" fill="url(#mealBg-${idSuffix})"/>
-          <ellipse cx="32" cy="42" rx="18" ry="11" fill="#065F46"/>
-          <ellipse cx="32" cy="40" rx="15" ry="8" fill="#10B981"/>
-          <line x1="16" y1="20" x2="48" y2="20" stroke="#78350F" stroke-width="2.5"/>
-          <circle cx="24" cy="20" r="4.5" fill="#F472B6"/>
-          <circle cx="33" cy="20" r="4.5" fill="#FFFFFF"/>
-          <circle cx="42" cy="20" r="4.5" fill="#34D399"/>
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Dining / Market">
+          <circle cx="32" cy="32" r="32" fill="#FEF3C7" />
+          <ellipse cx="32" cy="38" rx="16" ry="7" fill="#F59E0B" opacity="0.4" />
+          <path d="M18 32 C18 42 46 42 46 32 Z" fill="#D97706" />
+          <path d="M22 28 C25 25 27 28 30 25" stroke="#92400E" stroke-width="2" stroke-linecap="round" fill="none" />
+          <path d="M34 28 C37 25 39 28 42 25" stroke="#92400E" stroke-width="2" stroke-linecap="round" fill="none" />
+          <line x1="20" y1="18" x2="44" y2="28" stroke="#78350F" stroke-width="2" stroke-linecap="round" />
         </svg>
       `;
     }
 
-    // 4. Transit / Shinkansen Bullet Train
-    if (block.category === 'transit' || (block.title && block.title.includes('Shinkansen'))) {
+    if (block.category === 'transit') {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Bullet Train">
-          <defs>
-            <linearGradient id="trainBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#E0F2FE"/>
-              <stop offset="100%" stop-color="#BAE6FD"/>
-            </linearGradient>
-            <linearGradient id="trainNose-${idSuffix}" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#FFFFFF"/>
-              <stop offset="100%" stop-color="#F1F5F9"/>
-            </linearGradient>
-          </defs>
-          <rect width="64" height="64" fill="url(#trainBg-${idSuffix})"/>
-          <path d="M12 40 C16 26 32 24 54 24 L54 44 L12 44 Z" fill="url(#trainNose-${idSuffix})"/>
-          <path d="M14 36 C24 33 36 32 54 32 L54 35 C36 35 24 36 14 39 Z" fill="#0284C7"/>
-          <path d="M22 28 C28 26 34 26 38 28 L36 31 C32 30 28 30 24 31 Z" fill="#1E293B"/>
-          <line x1="8" y1="46" x2="56" y2="46" stroke="#64748B" stroke-width="2"/>
-          <line x1="12" y1="49" x2="52" y2="49" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,2"/>
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Bullet Train / Transit">
+          <circle cx="32" cy="32" r="32" fill="#E0F2FE" />
+          <path d="M16 38 L32 20 L48 38 Z" fill="#0284C7" />
+          <rect x="24" y="32" width="16" height="14" rx="2" fill="#0369A1" />
+          <rect x="27" y="35" width="10" height="5" rx="1" fill="#BAE6FD" />
+          <circle cx="28" cy="43" r="1.5" fill="#FFFFFF" />
+          <circle cx="36" cy="43" r="1.5" fill="#FFFFFF" />
         </svg>
       `;
     }
 
-    // 5. Digital Art Museum & Sightseeing
     return `
-      <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Sightseeing Landmark">
-        <defs>
-          <linearGradient id="artBg-${idSuffix}" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#3B82F6"/>
-            <stop offset="100%" stop-color="#8B5CF6"/>
-          </linearGradient>
-        </defs>
-        <rect width="64" height="64" fill="url(#artBg-${idSuffix})"/>
-        <polygon points="32,14 46,32 32,50 18,32" fill="#FFFFFF" opacity="0.85"/>
-        <circle cx="32" cy="32" r="6" fill="#FBBF24"/>
+      <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Hotel / Rest">
+        <circle cx="32" cy="32" r="32" fill="#EEF2FF" />
+        <rect x="18" y="24" width="28" height="24" rx="3" fill="#4F46E5" />
+        <rect x="24" y="28" width="4" height="6" rx="1" fill="#C7D2FE" />
+        <rect x="36" y="28" width="4" height="6" rx="1" fill="#C7D2FE" />
+        <rect x="24" y="38" width="4" height="6" rx="1" fill="#C7D2FE" />
+        <rect x="36" y="38" width="4" height="6" rx="1" fill="#C7D2FE" />
       </svg>
     `;
   }
 
-    function renderTimelineItems(blocks) {
-    if (blocks.length === 0) {
-      return `
-        <div style="text-align: center; padding: 40px 20px; background: var(--color-surface); border-radius: var(--radius-xl); border: 1px dashed var(--color-border);">
-          <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: 12px;">No activities scheduled for this day yet.</p>
-          <button type="button" class="btn btn--primary btn--sm" id="empty-add-btn">Propose First Activity</button>
-        </div>
-      `;
-    }
-
+  function renderTimelineItems(blocks) {
     const categoryMap = {
       activity: {
-        label: 'Activity',
-        badgeLabel: 'Activity',
-        icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>`,
+        label: 'Sightseeing',
+        badgeLabel: 'Sightseeing',
+        icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>`,
       },
       meal: {
-        label: 'Meal',
-        badgeLabel: 'Meal',
-        icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path></svg>`,
+        label: 'Dining',
+        badgeLabel: 'Dining',
+        icon: `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>`,
       },
       transit: {
         label: 'Transit',
@@ -414,6 +419,8 @@ export function createItineraryView() {
       .map((block, index) => {
         const isExpanded = expandedCardIds.has(block.id);
         const buffer = block.transitBuffer;
+        const isCancelled = block.status === 'cancelled';
+        const isReel = block.source === 'reel' || block.reelUrl;
 
         // Formatted times
         const displayStart = formatDisplayTime(block.startTime);
@@ -428,6 +435,9 @@ export function createItineraryView() {
         } else if (block.status === 'tentative') {
           statusClass = 'status-pill-btn--tentative';
           statusLabel = 'Weather Permitting';
+        } else if (isCancelled) {
+          statusClass = 'status-pill-btn--cancelled';
+          statusLabel = 'Free Time / Relax';
         }
 
         const catInfo = categoryMap[block.category] || categoryMap.activity;
@@ -441,27 +451,34 @@ export function createItineraryView() {
         const thread = getThreadById(block.id);
         const threadMsgCount = thread && thread.messages ? thread.messages.length : 0;
 
-        // Status Vector Icon (Consistent across collapsed card & expanded header)
+        // Status Vector Icon
         let statusIconSvg = '';
         if (block.status === 'confirmed') {
           statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
         } else if (block.status === 'tentative') {
-          // Weather Permitting cloud-sun icon
           statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="M20 12h2"/><path d="m19.07 4.93-1.41 1.41"/><path d="M15.947 12.65a4 4 0 0 0-5.925-4.128"/><path d="M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"/></svg>';
+        } else if (isCancelled) {
+          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
         } else {
           statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
         }
 
-        const collapsedStatusLabel = block.status === 'tentative' ? 'Weather' : (block.status === 'confirmed' ? 'Confirmed' : 'Proposed');
+        const collapsedStatusLabel = isCancelled
+          ? 'Free Time'
+          : block.status === 'tentative'
+          ? 'Weather'
+          : block.status === 'confirmed'
+          ? 'Confirmed'
+          : 'Proposed';
 
         let cardContent = '';
 
         if (!isExpanded) {
-          // Collapsed State: Left Meta Column (Times + Status + Category), Body (Flowing Title & Location), Right (Chevron on top, Thread Icon below)
+          // Collapsed State
           cardContent = `
-            <article class="timeline-card timeline-card--collapsed timeline-card--${block.category}">
+            <article class="timeline-card timeline-card--collapsed timeline-card--${block.category} ${isCancelled ? 'timeline-card--cancelled' : ''} ${isReel ? 'timeline-card--has-reel' : ''}">
               <div class="timeline-card__collapsed-split" data-toggle-details="${block.id}" role="button" tabindex="0" aria-expanded="false">
-                <!-- Left Column: Fixed-width Clean Stacked Times with Status & Category Badges Below -->
+                <!-- Left Column: Times with Status & Category Badges -->
                 <div class="timeline-card__time-col">
                   <div class="time-col__times">
                     <span class="time-col__start">${displayStart}</span>
@@ -480,10 +497,24 @@ export function createItineraryView() {
                   </div>
                 </div>
 
-                <!-- Right Column: Dedicated Title Row & Location Row with clean spacing -->
+                <!-- Right Column: Title & Location -->
                 <div class="timeline-card__body-col">
-                  <h3 class="timeline-card__title">${block.title}</h3>
-                  ${block.location ? `
+                  <div class="timeline-card__title-row">
+                    <h3 class="timeline-card__title">${block.title}</h3>
+                    ${
+                      isReel
+                        ? `
+                      <button type="button" class="card-origin-badge card-origin-badge--reel" data-preview-reel-id="${block.id}" title="Watch Reel Preview">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                        <span>Reel Pick</span>
+                      </button>
+                    `
+                        : ''
+                    }
+                  </div>
+                  ${
+                    block.location
+                      ? `
                     <div class="timeline-card__location-row" title="${block.location}">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -491,100 +522,130 @@ export function createItineraryView() {
                       </svg>
                       <span class="timeline-card__location-text">${block.location}</span>
                     </div>
-                  ` : ''}
+                  `
+                      : ''
+                  }
                 </div>
+              </div>
 
-                <!-- Far Right: Chevron Expand Button on Top, Activity Thread Icon Below -->
-                <div class="timeline-card__right-actions">
-                  <button type="button" class="timeline-card__chevron-btn" data-toggle-details="${block.id}" aria-label="Expand details">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="6 9 12 15 18 9"></polyline>
-                    </svg>
-                  </button>
-
-                  <button type="button" class="timeline-card__thread-pill-btn" data-thread-btn="${block.id}" title="Open activity thread" aria-label="Activity thread">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                    </svg>
-                    <span>${threadMsgCount}</span>
-                  </button>
-                </div>
+              <!-- Right Edge Controls -->
+              <div class="timeline-card__collapsed-actions">
+                <button type="button" class="btn-card-chevron" data-toggle-details="${block.id}" aria-label="Expand details">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+                <button type="button" class="btn-thread-badge" data-thread-btn="${block.id}" title="Open Activity Discussion">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                  </svg>
+                  ${threadMsgCount > 0 ? `<span class="thread-badge-count">${threadMsgCount}</span>` : ''}
+                </button>
               </div>
             </article>
           `;
         } else {
-          // OPTION A: Expanded State (Integrated Full-Width Card):
-          // Full-width card with no awkward left strip.
-          // Top row: time range, category pill, confirmed status badge, and chevron.
-          // Showcase row: Venue artwork circle, title, full un-truncated location, origin badge.
-          // Single-line dress code, deduplicated checklist, fallback card, and bottom actions.
+          // Expanded State
           cardContent = `
-            <article class="timeline-card timeline-card--expanded timeline-card--${block.category}">
-              <div class="timeline-card__expanded-inner">
-                <!-- Top Row: Time on Top, Category & Status Below Time, Chevron on Top-Right -->
-                <div class="timeline-card__expanded-header">
-                  <div class="timeline-card__expanded-header-left">
-                    <span class="timeline-card__time-pill">${displayStart} – ${displayEnd}</span>
+            <article class="timeline-card timeline-card--expanded timeline-card--${block.category} ${isCancelled ? 'timeline-card--cancelled' : ''} ${isReel ? 'timeline-card--has-reel' : ''}">
+              <div class="timeline-card__expanded-split">
+                <!-- Left Details Column (260px) -->
+                <div class="timeline-card__split-left">
+                  <!-- Header: Badges & Shift Controls -->
+                  <div class="split-left__header">
                     <div class="timeline-card__expanded-badges">
-                      <!-- Status Badge FIRST with consistent statusIconSvg -->
-                      <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Click to update status lifecycle">
+                      <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Tap to change status lifecycle">
                         ${statusIconSvg}
                         <span>${statusLabel}</span>
                       </button>
-                      <!-- Category Pill SECOND -->
                       <span class="timeline-card__category-badge timeline-card__category-badge--${block.category}">
                         ${catInfo.icon}
                         <span>${catInfo.label}</span>
                       </span>
                     </div>
+
+                    <!-- Keyboard/Accessible Shift Buttons -->
+                    <div class="split-left__shift-controls">
+                      <button type="button" class="shift-btn shift-up-btn" data-id="${block.id}" title="Shift event earlier" ${index === 0 ? 'disabled' : ''}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+                      </button>
+                      <button type="button" class="shift-btn shift-down-btn" data-id="${block.id}" title="Shift event later" ${index === blocks.length - 1 ? 'disabled' : ''}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                      </button>
+                      <button type="button" class="btn-card-chevron btn-card-chevron--expanded" data-toggle-details="${block.id}" aria-label="Collapse details">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="18 15 12 9 6 15"></polyline>
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
-                  <button type="button" class="timeline-card__chevron-btn timeline-card__chevron-btn--active" data-toggle-details="${block.id}" aria-label="Collapse details">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="18 15 12 9 6 15"></polyline>
-                    </svg>
-                  </button>
-                </div>
+                  <!-- Title, Reel Badge & Location -->
+                  <div class="split-left__heading">
+                    <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
+                      <h3 class="split-left__title">${block.title}</h3>
+                      ${
+                        isReel
+                          ? `
+                        <button type="button" class="card-origin-badge card-origin-badge--reel" data-preview-reel-id="${block.id}" title="Watch Reel Preview">
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                          <span>Watch Reel</span>
+                        </button>
+                      `
+                          : ''
+                      }
+                    </div>
+                    ${
+                      block.location
+                        ? `
+                      <div class="split-left__location" title="${block.location}">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                          <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        <span>${block.location}</span>
+                      </div>
+                    `
+                        : ''
+                    }
+                  </div>
 
-                <!-- Venue Showcase Row: Full Title & Complete Location -->
-                <div class="timeline-card__showcase-row">
-                  <div class="timeline-card__showcase-info">
-                    <h3 class="timeline-card__title timeline-card__title--expanded">${block.title}</h3>
-                    <div class="detail-panel__location">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                        <circle cx="12" cy="10" r="3"></circle>
-                      </svg>
-                      <span>${block.location}</span>
+                  <!-- Metadata Strip: Time, Transit & Dress Code -->
+                  <div class="split-left__meta-strip">
+                    <div class="meta-strip__item">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <span>${displayStart} – ${displayEnd}</span>
                     </div>
 
                     ${
-                      block.source === 'wishlist'
-                        ? `<div class="card-origin-badge card-origin-badge--wishlist">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                            <span>Wishlist Anchor (${block.sourceVotes || 4} votes)</span>
-                          </div>`
-                        : block.source === 'reel'
-                        ? `<div class="card-origin-badge card-origin-badge--reel">
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                            <span>From Social Reel</span>
-                          </div>`
+                      block.transitToNextMinutes > 0
+                        ? `
+                      <div class="meta-strip__item">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path></svg>
+                        <span>${block.transitToNextMinutes}m transit (${block.transitMode || 'Metro'})</span>
+                      </div>
+                    `
+                        : ''
+                    }
+
+                    ${
+                      block.dressCode
+                        ? `
+                      <div class="meta-strip__item">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
+                        <span>${block.dressCode}</span>
+                      </div>
+                    `
                         : ''
                     }
                   </div>
                 </div>
 
-                <!-- Structured Details: Single-line Dress Code, Requirements Checklist, Contingency -->
-                <div class="timeline-card__details-content">
+                <!-- Right Detail Panel (Collapsible content) -->
+                <div class="timeline-card__split-right">
                   ${
-                    block.dressCode
-                      ? `<div class="detail-panel__note-tag">
-                          <span class="detail-panel__note-label">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"></path></svg>
-                            Dress Code:
-                          </span>
-                          <span>${block.dressCode}</span>
-                        </div>`
+                    block.notes
+                      ? `<p class="detail-panel__notes">${block.notes}</p>`
                       : ''
                   }
 
@@ -656,13 +717,25 @@ export function createItineraryView() {
                       : ''
                   }
 
-                  <!-- Bottom Action Row: Activity Chat Thread + Drag Grip -->
+                  <!-- Expanded Action Row: Thread, Cancel Event, Delete, and Drag Handle -->
                   <div class="detail-panel__bottom-row">
                     <button type="button" class="btn-thread-badge btn-thread-badge--inline" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                       </svg>
-                      <span>Activity Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
+                      <span>Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
+                    </button>
+
+                    <!-- Cancel Event (Day-Of Execution) -->
+                    <button type="button" class="btn-card-action btn-card-action--cancel" data-cancel-block="${block.id}" title="Cancel event (Day-Of Contingency)">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                      <span>Cancel</span>
+                    </button>
+
+                    <!-- Delete Block (Planning Phase) -->
+                    <button type="button" class="btn-card-action btn-card-action--delete" data-delete-block="${block.id}" title="Delete block from schedule">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      <span>Delete</span>
                     </button>
 
                     <div class="drag-grip drag-grip--inline" data-id="${block.id}" title="Hold and drag to reorder schedule" aria-label="Drag handle">
@@ -679,123 +752,208 @@ export function createItineraryView() {
           `;
         }
 
-        const isLast = index === blocks.length - 1;
+        const isLastItem = index === blocks.length - 1;
+
         return `
-        <div 
-          class="timeline-item-wrapper"  
-          data-block-id="${block.id}" 
-          data-index="${index}"
-          draggable="true"
-        >
-          <!-- Illustrated Venue SVG Milestone Node on Vertical Spine -->
-          <div class="timeline-node-pin" title="${block.title}">
-            ${getVenueThumbnail(block)}
-          </div>
-
-          <!-- Continuous Vertical Spine Segment (Terminates strictly at the final circle node) -->
-          ${!isLast ? '<div class="timeline-spine-connector" aria-hidden="true"></div>' : ''}
-
-          <!-- Timeline Card (Collapsed or Expanded) -->
-          ${cardContent}
-
-          <!-- Thin vertical buffer line beneath the card -->
-          ${
-            buffer
-              ? `
-            <div class="timeline-buffer-connector">
-              <div class="timeline-buffer-line"></div>
-              <div class="timeline-buffer-tag ${buffer.isDeficit ? 'timeline-buffer-tag--warning' : ''}">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                <span>${buffer.requiredMinutes}m ${buffer.transitMode || 'Transit'}</span>
-                ${buffer.isDeficit ? `<span class="buffer-tight-label">• Tight Buffer</span>` : ''}
-              </div>
+          <div 
+            class="timeline-item-wrapper" 
+            data-block-id="${block.id}" 
+            draggable="true"
+          >
+            <!-- Timeline Pin & Illustrated SVG Venue Pin -->
+            <div class="timeline-node-pin" data-category="${block.category}">
+              ${getVenueThumbnail(block)}
             </div>
-          `
-              : ''
-          }
-        </div>
-      `;
+
+            <!-- Vertical Spine Connector (terminates at final node) -->
+            ${!isLastItem ? '<div class="timeline-spine-connector" aria-hidden="true"></div>' : ''}
+
+            <!-- Card Body -->
+            ${cardContent}
+
+            <!-- Transit Buffer Connector Pill -->
+            ${
+              buffer
+                ? `
+              <div class="timeline-transit-connector ${buffer.isDeficit ? 'timeline-transit-connector--warning' : ''}">
+                <div class="transit-connector-pill">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span>${formatDuration(buffer.actualMinutes)} transit buffer (${formatDuration(buffer.requiredMinutes)} needed)</span>
+                </div>
+              </div>
+            `
+                : ''
+            }
+          </div>
+        `;
       })
       .join('');
   }
 
-  function attachEvents(currentRawBlocks) {
-    // 0. Enable horizontal drag scroll on Day selector
-    enableDragScroll(container.querySelector('.day-chip-row'));
-
-    // 1. Day Selector Switching
-    container.querySelectorAll('.day-chip').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        currentDay = parseInt(btn.getAttribute('data-day'), 10) || 1;
-        render();
-      });
-    });
-
-    // 2. Propose Block Buttons
-    const addBtn = container.querySelector('#propose-block-btn');
-    const emptyAddBtn = container.querySelector('#empty-add-btn');
-    if (addBtn) addBtn.addEventListener('click', () => addBlockModal.open(currentDay));
-    if (emptyAddBtn) emptyAddBtn.addEventListener('click', () => addBlockModal.open(currentDay));
-
-    // 3. Reset Button
-    const resetBtn = container.querySelector('#reset-itinerary-btn');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        if (confirm('Reset itinerary back to default schedule?')) {
-          itineraryList = resetItineraryData();
-          render();
-          showScheduleToast('Schedule reset to default.');
+  function attachEvents(rawBlocks) {
+    // 1. Open Sidebar
+    const openSidebarBtn = container.querySelector('#btn-open-sidebar');
+    if (openSidebarBtn) {
+      openSidebarBtn.addEventListener('click', () => {
+        if (window.TravelApp && window.TravelApp.sidebar) {
+          window.TravelApp.sidebar.open();
         }
       });
     }
 
-    // 4. Status Lifecycle Pill Click
+    // 2. Day selector chips
+    container.querySelectorAll('.day-chip[data-day]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const day = parseInt(btn.getAttribute('data-day'), 10);
+        if (day && day !== currentDay) {
+          currentDay = day;
+          render();
+        }
+      });
+    });
+
+    // 2B. Add Day Button
+    const addDayBtn = container.querySelector('#btn-add-day');
+    if (addDayBtn) {
+      addDayBtn.addEventListener('click', () => {
+        const newDay = addItineraryDay();
+        currentDay = newDay;
+        render();
+        showScheduleToast(`Added Day ${newDay} to itinerary!`);
+      });
+    }
+
+    // 2C. Empty Day Actions
+    const emptyPropose = container.querySelector('#btn-empty-propose');
+    if (emptyPropose) {
+      emptyPropose.addEventListener('click', () => {
+        if (addBlockModal) addBlockModal.open(currentDay);
+      });
+    }
+
+    const emptyRemove = container.querySelector('#btn-empty-remove-day');
+    if (emptyRemove) {
+      emptyRemove.addEventListener('click', () => {
+        const remaining = removeItineraryDay(currentDay);
+        currentDay = Math.min(currentDay, remaining);
+        render();
+        showScheduleToast('Day removed from itinerary.');
+      });
+    }
+
+    // 2D. Live HUD Trigger
+    const liveHudBtn = container.querySelector('#btn-open-live-hud');
+    if (liveHudBtn) {
+      liveHudBtn.addEventListener('click', () => {
+        setActiveTab('dashboard');
+      });
+    }
+
+    // 3. Propose Activity Button
+    const proposeBtn = container.querySelector('#propose-block-btn');
+    if (proposeBtn && addBlockModal) {
+      proposeBtn.addEventListener('click', () => {
+        addBlockModal.open(currentDay);
+      });
+    }
+
+    // Reset Itinerary Button
+    const resetBtn = container.querySelector('#reset-itinerary-btn');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        if (confirm('Reset entire itinerary back to initial 3-day defaults?')) {
+          itineraryList = resetItineraryData();
+          currentDay = 1;
+          render();
+          showScheduleToast('Itinerary reset to defaults');
+        }
+      });
+    }
+
+    // 4. Status Lifecycle Modal Trigger
     container.querySelectorAll('[data-status-btn]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         const blockId = btn.getAttribute('data-status-btn');
         const block = itineraryList.find((b) => b.id === blockId);
-        if (block) statusModal.open(block);
-      });
-    });
-
-    // 4d. 1-Tap Swap Active Block with Contingency Backup
-    container.querySelectorAll('[data-swap-fallback]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const blockId = btn.getAttribute('data-swap-fallback');
-        const block = itineraryList.find((b) => b.id === blockId);
-        if (block && block.fallback) {
-          const originalTitle = block.title;
-          block.title = block.fallback;
-          block.fallback = originalTitle;
-          saveItineraryData(itineraryList);
-          render();
-          showScheduleToast(`Swapped to backup: ${block.title}`);
+        if (block && statusModal) {
+          statusModal.open(block);
         }
       });
     });
 
-    // 4c. Toggle Interactive Checklist Items
+    // 4B. Card Cancel Button (Day-of execution)
+    container.querySelectorAll('[data-cancel-block]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-cancel-block');
+        const block = itineraryList.find((b) => b.id === blockId);
+        if (block && statusModal) {
+          statusModal.open(block);
+        }
+      });
+    });
+
+    // 4C. Card Delete Button (Planning phase)
+    container.querySelectorAll('[data-delete-block]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-delete-block');
+        if (blockId) {
+          itineraryList = deleteItineraryBlock(blockId);
+          render();
+          showScheduleToast('Activity removed from schedule');
+        }
+      });
+    });
+
+    // 4D. Reel Preview Modal Trigger
+    container.querySelectorAll('[data-preview-reel-id]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-preview-reel-id');
+        const block = itineraryList.find((b) => b.id === blockId) || {};
+        openReelPreviewModal(block);
+      });
+    });
+
+    // Contingency Swap Button
+    container.querySelectorAll('[data-swap-fallback]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-swap-fallback');
+        swapFallbackEvent(blockId);
+      });
+    });
+
+    // Requirements Checklist Item Toggle
     container.querySelectorAll('[data-req-toggle]').forEach((item) => {
-      item.addEventListener('click', (e) => {
+      const toggle = (e) => {
         e.stopPropagation();
         const blockId = item.getAttribute('data-req-toggle');
-        const idx = parseInt(item.getAttribute('data-req-idx'), 10);
+        const idx = item.getAttribute('data-req-idx');
         const key = `${blockId}-${idx}`;
+
         if (checkedRequirements.has(key)) {
           checkedRequirements.delete(key);
         } else {
           checkedRequirements.add(key);
         }
         render();
+      };
+      item.addEventListener('click', toggle);
+      item.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggle(e);
+        }
       });
     });
 
-    // 4b. Open Per-Activity Chat Thread
+    // Discussion Thread Button
     container.querySelectorAll('[data-thread-btn]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -805,7 +963,7 @@ export function createItineraryView() {
       });
     });
 
-    // 5. Expand / Collapse Card (Toggle between Collapsed and Horizontal Split Expanded state)
+    // Expand / Collapse Card
     container.querySelectorAll('[data-toggle-details]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -834,7 +992,7 @@ export function createItineraryView() {
       });
     });
 
-    // 6. Accessible Shift Up / Shift Down Buttons (With Sequential Auto-Recalculation)
+    // Shift Up / Down
     container.querySelectorAll('.shift-up-btn').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -851,7 +1009,7 @@ export function createItineraryView() {
       });
     });
 
-    // 7. Drag-and-Drop Reordering Engine with Auto-Scroll & Time Recalculation
+    // Drag-and-Drop
     attachDragAndDropHandlers();
   }
 
@@ -863,16 +1021,14 @@ export function createItineraryView() {
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= rawBlocks.length) return;
 
-    // Swap items
     const temp = rawBlocks[index];
     rawBlocks[index] = rawBlocks[targetIndex];
     rawBlocks[targetIndex] = temp;
 
-    // Automatically recalculate times sequentially to keep schedule strictly chronological
     rawBlocks = recalculateDaySchedule(rawBlocks);
     setDayBlocks(rawBlocks);
     render();
-    showScheduleToast('Schedule updated · Times recalculated');
+    showScheduleToast('Schedule updated • Times recalculated');
   }
 
   function attachDragAndDropHandlers() {
@@ -888,7 +1044,7 @@ export function createItineraryView() {
       });
     }
 
-    // ── Desktop Drag & Drop (HTML5) with Viewport Auto-Scroll ──
+    // Desktop Drag & Drop
     const wrappers = feed.querySelectorAll('.timeline-item-wrapper');
 
     wrappers.forEach((wrapper) => {
@@ -911,7 +1067,6 @@ export function createItineraryView() {
 
       wrapper.addEventListener('dragover', (e) => {
         e.preventDefault();
-        // Auto-scroll when mouse drags near top/bottom screen edges
         updateAutoScroll(e.clientY);
 
         if (!draggedWrapper || draggedWrapper === wrapper) return;
@@ -940,14 +1095,13 @@ export function createItineraryView() {
       });
     });
 
-    // Window dragover listener to ensure auto-scroll continues if cursor moves beyond feed
     window.addEventListener('dragover', (e) => {
       if (draggedWrapper) {
         updateAutoScroll(e.clientY);
       }
     });
 
-    // ── Mobile Touch Drag Gesture on .drag-grip with Viewport Auto-Scroll ──
+    // Mobile Touch Drag
     feed.querySelectorAll('.drag-grip').forEach((grip) => {
       let targetWrapper = null;
       let isTouchDragging = false;
@@ -970,11 +1124,8 @@ export function createItineraryView() {
         (e) => {
           if (!isTouchDragging || !targetWrapper) return;
           const touch = e.touches[0];
-
-          // Auto-scroll when finger drags near top/bottom screen edges
           updateAutoScroll(touch.clientY);
 
-          // Find element under finger
           const elemBelow = document.elementFromPoint(touch.clientX, touch.clientY);
           const hoverWrapper = elemBelow ? elemBelow.closest('.timeline-item-wrapper') : null;
 
@@ -1033,13 +1184,112 @@ export function createItineraryView() {
       const sourceBlock = rawBlocks[fromIndex];
       const targetBlock = rawBlocks[toIndex];
 
-      // Directly exchange time slots while preserving activity durations
       rawBlocks = swapBlockTimeSlots(rawBlocks, sourceId, targetId);
       setDayBlocks(rawBlocks);
       clearOverClasses();
       render();
-      showScheduleToast(`Swapped time slots: ${sourceBlock.title} ⇄ ${targetBlock.title}`);
+      showScheduleToast(`Swapped: ${sourceBlock.title} ⇄ ${targetBlock.title}`);
     }
+  }
+
+  function swapFallbackEvent(blockId) {
+    itineraryList = itineraryList.map((b) => {
+      if (b.id === blockId && b.fallback) {
+        const oldTitle = b.title;
+        const newTitle = b.fallback;
+        return {
+          ...b,
+          title: newTitle,
+          fallback: oldTitle,
+          fallbackReason: 'general',
+          notes: (b.notes ? b.notes + ' ' : '') + `[Swapped contingency on ${new Date().toLocaleDateString()}]`,
+        };
+      }
+      return b;
+    });
+
+    saveItineraryData(itineraryList);
+    render();
+    showScheduleToast('Swapped to backup option');
+  }
+
+  function openReelPreviewModal(block) {
+    let modal = document.querySelector('#reel-preview-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'reel-preview-modal';
+      modal.className = 'itinerary-modal-backdrop';
+      document.body.appendChild(modal);
+    }
+
+    const creator = block.reelCreator || '@tokyofoodie';
+    const spotTitle = block.title || 'Shibuya Sky Observatory';
+
+    modal.innerHTML = `
+      <div class="itinerary-modal-sheet reel-preview-sheet">
+        <div class="itinerary-modal-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div class="reel-preview-avatar">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+            </div>
+            <div>
+              <strong style="font-size: 13px; color: #0F172A;">${creator}</strong>
+              <div style="font-size: 11px; color: #64748B;">Trending Travel Reel</div>
+            </div>
+          </div>
+          <button type="button" class="drawer-close-btn" id="btn-close-reel-modal" aria-label="Close">✕</button>
+        </div>
+
+        <div class="reel-preview-body">
+          <div class="reel-mockup-frame">
+            <div class="reel-mockup-overlay">
+              <div class="reel-play-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              </div>
+              <div class="reel-mockup-caption">
+                <span class="reel-sound-tag">♫ Tokyo Beat • Trending Sound</span>
+                <h4 style="margin: 4px 0 2px; font-size: 13px; color: #FFFFFF;">Top 5 Secret Alley Spots & Rooftop Views</h4>
+                <p style="margin: 0; font-size: 11px; opacity: 0.85;">Viral Reel • 4.2M Views • AI extracted 3 locations</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="reel-detected-spots">
+            <span class="reel-detected-title">AI Extracted Spots:</span>
+            <div class="reel-spots-list">
+              <div class="reel-spot-tag reel-spot-tag--scheduled">
+                <span class="reel-spot-bullet">✓</span>
+                <span><strong>${spotTitle}</strong> (Scheduled on Day ${block.day || currentDay})</span>
+              </div>
+              <div class="reel-spot-tag">
+                <span class="reel-spot-bullet">+</span>
+                <span>Uobei Conveyor Belt Sushi (Saved to Wishlist)</span>
+              </div>
+              <div class="reel-spot-tag">
+                <span class="reel-spot-bullet">+</span>
+                <span>Nonbei Yokocho Micro-Izakayas (Saved to Wishlist)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="reel-preview-footer">
+          <button type="button" class="btn btn--primary" style="width: 100%;" id="btn-dismiss-reel-modal">Done</button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add('is-open');
+
+    const close = () => modal.classList.remove('is-open');
+    const closeBtn = modal.querySelector('#btn-close-reel-modal');
+    const dismissBtn = modal.querySelector('#btn-dismiss-reel-modal');
+
+    if (closeBtn) closeBtn.onclick = close;
+    if (dismissBtn) dismissBtn.onclick = close;
+    modal.onclick = (e) => {
+      if (e.target === modal) close();
+    };
   }
 
   function openQuickThreadDrawer(blockId) {
@@ -1119,49 +1369,61 @@ export function createItineraryView() {
         </div>
       `;
 
-      backdrop.querySelector('#btn-close-qt').addEventListener('click', closeDrawer);
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) closeDrawer();
-      });
-
       const input = backdrop.querySelector('#qt-input');
       const sendBtn = backdrop.querySelector('#btn-qt-send');
+      const closeBtn = backdrop.querySelector('#btn-close-qt');
+      const goFullBtn = backdrop.querySelector('#btn-qt-go-full');
 
-      function sendMsg() {
-        const txt = input.value.trim();
-        if (!txt) return;
-        addMessageToThread(blockId, txt);
-        thread.messages = (getThreadById(blockId) || thread).messages;
-        renderThreadContent();
+      if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+
+      if (goFullBtn) {
+        goFullBtn.addEventListener('click', () => {
+          closeDrawer();
+          setActiveTab('chat');
+        });
       }
 
-      sendBtn.addEventListener('click', sendMsg);
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          sendMsg();
-        }
-      });
+      const handleSend = () => {
+        const text = input.value.trim();
+        if (!text) return;
+        addMessageToThread(blockId, {
+          sender: 'You',
+          text,
+          time: 'Just now',
+          isCurrentUser: true,
+        });
+        input.value = '';
+        renderThreadContent();
+        render(); // Update count badge on card
+      };
 
-      backdrop.querySelector('#btn-qt-go-full').addEventListener('click', () => {
-        closeDrawer();
-        sessionStorage.setItem('travel_pending_thread', blockId);
-        setActiveTab('chat');
-      });
+      if (sendBtn) sendBtn.addEventListener('click', handleSend);
+      if (input) {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') handleSend();
+        });
+      }
     }
 
     renderThreadContent();
     document.body.appendChild(backdrop);
-    requestAnimationFrame(() => {
-      backdrop.classList.add('is-open');
+    requestAnimationFrame(() => backdrop.classList.add('is-open'));
+
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeDrawer();
     });
   }
 
-  // Initial setup and render
+  // Initialize and return
   initModals();
   render();
 
   return {
     element: container,
+    render,
+    setDay: (day) => {
+      currentDay = day;
+      render();
+    },
   };
 }

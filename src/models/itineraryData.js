@@ -1,10 +1,12 @@
 /**
  * Itinerary Data Model & Persistence
- * Stores schedule blocks for Days 1, 2, and 3 with category,
- * status lifecycle, requirements, and required transit travel times.
+ * Stores schedule blocks for dynamic days with category,
+ * status lifecycle, requirements, required transit travel times,
+ * and day-of contingency cancellation & reflow logic.
  */
 
-import { timeToMinutes, minutesTo24 } from '../utils/bufferEngine.js';
+import { timeToMinutes, minutesTo24, recalculateDaySchedule } from '../utils/bufferEngine.js';
+import { getTripSettings, saveTripSettings } from './tripSettings.js';
 
 export const DEFAULT_ITINERARY = [
   // ── Day 1 (Tokyo Arrival & Ancient Taito) ──
@@ -14,7 +16,7 @@ export const DEFAULT_ITINERARY = [
     startTime: '09:00',
     endTime: '10:15',
     category: 'rest', // 'activity' | 'meal' | 'transit' | 'rest'
-    status: 'confirmed', // 'proposed' | 'confirmed' | 'tentative'
+    status: 'confirmed', // 'proposed' | 'confirmed' | 'tentative' | 'cancelled'
     title: 'Hotel Check-In & Luggage Drop',
     location: 'Shinjuku Granbell Hotel',
     transitToNextMinutes: 30, // Travel time to next stop
@@ -267,6 +269,105 @@ export function addItineraryBlock(block) {
 }
 
 /**
+ * Delete a block directly (Planning phase action)
+ */
+export function deleteItineraryBlock(blockId) {
+  let list = getItineraryData();
+  list = list.filter((b) => b.id !== blockId);
+  saveItineraryData(list);
+  return list;
+}
+
+/**
+ * Day-of Event Cancellation with dual resolution:
+ * 1. 'free-time': Keep block on timeline with strikethrough styling as free time / relax pocket.
+ * 2. 'reflow': Remove block and recalculate schedule chronologically for subsequent events.
+ */
+export function cancelItineraryBlock(blockId, mode = 'free-time') {
+  let list = getItineraryData();
+  const target = list.find((b) => b.id === blockId);
+  if (!target) return list;
+
+  if (mode === 'free-time') {
+    list = list.map((b) => {
+      if (b.id === blockId) {
+        return {
+          ...b,
+          status: 'cancelled',
+          title: `Free Time / Relax Pocket`,
+          notes: `Slot held open after cancellation of: ${b.title}. Keeping future reservations intact.`,
+          fallback: null,
+          requirements: [],
+        };
+      }
+      return b;
+    });
+    saveItineraryData(list);
+    return list;
+  } else if (mode === 'reflow') {
+    const dayNumber = target.day;
+    // Remove the target block
+    list = list.filter((b) => b.id !== blockId);
+    // Recalculate schedule for remaining blocks on that day
+    const dayBlocks = list.filter((b) => b.day === dayNumber);
+    const otherDays = list.filter((b) => b.day !== dayNumber);
+    const recomputed = recalculateDaySchedule(dayBlocks);
+    list = [...otherDays, ...recomputed];
+    saveItineraryData(list);
+    return list;
+  }
+  return list;
+}
+
+/**
+ * Get all available trip day numbers dynamically.
+ */
+export function getItineraryDayList() {
+  const items = getItineraryData();
+  const settings = getTripSettings();
+  const maxDayFromItems = items.reduce((max, b) => Math.max(max, b.day || 1), 1);
+  const targetDays = Math.max(settings.totalDays || 3, maxDayFromItems);
+
+  const days = [];
+  for (let d = 1; d <= targetDays; d++) {
+    days.push(d);
+  }
+  return days;
+}
+
+/**
+ * Add a new day to the trip
+ */
+export function addItineraryDay() {
+  const settings = getTripSettings();
+  const nextTotal = (settings.totalDays || 3) + 1;
+  saveTripSettings({ totalDays: nextTotal });
+  return nextTotal;
+}
+
+/**
+ * Remove an empty day from the trip
+ */
+export function removeItineraryDay(dayNumber) {
+  let list = getItineraryData();
+  // Remove any blocks on this day
+  list = list.filter((b) => b.day !== dayNumber);
+  // Re-index remaining days higher than dayNumber
+  list = list.map((b) => {
+    if (b.day > dayNumber) {
+      return { ...b, day: b.day - 1 };
+    }
+    return b;
+  });
+  saveItineraryData(list);
+
+  const settings = getTripSettings();
+  const nextTotal = Math.max(1, (settings.totalDays || 3) - 1);
+  saveTripSettings({ totalDays: nextTotal });
+  return nextTotal;
+}
+
+/**
  * Apply automated AI schedule reshuffle
  */
 export function applyReshuffle(strategy = 'rain-delay') {
@@ -323,4 +424,3 @@ export function applyReshuffle(strategy = 'rain-delay') {
   saveItineraryData(list);
   return list;
 }
-

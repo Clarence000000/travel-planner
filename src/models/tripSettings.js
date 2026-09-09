@@ -1,0 +1,143 @@
+/**
+ * Trip Settings & Appearance Data Model
+ * Manages destination, custom date range, total days, trip cover image,
+ * and user travel preferences (pace, vibe) persisted in localStorage.
+ */
+
+const STORAGE_KEY = 'travel_planner_trip_settings_v1';
+
+export const PRESET_COVERS = [
+  {
+    id: 'tokyo-neon',
+    name: 'Tokyo Neon Night',
+    url: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
+    thumb: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=300&q=80',
+  },
+  {
+    id: 'kyoto-bamboo',
+    name: 'Kyoto Bamboo Grove',
+    url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
+    thumb: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=300&q=80',
+  },
+  {
+    id: 'fuji-sunrise',
+    name: 'Mount Fuji Sunrise',
+    url: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=1200&q=80',
+    thumb: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=300&q=80',
+  },
+  {
+    id: 'editorial-warm',
+    name: 'Editorial Minimalist',
+    url: './src/assets/hero-banner.jpg',
+    thumb: './src/assets/hero-banner.jpg',
+  },
+];
+
+const DEFAULT_SETTINGS = {
+  title: 'Tokyo Expedition',
+  destination: 'Tokyo & Kyoto, Japan',
+  startDate: '2026-07-14',
+  endDate: '2026-07-16',
+  totalDays: 3,
+  coverImage: './src/assets/hero-banner.jpg',
+  pace: 'balanced', // 'chill' | 'balanced' | 'turbo'
+  vibe: 'food', // 'food' | 'culture' | 'modern' | 'scenic'
+};
+
+const listeners = new Set();
+
+/**
+ * Calculate the number of days between two YYYY-MM-DD dates inclusive.
+ */
+export function calculateDaysBetween(startDateStr, endDateStr) {
+  if (!startDateStr || !endDateStr) return 3;
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+  const diffTime = end.getTime() - start.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+  return Math.max(1, isNaN(diffDays) ? 3 : diffDays);
+}
+
+/**
+ * Format date range nicely (e.g. "July 14 – 16, 2026 • 3 Days")
+ */
+export function formatDateRange(startDateStr, endDateStr, totalDays) {
+  try {
+    const s = new Date(startDateStr);
+    const e = new Date(endDateStr);
+    const sMonth = s.toLocaleString('default', { month: 'short' });
+    const eMonth = e.toLocaleString('default', { month: 'short' });
+    const sDay = s.getDate();
+    const eDay = e.getDate();
+    const year = s.getFullYear();
+
+    const range = sMonth === eMonth
+      ? `${sMonth} ${sDay} – ${eDay}, ${year}`
+      : `${sMonth} ${sDay} – ${eMonth} ${eDay}, ${year}`;
+    return `${range} • ${totalDays} ${totalDays === 1 ? 'Day' : 'Days'}`;
+  } catch (err) {
+    return `3 Days`;
+  }
+}
+
+export function getTripSettings() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+    }
+  } catch (e) {
+    console.warn('[TripSettings] Failed to read trip settings:', e);
+  }
+  return { ...DEFAULT_SETTINGS };
+}
+
+export function saveTripSettings(updates) {
+  const current = getTripSettings();
+  const next = { ...current, ...updates };
+
+  // Recompute totalDays if dates were updated
+  if (updates.startDate || updates.endDate) {
+    next.totalDays = calculateDaysBetween(next.startDate, next.endDate);
+  }
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch (e) {
+    console.error('[TripSettings] Error saving settings:', e);
+  }
+
+  notifyListeners(next);
+  applyCoverToDom(next.coverImage);
+  return next;
+}
+
+export function updateTripCover(coverUrl) {
+  return saveTripSettings({ coverImage: coverUrl });
+}
+
+export function onTripSettingsChange(callback) {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+}
+
+function notifyListeners(settings) {
+  listeners.forEach((fn) => {
+    try {
+      fn(settings);
+    } catch (e) {
+      console.error('[TripSettings] Listener error:', e);
+    }
+  });
+}
+
+/**
+ * Sync cover image across all banner elements currently in the DOM
+ */
+export function applyCoverToDom(coverUrl) {
+  if (!coverUrl) return;
+  const banners = document.querySelectorAll('.view-banner, .cat-header__banner');
+  banners.forEach((b) => {
+    b.style.backgroundImage = `url('${coverUrl}')`;
+  });
+}
