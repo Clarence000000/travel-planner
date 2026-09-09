@@ -1417,85 +1417,81 @@
   margin: 0;
 }
 
-/* ──────────────── Transit Buffer Connector ──────────────── */
+/* ──────────────── Transit Buffer Connector & Interactive Hover States ──────────────── */
 
+.timeline-transit-connector,
 .transit-connector {
-  margin: 6px 0 6px 12px;
-  padding: 7px 12px;
-  border-left: 2px dashed var(--color-border);
+  position: relative;
+  margin: 6px 0 8px 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border-radius: 0 var(--radius-md) var(--radius-md) 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-  transition: all var(--transition-fast);
+  transition: all 180ms ease;
 }
 
-.transit-connector__info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
-}
-
-.transit-connector__info svg {
-  flex-shrink: 0;
-}
-
-.transit-connector__badge {
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  white-space: nowrap;
-}
-
-.transit-mode-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Safe Buffer Badge */
-.transit-safe-badge {
-  font-size: 10px;
-  font-weight: var(--font-semibold);
-  color: var(--color-secondary);
-  background-color: var(--color-secondary-light);
-  padding: 2px 7px;
-  border-radius: var(--radius-pill);
+.transit-connector-pill,
+.timeline-buffer-tag {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  white-space: nowrap;
-  flex-shrink: 0;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  font-size: 11px;
+  font-weight: 600;
+  color: #475569;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04), inset 0 1px 0.5px #FFFFFF;
+  cursor: pointer;
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
 }
 
-/* Transit Buffer Warning State */
-.transit-connector--warning {
-  border-left: 3px solid #DC2626;
-  background-color: #FEF2F2;
+.transit-connector-pill:hover,
+.timeline-buffer-tag:hover {
+  background: #FFFFFF;
+  border-color: rgba(37, 99, 235, 0.45);
+  color: #1E3A8A;
+  transform: translateX(3px) scale(1.02);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.14), inset 0 1px 0.5px #FFFFFF;
+}
+
+.transit-connector-pill svg,
+.timeline-buffer-tag svg {
+  flex-shrink: 0;
+  color: #2563EB;
+  stroke: #2563EB;
+  transition: transform 180ms ease;
+}
+
+.transit-connector-pill:hover svg,
+.timeline-buffer-tag:hover svg {
+  transform: rotate(15deg);
+}
+
+/* Transit Buffer Warning / Tight Window State */
+.timeline-transit-connector--warning .transit-connector-pill,
+.timeline-buffer-tag--warning {
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.95) 0%, rgba(254, 226, 226, 0.88) 100%);
+  border-color: rgba(239, 68, 68, 0.45);
   color: #991B1B;
-  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.15);
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.12), inset 0 1px 0.5px #FFFFFF;
 }
 
-.transit-connector--warning .transit-connector__badge {
+.timeline-transit-connector--warning .transit-connector-pill svg,
+.timeline-buffer-tag--warning svg {
   color: #DC2626;
+  stroke: #DC2626;
 }
 
-.transit-warning-pill {
-  font-size: 10px;
-  font-weight: var(--font-bold);
-  padding: 2px 7px;
-  border-radius: var(--radius-pill);
-  background-color: #DC2626;
-  color: #FFFFFF;
-  white-space: nowrap;
-  flex-shrink: 0;
+.timeline-transit-connector--warning .transit-connector-pill:hover,
+.timeline-buffer-tag--warning:hover {
+  background: #FFFFFF;
+  border-color: #DC2626;
+  color: #DC2626;
+  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.22), inset 0 1px 0.5px #FFFFFF;
+  transform: translateX(3px) scale(1.02);
 }
 
 /* ──────────────── Modals & Drawer Close Button ──────────────── */

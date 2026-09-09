@@ -27,7 +27,7 @@ export const navTabs = [
   },
   {
     id: 'ideas',
-    label: 'Ideas & Wishlist',
+    label: 'Ideas',
     title: 'Trip Ideas & Wishlist',
     subtitle: 'Collaborative wishlist & reels',
     href: '#ideas',

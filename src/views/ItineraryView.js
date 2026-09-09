@@ -244,11 +244,6 @@ export function createItineraryView() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
             <span style="color: #2563EB; font-weight: 700;">Live HUD</span>
           </button>
-
-          <button type="button" class="btn btn--secondary btn--sm" id="reset-itinerary-btn" title="Reset to default schedule">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-            <span>Reset Trip</span>
-          </button>
         </div>
       </div>
 
@@ -319,74 +314,125 @@ export function createItineraryView() {
   function getVenueThumbnail(block) {
     const idSuffix = block.id || Math.random().toString(36).slice(2, 6);
 
+    // 1. Senso-ji Temple Gate (Iconic Kaminarimon with curved eaves, red pillars, giant red lantern)
     if (block.id === 'd1-2' || (block.title && (block.title.includes('Senso-ji') || block.title.includes('Shrine')))) {
       return `
         <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Traditional Shrine">
-          <circle cx="32" cy="32" r="32" fill="#FEF2F2" />
-          <path d="M12 24 L52 24 L48 20 L16 20 Z" fill="#DC2626" />
-          <rect x="20" y="24" width="4" height="24" fill="#B91C1C" rx="1" />
-          <rect x="40" y="24" width="4" height="24" fill="#B91C1C" rx="1" />
-          <ellipse cx="32" cy="34" rx="8" ry="10" fill="#EF4444" />
-          <rect x="28" y="23" width="8" height="2" fill="#1E293B" />
-          <rect x="29" y="44" width="6" height="2" fill="#1E293B" />
-        </svg>
-      `;
-    }
-
-    if (block.id === 'd1-4' || (block.title && (block.title.includes('teamLab') || block.title.includes('Digital')))) {
-      return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="teamLab Borderless">
-          <circle cx="32" cy="32" r="32" fill="#0F172A" />
           <defs>
-            <radialGradient id="beamGrad-${idSuffix}" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.9" />
-              <stop offset="50%" stop-color="#A855F7" stop-opacity="0.6" />
-              <stop offset="100%" stop-color="#0F172A" stop-opacity="0" />
-            </radialGradient>
+            <linearGradient id="skyGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3B82F6"/>
+              <stop offset="55%" stop-color="#93C5FD"/>
+              <stop offset="100%" stop-color="#EFF6FF"/>
+            </linearGradient>
+            <linearGradient id="lanternGrad-${idSuffix}" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#EF4444"/>
+              <stop offset="45%" stop-color="#DC2626"/>
+              <stop offset="100%" stop-color="#991B1B"/>
+            </linearGradient>
+            <linearGradient id="roofGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#374151"/>
+              <stop offset="100%" stop-color="#111827"/>
+            </linearGradient>
           </defs>
-          <circle cx="32" cy="32" r="22" fill="url(#beamGrad-${idSuffix})" />
-          <circle cx="32" cy="32" r="7" fill="#FFFFFF" opacity="0.9" />
-          <circle cx="20" cy="22" r="2.5" fill="#38BDF8" />
-          <circle cx="44" cy="26" r="2.5" fill="#F472B6" />
-          <circle cx="26" cy="42" r="3" fill="#C084FC" />
+          <rect width="64" height="64" fill="url(#skyGrad-${idSuffix})"/>
+          <ellipse cx="48" cy="18" rx="10" ry="4" fill="#FFFFFF" opacity="0.6"/>
+          <ellipse cx="16" cy="16" rx="8" ry="3" fill="#FFFFFF" opacity="0.5"/>
+          <path d="M4 22 C18 16 46 16 60 22 L57 26 L7 26 Z" fill="url(#roofGrad-${idSuffix})"/>
+          <path d="M8 23 C20 18 44 18 56 23" stroke="#F59E0B" stroke-width="1.5" fill="none"/>
+          <rect x="10" y="26" width="44" height="5" fill="#991B1B"/>
+          <rect x="12" y="30" width="5" height="34" fill="#DC2626"/>
+          <rect x="47" y="30" width="5" height="34" fill="#DC2626"/>
+          <ellipse cx="32" cy="39" rx="11" ry="13" fill="url(#lanternGrad-${idSuffix})"/>
+          <line x1="32" y1="26" x2="32" y2="30" stroke="#111827" stroke-width="2.5"/>
+          <rect x="25" y="29" width="14" height="3" fill="#111827" rx="1"/>
+          <rect x="25" y="48" width="14" height="3" fill="#111827" rx="1"/>
+          <circle cx="32" cy="39" r="5.5" fill="#FBBF24" opacity="0.9"/>
+          <text x="32" y="42" font-size="6.5" font-family="'Inter', sans-serif" font-weight="900" fill="#111827" text-anchor="middle">雷</text>
+          <rect x="0" y="56" width="64" height="8" fill="#E2E8F0"/>
         </svg>
       `;
     }
 
+    // 2. Hotel Check-in / Rest
+    if (block.category === 'rest') {
+      return `
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Hotel Lobby">
+          <defs>
+            <linearGradient id="hotelGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#EEF2FF"/>
+              <stop offset="100%" stop-color="#C7D2FE"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" fill="url(#hotelGrad-${idSuffix})"/>
+          <rect x="18" y="16" width="28" height="48" fill="#4338CA" rx="3"/>
+          <rect x="23" y="21" width="5" height="5" fill="#FEF08A" rx="1"/>
+          <rect x="36" y="21" width="5" height="5" fill="#FEF08A" rx="1"/>
+          <rect x="23" y="30" width="5" height="5" fill="#FEF08A" rx="1"/>
+          <rect x="36" y="30" width="5" height="5" fill="#FEF08A" rx="1"/>
+          <rect x="23" y="39" width="5" height="5" fill="#FEF08A" rx="1"/>
+          <rect x="36" y="39" width="5" height="5" fill="#FEF08A" rx="1"/>
+          <polygon points="16,50 48,50 44,55 20,55" fill="#E8621A"/>
+        </svg>
+      `;
+    }
+
+    // 3. Meals & Street Food
     if (block.category === 'meal') {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Dining / Market">
-          <circle cx="32" cy="32" r="32" fill="#FEF3C7" />
-          <ellipse cx="32" cy="38" rx="16" ry="7" fill="#F59E0B" opacity="0.4" />
-          <path d="M18 32 C18 42 46 42 46 32 Z" fill="#D97706" />
-          <path d="M22 28 C25 25 27 28 30 25" stroke="#92400E" stroke-width="2" stroke-linecap="round" fill="none" />
-          <path d="M34 28 C37 25 39 28 42 25" stroke="#92400E" stroke-width="2" stroke-linecap="round" fill="none" />
-          <line x1="20" y1="18" x2="44" y2="28" stroke="#78350F" stroke-width="2" stroke-linecap="round" />
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Street Food & Matcha">
+          <defs>
+            <linearGradient id="mealBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FEF3C7"/>
+              <stop offset="100%" stop-color="#FDE68A"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" fill="url(#mealBg-${idSuffix})"/>
+          <ellipse cx="32" cy="42" rx="18" ry="11" fill="#065F46"/>
+          <ellipse cx="32" cy="40" rx="15" ry="8" fill="#10B981"/>
+          <line x1="16" y1="20" x2="48" y2="20" stroke="#78350F" stroke-width="2.5"/>
+          <circle cx="24" cy="20" r="4.5" fill="#F472B6"/>
+          <circle cx="33" cy="20" r="4.5" fill="#FFFFFF"/>
+          <circle cx="42" cy="20" r="4.5" fill="#34D399"/>
         </svg>
       `;
     }
 
-    if (block.category === 'transit') {
+    // 4. Transit / Shinkansen Bullet Train
+    if (block.category === 'transit' || (block.title && block.title.includes('Shinkansen'))) {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Bullet Train / Transit">
-          <circle cx="32" cy="32" r="32" fill="#E0F2FE" />
-          <path d="M16 38 L32 20 L48 38 Z" fill="#0284C7" />
-          <rect x="24" y="32" width="16" height="14" rx="2" fill="#0369A1" />
-          <rect x="27" y="35" width="10" height="5" rx="1" fill="#BAE6FD" />
-          <circle cx="28" cy="43" r="1.5" fill="#FFFFFF" />
-          <circle cx="36" cy="43" r="1.5" fill="#FFFFFF" />
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Bullet Train">
+          <defs>
+            <linearGradient id="trainBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#E0F2FE"/>
+              <stop offset="100%" stop-color="#BAE6FD"/>
+            </linearGradient>
+            <linearGradient id="trainNose-${idSuffix}" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#FFFFFF"/>
+              <stop offset="100%" stop-color="#F1F5F9"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" fill="url(#trainBg-${idSuffix})"/>
+          <path d="M12 40 C16 26 32 24 54 24 L54 44 L12 44 Z" fill="url(#trainNose-${idSuffix})"/>
+          <path d="M14 36 C24 33 36 32 54 32 L54 35 C36 35 24 36 14 39 Z" fill="#0284C7"/>
+          <path d="M22 28 C28 26 34 26 38 28 L36 31 C32 30 28 30 24 31 Z" fill="#1E293B"/>
+          <line x1="8" y1="46" x2="56" y2="46" stroke="#64748B" stroke-width="2"/>
+          <line x1="12" y1="49" x2="52" y2="49" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,2"/>
         </svg>
       `;
     }
 
+    // 5. Digital Art Museum & Sightseeing
     return `
-      <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Hotel / Rest">
-        <circle cx="32" cy="32" r="32" fill="#EEF2FF" />
-        <rect x="18" y="24" width="28" height="24" rx="3" fill="#4F46E5" />
-        <rect x="24" y="28" width="4" height="6" rx="1" fill="#C7D2FE" />
-        <rect x="36" y="28" width="4" height="6" rx="1" fill="#C7D2FE" />
-        <rect x="24" y="38" width="4" height="6" rx="1" fill="#C7D2FE" />
-        <rect x="36" y="38" width="4" height="6" rx="1" fill="#C7D2FE" />
+      <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Sightseeing Landmark">
+        <defs>
+          <linearGradient id="artBg-${idSuffix}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#3B82F6"/>
+            <stop offset="100%" stop-color="#8B5CF6"/>
+          </linearGradient>
+        </defs>
+        <rect width="64" height="64" fill="url(#artBg-${idSuffix})"/>
+        <polygon points="32,14 46,32 32,50 18,32" fill="#FFFFFF" opacity="0.85"/>
+        <circle cx="32" cy="32" r="6" fill="#FBBF24"/>
       </svg>
     `;
   }

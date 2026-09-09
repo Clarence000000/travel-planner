@@ -1906,6 +1906,15 @@
   border-radius: 16px;
   margin-top: var(--space-1);
   box-shadow: inset 0 1px 0.5px #FFFFFF;
+  cursor: pointer;
+  transition: all 180ms ease;
+}
+
+.transit-step:hover {
+  background: rgba(255, 255, 255, 0.88);
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12), inset 0 1px 1px #FFFFFF;
+  transform: translateY(-1px);
 }
 
 .transit-step__icon {
@@ -4680,23 +4689,31 @@
 .sidebar-hud-card__title-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
 }
 
 .sidebar-hud-card__title-row strong {
   font-size: 12.5px;
   font-weight: 700;
   color: #1E3A8A;
+  line-height: 1;
 }
 
 .sidebar-hud-card__pill {
-  font-size: 8.5px;
-  font-weight: 800;
-  padding: 1px 5px;
-  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  height: 17px;
+  padding: 0 6px;
+  border-radius: 5px;
   background: #2563EB;
   color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 800;
+  line-height: 1;
   letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
 /* ── Cancelled Timeline Card Styling ── */
@@ -5082,4 +5099,41 @@
 .btn-card-action--delete:hover {
   background: #DC2626;
   color: #FFFFFF;
+}
+
+/* ── Sidebar Danger Action: Reset Trip ── */
+.sidebar-reset-row {
+  margin-top: 14px;
+  padding: 10px 4px 0;
+  border-top: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.sidebar-reset-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px dashed rgba(239, 68, 68, 0.45);
+  background: rgba(254, 242, 242, 0.65);
+  color: #DC2626;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 160ms ease;
+}
+
+.sidebar-reset-btn:hover {
+  background: #FEE2E2;
+  border-color: #DC2626;
+  border-style: solid;
+  color: #B91C1C;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+}
+
+.sidebar-reset-btn:active {
+  transform: scale(0.98);
 }
