@@ -21,6 +21,7 @@ import {
   removeItineraryDay,
   deleteItineraryBlock,
   cancelItineraryBlock,
+  onItineraryChange,
 } from '../models/itineraryData.js';
 import {
   calculateItineraryBuffers,
@@ -197,6 +198,12 @@ export function createItineraryView() {
     container.innerHTML = `
       <!-- Atmospheric Vertical Asset Banner -->
       <div class="view-banner" style="background-image: url('${bannerImg}');">
+        <button type="button" class="view-banner__back-btn" id="btn-back-to-trips" title="Return to My Trips">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>My Trips</span>
+        </button>
         <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -271,21 +278,80 @@ export function createItineraryView() {
       ${
         rawBlocks.length === 0
           ? `
-        <div class="empty-day-canvas">
-          <div class="empty-day-canvas__icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
+        <div class="timeline-feed timeline-feed--empty-dashed" id="timeline-feed-target">
+          <!-- Dashed vertical spine rail -->
+          <div class="timeline-empty-spine" aria-hidden="true"></div>
+
+          <!-- Ghost Slot 1 (Morning) -->
+          <div class="ghost-slot-card" data-slot-preset="morning" role="button" tabindex="0">
+            <div class="ghost-slot-pin">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="ghost-slot-body">
+              <div class="ghost-slot-time">09:00 – 11:30 • Morning Slot</div>
+              <h4 class="ghost-slot-title">Unscheduled Activity</h4>
+              <p class="ghost-slot-hint">Ready for your morning spot. Propose an activity or import from wishlist.</p>
+            </div>
+            <button type="button" class="ghost-slot-add-btn" data-slot-preset="morning" title="Add Morning Activity">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
           </div>
-          <h3 class="empty-day-canvas__title">Day ${currentDay} is Open</h3>
-          <p class="empty-day-canvas__desc">No activities scheduled yet for this day. Propose stops, import from reels, or add from group wishlist.</p>
-          <div class="empty-day-canvas__actions">
+
+          <!-- Dashed Transit Buffer Connector -->
+          <div class="ghost-transit-buffer">
+            <div class="ghost-transit-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/></svg>
+              <span>Transit cushion calculated automatically</span>
+            </div>
+          </div>
+
+          <!-- Ghost Slot 2 (Afternoon) -->
+          <div class="ghost-slot-card" data-slot-preset="afternoon" role="button" tabindex="0">
+            <div class="ghost-slot-pin">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="ghost-slot-body">
+              <div class="ghost-slot-time">12:00 – 15:00 • Afternoon Slot</div>
+              <h4 class="ghost-slot-title">Unscheduled Activity</h4>
+              <p class="ghost-slot-hint">Ideal for dining, sightseeing, or cultural exploring.</p>
+            </div>
+            <button type="button" class="ghost-slot-add-btn" data-slot-preset="afternoon" title="Add Afternoon Activity">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+
+          <!-- Dashed Transit Buffer Connector -->
+          <div class="ghost-transit-buffer">
+            <div class="ghost-transit-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <span>Subway & walking buffer calculated on lock</span>
+            </div>
+          </div>
+
+          <!-- Ghost Slot 3 (Evening) -->
+          <div class="ghost-slot-card" data-slot-preset="evening" role="button" tabindex="0">
+            <div class="ghost-slot-pin">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="ghost-slot-body">
+              <div class="ghost-slot-time">17:30 – 21:00 • Evening Slot</div>
+              <h4 class="ghost-slot-title">Unscheduled Activity</h4>
+              <p class="ghost-slot-hint">Dinner reservations, izakaya crawling, or night viewpoints.</p>
+            </div>
+            <button type="button" class="ghost-slot-add-btn" data-slot-preset="evening" title="Add Evening Activity">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+          </div>
+
+          <!-- Empty Timeline Action Toolbar -->
+          <div class="empty-timeline-actions">
             <button type="button" class="btn btn--primary btn--sm" id="btn-empty-propose">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               <span>Propose Activity</span>
+            </button>
+            <button type="button" class="btn btn--secondary btn--sm" id="btn-empty-whiteboard">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              <span>Idea Whiteboard</span>
             </button>
             ${
               dayList.length > 1
@@ -300,7 +366,7 @@ export function createItineraryView() {
         </div>
       `
           : `
-        <!-- Draggable Timeline Blocks Container with Vertical Spine -->
+<!-- Draggable Timeline Blocks Container with Vertical Spine -->
         <div class="timeline-feed" id="timeline-feed-target">
           ${renderTimelineItems(blocksWithBuffers)}
         </div>
@@ -1465,6 +1531,11 @@ export function createItineraryView() {
     });
   }
 
+  // Subscribe to itinerary changes
+  const unsubscribe = onItineraryChange(() => {
+    render();
+  });
+
   // Initialize and return
   initModals();
   render();
@@ -1475,6 +1546,9 @@ export function createItineraryView() {
     setDay: (day) => {
       currentDay = day;
       render();
+    },
+    destroy: () => {
+      unsubscribe();
     },
   };
 }

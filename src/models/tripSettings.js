@@ -4,6 +4,8 @@
  * and user travel preferences (pace, vibe) persisted in localStorage.
  */
 
+import { getActiveTrip, updateTrip } from './tripsModel.js';
+
 const STORAGE_KEY = 'travel_planner_trip_settings_v1';
 
 export const PRESET_COVERS = [
@@ -36,8 +38,8 @@ export const PRESET_COVERS = [
 const DEFAULT_SETTINGS = {
   title: 'Tokyo Expedition',
   destination: 'Tokyo & Kyoto, Japan',
-  startDate: '2026-07-14',
-  endDate: '2026-07-16',
+  startDate: '2026-10-12',
+  endDate: '2026-10-14',
   totalDays: 3,
   coverImage: './src/assets/bg-itinerary.png',
   pace: 'balanced', // 'chill' | 'balanced' | 'turbo'
@@ -59,7 +61,7 @@ export function calculateDaysBetween(startDateStr, endDateStr) {
 }
 
 /**
- * Format date range nicely (e.g. "July 14 – 16, 2026 • 3 Days")
+ * Format date range nicely (e.g. "Oct 12 – 14, 2026 • 3 Days")
  */
 export function formatDateRange(startDateStr, endDateStr, totalDays) {
   try {
@@ -81,6 +83,19 @@ export function formatDateRange(startDateStr, endDateStr, totalDays) {
 }
 
 export function getTripSettings() {
+  const activeTrip = getActiveTrip();
+  if (activeTrip) {
+    return {
+      ...DEFAULT_SETTINGS,
+      title: activeTrip.title || DEFAULT_SETTINGS.title,
+      destination: activeTrip.destination || DEFAULT_SETTINGS.destination,
+      startDate: activeTrip.startDate || DEFAULT_SETTINGS.startDate,
+      endDate: activeTrip.endDate || DEFAULT_SETTINGS.endDate,
+      totalDays: activeTrip.totalDays || DEFAULT_SETTINGS.totalDays,
+      coverImage: activeTrip.coverImage || DEFAULT_SETTINGS.coverImage,
+    };
+  }
+
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -103,6 +118,18 @@ export function saveTripSettings(updates) {
   // Recompute totalDays if dates were updated
   if (updates.startDate || updates.endDate) {
     next.totalDays = calculateDaysBetween(next.startDate, next.endDate);
+  }
+
+  const activeTrip = getActiveTrip();
+  if (activeTrip) {
+    updateTrip(activeTrip.id, {
+      title: next.title,
+      destination: next.destination,
+      startDate: next.startDate,
+      endDate: next.endDate,
+      totalDays: next.totalDays,
+      coverImage: next.coverImage,
+    });
   }
 
   try {

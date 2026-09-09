@@ -53,44 +53,45 @@ export function createAddBlockModal({ onAdd }) {
         <!-- Times -->
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
           <div class="form-group">
-            <label class="form-label" for="block-start">Start Time</label>
-            <input type="time" class="form-input" id="block-start" value="14:00" required />
+            <label class="form-label" for="block-start">Start Time *</label>
+            <input type="time" class="form-input" id="block-start" value="10:00" required />
           </div>
+
           <div class="form-group">
-            <label class="form-label" for="block-end">End Time</label>
-            <input type="time" class="form-input" id="block-end" value="15:30" required />
+            <label class="form-label" for="block-end">End Time *</label>
+            <input type="time" class="form-input" id="block-end" value="11:30" required />
           </div>
         </div>
 
         <!-- Location -->
         <div class="form-group">
-          <label class="form-label" for="block-location">Location / Landmark</label>
-          <input type="text" class="form-input" id="block-location" placeholder="e.g. Shibuya, Tokyo" />
+          <label class="form-label" for="block-location">Location / Stop</label>
+          <input type="text" class="form-input" id="block-location" placeholder="e.g. Harajuku, Shibuya City" />
         </div>
 
-        <!-- Requirements & Dress Code -->
+        <!-- Requirements -->
         <div class="form-group">
-          <label class="form-label" for="block-reqs">Requirements / What to Bring (comma separated)</label>
-          <input type="text" class="form-input" id="block-reqs" placeholder="e.g. Passport, Walking shoes" />
+          <label class="form-label" for="block-reqs">Requirements (comma-separated)</label>
+          <input type="text" class="form-input" id="block-reqs" placeholder="e.g. Walking Shoes, Hat Clips, Tickets" />
         </div>
 
-        <!-- Fallback if tentative -->
+        <!-- Weather Fallback (Conditional) -->
         <div class="form-group" id="add-fallback-group" style="display: none;">
-          <label class="form-label" for="block-fallback">Fallback Plan (if rainy/delayed)</label>
-          <input type="text" class="form-input" id="block-fallback" placeholder="e.g. Indoor Underground Arcade" />
+          <label class="form-label" for="block-fallback">Indoor / Weather Backup Stop</label>
+          <input type="text" class="form-input" id="block-fallback" placeholder="e.g. Mori Art Museum Roppongi Hills" />
         </div>
 
-        <div style="display: flex; gap: 8px; margin-top: 8px;">
-          <button type="submit" class="btn btn--primary" style="flex: 1;">Add to Timeline</button>
+        <div class="itinerary-modal-footer">
           <button type="button" class="btn btn--secondary" id="cancel-add-btn">Cancel</button>
+          <button type="submit" class="btn btn--primary" id="confirm-add-btn">Add to Timeline</button>
         </div>
       </form>
     </div>
   `;
 
+  const form = backdrop.querySelector('#add-block-form');
   const closeBtn = backdrop.querySelector('#close-add-modal-btn');
   const cancelBtn = backdrop.querySelector('#cancel-add-btn');
-  const form = backdrop.querySelector('#add-block-form');
   const statusSelect = backdrop.querySelector('#block-status');
   const fallbackGroup = backdrop.querySelector('#add-fallback-group');
 
@@ -104,9 +105,17 @@ export function createAddBlockModal({ onAdd }) {
     }
   });
 
-  function open(day) {
+  function open(day, defaults = {}) {
     activeDay = day || 1;
     form.reset();
+    if (defaults.startTime) {
+      const startEl = backdrop.querySelector('#block-start');
+      if (startEl) startEl.value = defaults.startTime;
+      const [h, m] = defaults.startTime.split(':').map(Number);
+      const endH = Math.min(23, h + 2);
+      const endEl = backdrop.querySelector('#block-end');
+      if (endEl) endEl.value = `${String(endH).padStart(2, '0')}:${String(m || 0).padStart(2, '0')}`;
+    }
     statusSelect.value = 'proposed';
     fallbackGroup.style.display = 'none';
     backdrop.classList.add('is-open');

@@ -1,13 +1,14 @@
 /**
  * Mobile Travel Planner App
  * Features atmospheric sticky cat photo banner, clean slide-out sidebar,
- * dynamic tab views, and 5-tab bottom navigation.
- * Tab Views:
- * 1. Itinerary (Interactive Timeline)
- * 2. Chat (Per-Activity Chat Threads)
- * 3. Assistant (AI Schedule Assistant)
- * 4. Ideas (Trip Idea Wishlist & Whiteboard)
- * 5. Dashboard (Now & Next Live HUD)
+ * dynamic tab views, multi-trip management portfolio, and 2-tab bottom navigation.
+ * Views:
+ * - Trips (Portfolio / 0-state landing)
+ * - Itinerary (Interactive Timeline with dashed empty rail & ghost slots)
+ * - Ideas (Wishlist, Whiteboard & Social Reels)
+ * - Dashboard (Now & Next Live HUD)
+ * - Chat (Per-Activity Chat Threads)
+ * - Assistant (AI Schedule Assistant)
  */
 
 import { createSidebar } from './components/Sidebar.js';
@@ -18,6 +19,8 @@ import { createChatView } from './views/ChatView.js';
 import { createAssistantView } from './views/AssistantView.js';
 import { createIdeasView } from './views/IdeasView.js';
 import { createDashboardView } from './views/DashboardView.js';
+import { createTripsView } from './views/TripsView.js';
+import { getActiveTrip, setActiveTripId, getTrips } from './models/tripsModel.js';
 import { onTabChange, setActiveTab, getActiveTab, getNavTabs } from './config/navigation.js';
 
 export function initApp() {
@@ -33,7 +36,7 @@ export function initApp() {
   const appShell = document.createElement('div');
   appShell.className = 'app-shell';
 
-  // 2. Onboarding & Data Import Modal Component
+  // 2. Onboarding & Data Import Modal Component (available via sidebar)
   const onboardingModal = createOnboardingModal({
     onComplete: () => {
       const activeTab = getActiveTab();
@@ -71,7 +74,7 @@ export function initApp() {
 
   appShell.appendChild(mainContent);
 
-  // Viewport Occlusion Guards (prevents scrolled content from exceeding above the cat photo banner or below the floating bottom nav bar)
+  // Viewport Occlusion Guards
   const topGuard = document.createElement('div');
   topGuard.className = 'app-shell__top-guard';
   topGuard.setAttribute('aria-hidden', 'true');
@@ -118,6 +121,28 @@ export function initApp() {
 
   // 6. View Switcher Logic
   function renderView(activeTab) {
+    const activeTrip = getActiveTrip();
+    const currentHash = window.location.hash.replace(/^#/, '');
+
+    // If on #trips view or if there are no active trips at all
+    if (currentHash === 'trips' || !activeTrip) {
+      appShell.classList.add('app-shell--in-trips-view');
+      appShell.setAttribute('data-active-tab', 'trips');
+      viewContainer.innerHTML = '';
+      const tripsView = createTripsView({
+        onSelectTrip: (trip) => {
+          setActiveTripId(trip.id);
+          appShell.classList.remove('app-shell--in-trips-view');
+          window.location.hash = '#itinerary';
+          setActiveTab('itinerary');
+        },
+      });
+      viewContainer.appendChild(tripsView.element);
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
+    }
+
+    appShell.classList.remove('app-shell--in-trips-view');
     appShell.setAttribute('data-active-tab', activeTab.id);
     viewContainer.innerHTML = '';
     let view;
@@ -152,10 +177,14 @@ export function initApp() {
     renderView(activeTab);
   });
 
-  // Handle URL hash sync (e.g. #itinerary, #chat, #assistant, #dashboard)
+  // Handle URL hash sync
   function syncHash() {
-    const hash = window.location.hash.replace(/^#/, '') || 'itinerary';
-    setActiveTab(hash);
+    const hash = window.location.hash.replace(/^#/, '');
+    if (hash === 'trips' || !getActiveTrip()) {
+      renderView({ id: 'trips' });
+    } else {
+      setActiveTab(hash || 'itinerary');
+    }
   }
 
   window.addEventListener('hashchange', syncHash);
@@ -163,25 +192,28 @@ export function initApp() {
   // Initial render
   syncHash();
 
-  // Expose clean helper API for testing
+  // Expose clean helper API for testing and remote simulation
   window.TravelApp = {
     setActiveTab,
     getActiveTab,
     getNavTabs,
+    openTrips: () => {
+      window.location.hash = '#trips';
+      renderView({ id: 'trips' });
+    },
+    openTrip: (tripId) => {
+      setActiveTripId(tripId);
+      window.location.hash = '#itinerary';
+      setActiveTab('itinerary');
+    },
     openOnboarding: () => onboardingModal.open(),
     openSidebar: () => sidebarComponent.open(),
     closeSidebar: () => sidebarComponent.close(),
+    sidebar: sidebarComponent,
   };
 
-  // Auto-show onboarding modal on first visit
-  if (!localStorage.getItem('travel_planner_onboarded_v1')) {
-    setTimeout(() => {
-      onboardingModal.open();
-    }, 450);
-  }
-
   console.log(
-    '%c[App] Travel Planner Mobile App Initialized (Cat Photo Header & Clean Sidebar)',
+    '%c[App] Travel Planner Initialized (Clean Slate 0-State Architecture)',
     'color: #E8621A; font-weight: bold; font-size: 14px;'
   );
 }

@@ -33,6 +33,15 @@ export function createSidebar(options = {}) {
 
       <!-- Slide-out Drawer Panel -->
       <aside class="sidebar-drawer" role="dialog" aria-label="Trip Navigation Menu" aria-modal="true">
+        <!-- Switch to All Trips Button -->
+        <div style="padding: 14px 16px 4px;">
+          <button type="button" class="btn btn--secondary btn--sm" id="sidebar-btn-all-trips" style="width: 100%; justify-content: flex-start; gap: 8px; font-weight: 700; border-radius: 12px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            <span>All Trips & Expeditions</span>
+          </button>
+        </div>
         <!-- Drawer Header -->
         <div class="sidebar-header">
           <div class="sidebar-header__brand">
@@ -276,6 +285,15 @@ export function createSidebar(options = {}) {
   function bindEvents() {
     const backdrop = container.querySelector('#sidebar-backdrop');
     const closeBtn = container.querySelector('#sidebar-close-btn');
+    const allTripsBtn = container.querySelector('#sidebar-btn-all-trips');
+    if (allTripsBtn) {
+      allTripsBtn.addEventListener('click', () => {
+        close();
+        if (window.TravelApp && window.TravelApp.openTrips) {
+          window.TravelApp.openTrips();
+        }
+      });
+    }
     const liveHudBtn = container.querySelector('#sidebar-btn-live-hud');
     const setupBtn = container.querySelector('#sidebar-btn-setup');
     const chatHubBtn = container.querySelector('#sidebar-btn-chat-hub');

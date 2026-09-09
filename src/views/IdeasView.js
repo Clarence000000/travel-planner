@@ -47,6 +47,12 @@ export function createIdeasView() {
     container.innerHTML = `
       <!-- Atmospheric Vertical Asset Banner -->
       <div class="view-banner" style="background-image: url('${coverBg}');">
+        <button type="button" class="view-banner__back-btn" id="btn-back-to-trips" title="Return to My Trips">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>My Trips</span>
+        </button>
         <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -90,6 +96,15 @@ export function createIdeasView() {
     `;
 
     // Connect sidebar button
+    const backTripsBtn = container.querySelector('#btn-back-to-trips');
+    if (backTripsBtn) {
+      backTripsBtn.addEventListener('click', () => {
+        if (window.TravelApp && window.TravelApp.openTrips) {
+          window.TravelApp.openTrips();
+        }
+      });
+    }
+
     const openSidebarBtn = container.querySelector('#btn-open-sidebar');
     if (openSidebarBtn) {
       openSidebarBtn.addEventListener('click', () => {
@@ -145,9 +160,34 @@ export function createIdeasView() {
       <div class="wishlist-grid">
         ${
           filtered.length === 0
-            ? `<div style="text-align: center; padding: 32px 16px; color: var(--color-text-secondary); font-size: var(--text-sm);">
-                No ideas found in this category. Tap <strong>Add Idea</strong> to save one!
-               </div>`
+            ? `<div class="ideas-zero-grid" style="grid-column: 1 / -1;">
+                <div class="ideas-zero-card">
+                  <div class="ideas-zero-card__icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8621A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4>Drop Instagram Reels or TikToks</h4>
+                    <p>Save viral travel clips to auto-extract venue details, location pins, and ratings.</p>
+                  </div>
+                </div>
+
+                <div class="ideas-zero-card">
+                  <div class="ideas-zero-card__icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4>Pin Google Maps Venues</h4>
+                    <p>Collect candidate ramen bars, shrines, and spots in your group voting pool.</p>
+                  </div>
+                </div>
+              </div>`
             : filtered
                 .map(
                   (item) => `
@@ -286,9 +326,19 @@ export function createIdeasView() {
       <div class="whiteboard-grid">
         ${
           notes.length === 0
-            ? `<div style="grid-column: 1 / -1; text-align: center; padding: 40px 16px; color: var(--color-text-secondary); font-size: var(--text-sm);">
-                The whiteboard is clean! Tap <strong>New Sticky</strong> to post a thought.
-               </div>`
+            ? `<div class="ideas-zero-grid" style="grid-column: 1 / -1;">
+                <div class="ideas-zero-card" style="justify-content: center; text-align: center; flex-direction: column; padding: 36px 20px;">
+                  <div class="ideas-zero-card__icon" style="margin-bottom: 8px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2">
+                      <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                      <line x1="3" y1="9" x2="21" y2="9"></line>
+                      <line x1="9" y1="21" x2="9" y2="9"></line>
+                    </svg>
+                  </div>
+                  <h4>Whiteboard is Clean</h4>
+                  <p>Tap <strong>New Sticky</strong> to jot thoughts, packing notes, or transit hacks with your group.</p>
+                </div>
+              </div>`
             : notes
                 .map(
                   (note) => `

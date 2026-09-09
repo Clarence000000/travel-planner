@@ -7,8 +7,9 @@
 
 import { timeToMinutes, minutesTo24, recalculateDaySchedule } from '../utils/bufferEngine.js';
 import { getTripSettings, saveTripSettings } from './tripSettings.js';
+import { getActiveTripId } from './tripsModel.js';
 
-export const DEFAULT_ITINERARY = [
+export const SAMPLE_ITINERARY = [
   // ── Day 1 (Tokyo Arrival & Ancient Taito) ──
   {
     id: 'd1-1',
@@ -38,9 +39,13 @@ export const DEFAULT_ITINERARY = [
     transitToNextMinutes: 10,
     transitMode: 'Walking (5 mins)',
     requirements: ['Temple Walking Shoes', 'Coins for Incense'],
-    fallback: null,
-    notes: 'Main hall open until 5 PM. Dress respectfully.',
-    dressCode: 'Modest attire, no sandals in inner shrine',
+    fallback: 'Edo-Tokyo Museum & Asakusa Underground Arcade',
+    fallbackReason: 'weather',
+    notes: 'Incense smoke cleansing at Jokoro burner is customary.',
+    dressCode: 'Shoulders covered inside main hall',
+    source: 'reel',
+    reelUrl: 'https://www.instagram.com/reel/C8x9Y2zK_tokyo_eats',
+    rating: 4.8,
   },
   {
     id: 'd1-3',
@@ -48,73 +53,90 @@ export const DEFAULT_ITINERARY = [
     startTime: '12:40',
     endTime: '14:00',
     category: 'meal',
-    status: 'tentative', // Weather Permitting with attached fallback
-    title: 'Rooftop Matcha & Street Food Market',
-    location: 'Nakamise Street & Asakusa Rooftop',
-    transitToNextMinutes: 35, // Requires 35m transit to next event
-    transitMode: 'Metro (Ginza Line)',
-    requirements: ['Cash Only Stalls'],
-    fallback: 'Indoor Asakusa Underground Ramen Arcade',
-    fallbackReason: 'weather', // 'weather' | 'crowd' | 'closed' | 'general'
-    notes: 'Rooftop seating depends on weather; indoor arcade is 2 mins away.',
+    status: 'confirmed',
+    title: 'Asakusa Kagetsudo Melonpan & Street Bento',
+    location: 'Nakamise Shopping Street',
+    transitToNextMinutes: 45,
+    transitMode: 'Ginza Line + Chuo-Sobu Line',
+    requirements: ['Cash Only (\u00a51,000 notes)', 'Napkins'],
+    fallback: 'Asakusa Underground Food Court',
+    fallbackReason: 'crowd',
+    notes: 'Famous fluffy jumbo melonpan. Eat in designated courtyard.',
     dressCode: null,
   },
   {
     id: 'd1-4',
     day: 1,
-    startTime: '14:35',
-    endTime: '16:35',
+    startTime: '14:45',
+    endTime: '16:45',
     category: 'activity',
-    status: 'proposed',
-    title: 'teamLab Borderless Digital Art Museum',
-    location: 'Azabudai Hills',
-    transitToNextMinutes: 25,
-    transitMode: 'Subway (Hibiya Line)',
-    requirements: ['Advance E-Tickets Booked', 'Charged Phone for QR'],
-    fallback: null,
-    notes: 'Requires timed-entry ticket slot at 2:30 PM.',
-    dressCode: 'Wear pants & dark flat shoes (mirrored floors)',
+    status: 'confirmed',
+    title: 'Akihabara Electric Town Retro Tech Crawl',
+    location: 'Soto-Kanda, Chiyoda City',
+    transitToNextMinutes: 30,
+    transitMode: 'JR Yamanote Line to Shinjuku',
+    requirements: ['Duty-Free Passport', 'Comfortable sneakers'],
+    fallback: 'Radio Kaikan Multi-Floor Arcade',
+    fallbackReason: 'weather',
+    notes: 'Mandai & Super Potato for vintage gaming finds.',
+    dressCode: null,
   },
   {
     id: 'd1-5',
     day: 1,
-    startTime: '17:00',
-    endTime: '19:00',
+    startTime: '17:15',
+    endTime: '18:45',
     category: 'meal',
-    status: 'confirmed',
-    title: 'Izakaya Gathering & Craft Skewers',
-    location: 'Omoide Yokocho, Shinjuku',
-    transitToNextMinutes: 0,
-    transitMode: 'Walk back to hotel',
-    requirements: ['20+ Age Verification', 'Reservation Confirmed'],
-    fallback: 'Tsunahachi Tempura Bar (if queue > 30m)',
+    status: 'proposed',
+    title: 'Omoide Yokocho Yakitori Alley',
+    location: 'Memory Lane, Shinjuku',
+    transitToNextMinutes: 20,
+    transitMode: 'Walk through Kabukicho',
+    requirements: ['Small Group Table (max 4)', 'Cash Ready'],
+    fallback: 'Shinjuku Lumine 1 Food Hall',
     fallbackReason: 'crowd',
-    notes: 'Table booked under "Travel Group" for 7:00 PM.',
+    notes: 'Charcoal grilled skewers in narrow atmospheric alleyways.',
+    dressCode: 'Casual (smoke-friendly environment)',
+  },
+  {
+    id: 'd1-6',
+    day: 1,
+    startTime: '19:05',
+    endTime: '20:30',
+    category: 'activity',
+    status: 'proposed',
+    title: 'Tokyo Metropolitan Govt Building Observatory',
+    location: 'Nishi-Shinjuku',
+    transitToNextMinutes: 15,
+    transitMode: 'Walking back to hotel',
+    requirements: ['Security Bag Check'],
+    fallback: null,
+    notes: 'Free 202-meter high night panorama over Shinjuku lights.',
     dressCode: null,
   },
 
-  // ── Day 2 (Kyoto Culture & Bamboo Groves) ──
+  // ── Day 2 (Ancient Kyoto Day Trip) ──
   {
     id: 'd2-1',
     day: 2,
-    startTime: '08:30',
-    endTime: '10:00',
+    startTime: '07:30',
+    endTime: '09:45',
     category: 'transit',
     status: 'confirmed',
-    title: 'Shinkansen Bullet Train to Kyoto',
-    location: 'Tokyo Station → Kyoto Station',
-    transitToNextMinutes: 25,
-    transitMode: 'JR San-In Line',
-    requirements: ['JR Rail Pass Validated', 'Luggage Tag'],
+    title: 'Nozomi Shinkansen Bullet Train to Kyoto',
+    location: 'Tokyo Station Platform 14 to Kyoto',
+    transitToNextMinutes: 20,
+    transitMode: 'JR San-in Line to Saga-Arashiyama',
+    requirements: ['SmartEX QR Tickets', 'Bento Breakfast Box'],
     fallback: null,
-    notes: 'Car 6, seats 12A-12D reserved.',
+    notes: 'Seat 8E booked for Mt. Fuji view on the right side.',
     dressCode: null,
   },
   {
     id: 'd2-2',
     day: 2,
-    startTime: '10:30',
-    endTime: '12:30',
+    startTime: '10:05',
+    endTime: '12:15',
     category: 'activity',
     status: 'tentative',
     title: 'Arashiyama Bamboo Grove & River Walk',
@@ -180,7 +202,31 @@ export const DEFAULT_ITINERARY = [
   },
 ];
 
+export const DEFAULT_ITINERARY = SAMPLE_ITINERARY;
+
 const STORAGE_KEY = 'travel_planner_itinerary_v3';
+
+function getStorageKey() {
+  const tripId = getActiveTripId();
+  return tripId ? `travel_planner_itinerary_${tripId}` : STORAGE_KEY;
+}
+
+const itineraryListeners = new Set();
+
+export function onItineraryChange(callback) {
+  itineraryListeners.add(callback);
+  return () => itineraryListeners.delete(callback);
+}
+
+function notifyItineraryListeners(items) {
+  itineraryListeners.forEach((fn) => {
+    try {
+      fn(items);
+    } catch (e) {
+      console.error('[Itinerary] listener error:', e);
+    }
+  });
+}
 
 function sanitizeBlock(block) {
   const clean = (str) =>
@@ -212,30 +258,22 @@ function sanitizeBlock(block) {
 }
 
 /**
- * Load itinerary data (from localStorage if available, or default)
+ * Load itinerary data (clean slate default: returns [] unless saved)
  */
 export function getItineraryData() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const key = getStorageKey();
+    const saved = localStorage.getItem(key);
     if (saved) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Sanity check: Ensure day 1 starts at normal daylight hours (6 AM to 10 PM)
-        const d1First = parsed.find((b) => b.day === 1);
-        if (d1First) {
-          const startMins = timeToMinutes(d1First.startTime);
-          if (startMins >= 22 * 60 || startMins < 6 * 60) {
-            console.warn('[Itinerary] Corrupted overnight schedule detected in storage. Resetting to defaults.');
-            return resetItineraryData();
-          }
-        }
+      if (Array.isArray(parsed)) {
         return parsed.map(sanitizeBlock);
       }
     }
   } catch (e) {
     console.warn('[Itinerary] Failed to parse saved itinerary:', e);
   }
-  return resetItineraryData();
+  return [];
 }
 
 /**
@@ -243,17 +281,27 @@ export function getItineraryData() {
  */
 export function saveItineraryData(items) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    const key = getStorageKey();
+    localStorage.setItem(key, JSON.stringify(items));
   } catch (e) {
     console.error('[Itinerary] Error saving to storage:', e);
   }
+  notifyItineraryListeners(items);
 }
 
 /**
- * Reset itinerary data back to initial defaults
+ * Reset itinerary data back to clean empty slate
+ */
+export function clearItineraryData() {
+  saveItineraryData([]);
+  return [];
+}
+
+/**
+ * Load sample itinerary data (for explicit demo / reference)
  */
 export function resetItineraryData() {
-  const defaults = JSON.parse(JSON.stringify(DEFAULT_ITINERARY)).map(sanitizeBlock);
+  const defaults = JSON.parse(JSON.stringify(SAMPLE_ITINERARY)).map(sanitizeBlock);
   saveItineraryData(defaults);
   return defaults;
 }
@@ -379,48 +427,16 @@ export function applyReshuffle(strategy = 'rain-delay') {
       if (b.id === 'd2-2') {
         return {
           ...b,
-          title: 'Kyoto Railway Museum & Crafts (Indoor Backup)',
-          location: 'Shimogyo Ward, Kyoto',
-          notes: 'Reshuffled by AI Assistant due to 3:00 PM rain forecast.',
+          title: b.fallback || 'Kyoto Railway Museum & Crafts',
+          category: 'activity',
           status: 'confirmed',
-          fallback: 'Arashiyama Bamboo Grove (Postponed)',
-          fallbackReason: 'weather',
+          notes: 'Swapped to indoor venue due to forecasted rain.',
+          fallback: null,
         };
       }
       return b;
     });
-  } else if (strategy === 'chill-pace') {
-    // Extend meal and rest durations, add more buffer
-    list = list.map((b) => {
-      if (b.category === 'meal' || b.category === 'rest') {
-        return {
-          ...b,
-          notes: (b.notes ? b.notes + ' ' : '') + '[Chill Pace: Extended rest buffer]',
-        };
-      }
-      return b;
-    });
-  } else if (strategy === 'turbo-pace') {
-    // Tighten transit and add bonus exploration notes
-    list = list.map((b) => {
-      return {
-        ...b,
-        transitToNextMinutes: Math.max(10, b.transitToNextMinutes - 5),
-      };
-    });
-  } else if (strategy === 'delay-30m') {
-    // Shift afternoon blocks forward
-    list = list.map((b) => {
-      if (b.day === 1 && (b.id === 'd1-4' || b.id === 'd1-5')) {
-        return {
-          ...b,
-          notes: (b.notes ? b.notes + ' ' : '') + '[Shifted +30m due to traffic delay]',
-        };
-      }
-      return b;
-    });
+    saveItineraryData(list);
   }
-
-  saveItineraryData(list);
   return list;
 }
