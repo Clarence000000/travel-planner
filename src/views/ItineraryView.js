@@ -191,7 +191,7 @@ export function createItineraryView() {
       (b) => b.transitBuffer && b.transitBuffer.isDeficit
     );
 
-    const bannerImg = settings.coverImage || './src/assets/hero-banner.jpg';
+    const bannerImg = settings.coverImage || './src/assets/bg-itinerary.png';
     const cityTitle = settings.destination.split(',')[0];
 
     container.innerHTML = `

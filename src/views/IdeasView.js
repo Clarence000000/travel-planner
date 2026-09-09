@@ -41,7 +41,7 @@ export function createIdeasView() {
 
   function render() {
     const settings = getTripSettings();
-    const coverBg = settings.coverImage || './src/assets/hero-banner.jpg';
+    const coverBg = settings.coverImage || './src/assets/bg-itinerary.png';
     const cityTitle = settings.destination.split(',')[0];
 
     container.innerHTML = `

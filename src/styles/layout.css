@@ -290,13 +290,13 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 320px;
+  width: 300px;
   max-width: 86%;
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.74) 0%,
-    rgba(255, 255, 255, 0.54) 50%,
-    rgba(255, 255, 255, 0.70) 100%
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.76) 50%,
+    rgba(255, 255, 255, 0.84) 100%
   );
   backdrop-filter: blur(32px) saturate(200%) contrast(96%);
   -webkit-backdrop-filter: blur(32px) saturate(200%) contrast(96%);
@@ -322,40 +322,77 @@
 
 /* Frosted Glass Header with Liquid Curve & Specular Shine */
 .sidebar-header {
-  padding: 22px 20px 18px;
+  padding: 18px 18px 14px;
   border-top-right-radius: 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.65);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   background: linear-gradient(
     135deg,
-    rgba(255, 247, 237, 0.6) 0%,
-    rgba(239, 246, 255, 0.6) 100%
+    rgba(255, 247, 237, 0.7) 0%,
+    rgba(239, 246, 255, 0.7) 100%
   );
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
 }
 
+.sidebar-header__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 .sidebar-header__badge {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   color: var(--color-primary);
-  margin-bottom: 3px;
   display: inline-block;
-  text-shadow: 0 0 10px rgba(232, 98, 26, 0.25);
+}
+
+.sidebar-header__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .sidebar-header__title {
-  font-size: 20px;
+  font-size: 19px;
   font-weight: 800;
   color: #0F172A;
   margin: 0;
   line-height: 1.2;
   letter-spacing: -0.3px;
+}
+
+.sidebar-pencil-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(255, 255, 255, 0.7);
+  color: #64748B;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 160ms ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  flex-shrink: 0;
+}
+
+.sidebar-pencil-btn:hover,
+.sidebar-pencil-btn--active {
+  background: #FFFFFF;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: scale(1.06);
+  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.18);
 }
 
 .sidebar-header__subtitle {
@@ -752,29 +789,27 @@
 
 .bottom-nav {
   position: fixed;
-  bottom: 12px;
+  bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 24px);
-  max-width: calc(var(--mobile-max-width) - 24px);
-  height: 66px;
-  padding: 5px 8px env(safe-area-inset-bottom, 0px);
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.70) 0%,
-    rgba(255, 255, 255, 0.46) 50%,
-    rgba(255, 255, 255, 0.65) 100%
-  );
+  width: auto;
+  min-width: 250px;
+  max-width: 290px;
+  height: 52px;
+  padding: 4px 6px;
+  background: rgba(255, 255, 255, 0.84);
   backdrop-filter: blur(28px) saturate(210%) contrast(96%);
   -webkit-backdrop-filter: blur(28px) saturate(210%) contrast(96%);
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 9999px;
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: space-between;
+  gap: 4px;
   z-index: var(--z-nav);
   box-shadow: 
-    0 16px 40px rgba(15, 23, 42, 0.14),
+    0 10px 30px rgba(15, 23, 42, 0.12),
+    0 2px 8px rgba(0, 0, 0, 0.04),
     inset 0 1.5px 2px rgba(255, 255, 255, 1),
     inset 0 -1px 1px rgba(255, 255, 255, 0.5);
   transition: all var(--transition-fast);
@@ -783,62 +818,65 @@
 .bottom-nav__tab {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  height: 52px;
-  margin: 0 2px;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
   color: #64748B;
-  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  border-radius: 20px;
+  border-radius: 9999px;
   position: relative;
+  text-decoration: none;
 }
 
 .bottom-nav__tab:hover {
-  background: rgba(255, 255, 255, 0.40);
+  background: rgba(255, 255, 255, 0.55);
   color: #0F172A;
 }
 
 .bottom-nav__tab:active {
-  transform: scale(0.94);
+  transform: scale(0.96);
 }
 
 .bottom-nav__icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), filter 200ms ease;
+  transition: transform 180ms ease;
+}
+
+.bottom-nav__icon svg {
+  width: 17px;
+  height: 17px;
 }
 
 .bottom-nav__label {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  white-space: nowrap;
 }
 
 .bottom-nav__tab--active {
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.85) 0%,
-    rgba(255, 247, 237, 0.75) 100%
+    rgba(234, 88, 12, 0.12) 0%,
+    rgba(217, 74, 5, 0.08) 100%
   );
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  box-shadow: 
-    0 4px 14px rgba(232, 98, 26, 0.16),
-    inset 0 1px 1.5px rgba(255, 255, 255, 1);
   color: var(--color-primary);
+  border: 1px solid rgba(234, 88, 12, 0.18);
+  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.08);
 }
 
 .bottom-nav__tab--active .bottom-nav__label {
-  font-weight: 800;
+  font-weight: 700;
+  color: var(--color-primary);
 }
 
-.bottom-nav__tab--active .bottom-nav__icon {
-  transform: scale(1.1);
-  filter: drop-shadow(0 2px 8px rgba(232, 98, 26, 0.35));
+.bottom-nav__tab--active .bottom-nav__icon svg {
+  stroke: var(--color-primary);
 }

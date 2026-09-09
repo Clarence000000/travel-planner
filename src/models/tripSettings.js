@@ -8,6 +8,12 @@ const STORAGE_KEY = 'travel_planner_trip_settings_v1';
 
 export const PRESET_COVERS = [
   {
+    id: 'original-cats',
+    name: 'Original Cats',
+    url: './src/assets/bg-itinerary.png',
+    thumb: './src/assets/bg-itinerary.png',
+  },
+  {
     id: 'tokyo-neon',
     name: 'Tokyo Neon Night',
     url: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
@@ -25,12 +31,6 @@ export const PRESET_COVERS = [
     url: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=1200&q=80',
     thumb: 'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?auto=format&fit=crop&w=300&q=80',
   },
-  {
-    id: 'editorial-warm',
-    name: 'Editorial Minimalist',
-    url: './src/assets/hero-banner.jpg',
-    thumb: './src/assets/hero-banner.jpg',
-  },
 ];
 
 const DEFAULT_SETTINGS = {
@@ -39,7 +39,7 @@ const DEFAULT_SETTINGS = {
   startDate: '2026-07-14',
   endDate: '2026-07-16',
   totalDays: 3,
-  coverImage: './src/assets/hero-banner.jpg',
+  coverImage: './src/assets/bg-itinerary.png',
   pace: 'balanced', // 'chill' | 'balanced' | 'turbo'
   vibe: 'food', // 'food' | 'culture' | 'modern' | 'scenic'
 };
@@ -84,7 +84,11 @@ export function getTripSettings() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-      return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+      const parsed = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+      if (!parsed.coverImage || parsed.coverImage === './src/assets/hero-banner.jpg') {
+        parsed.coverImage = './src/assets/bg-itinerary.png';
+      }
+      return parsed;
     }
   } catch (e) {
     console.warn('[TripSettings] Failed to read trip settings:', e);

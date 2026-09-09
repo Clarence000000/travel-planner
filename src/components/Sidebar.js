@@ -2,11 +2,10 @@
  * Mobile Clean Side Menu / Sidebar Drawer Component
  * Slides out smoothly from the left with Apple iOS 26 Liquid Glass styling.
  * Houses secondary hubs and controls to keep the main view decluttered:
+ * - Header Cover Editor (Subtle Pencil Icon Toggle)
  * - Live Day HUD Mode Launcher
- * - Trip Appearance (Hero Banner Cover Presets & Custom URL)
  * - Trip Preferences & AI Reshuffle (Pacing & Contingency Swap)
- * - Contextual Discussions Hub
- * - Trip Dates & Setup (Dynamic Days)
+ * - Collaboration Hub (Discussions, Polls, Trip Dates)
  * - Notifications & Alerts
  */
 
@@ -22,6 +21,7 @@ export function createSidebar(options = {}) {
 
   let isOpen = false;
   let notifsExpanded = false;
+  let appearanceOpen = false;
 
   function renderSidebar() {
     const settings = getTripSettings();
@@ -37,15 +37,61 @@ export function createSidebar(options = {}) {
         <div class="sidebar-header">
           <div class="sidebar-header__brand">
             <div class="sidebar-header__badge">WANDERSYNC • ${settings.destination.split(',')[0].toUpperCase()}</div>
-            <h2 class="sidebar-header__title">${settings.title}</h2>
+            <div class="sidebar-header__title-row">
+              <h2 class="sidebar-header__title">${settings.title}</h2>
+              <button type="button" class="sidebar-pencil-btn ${appearanceOpen ? 'sidebar-pencil-btn--active' : ''}" id="sidebar-btn-edit-cover" title="Change header cover" aria-label="Edit trip cover">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+              </button>
+            </div>
             <span class="sidebar-header__subtitle">${dateSubtitle}</span>
           </div>
           <button type="button" class="sidebar-close-btn" id="sidebar-close-btn" aria-label="Close Menu">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
+        </div>
+
+        <!-- Sleek Sub-drawer for Appearance (Toggled via Pencil Icon) -->
+        <div class="sidebar-appearance-drawer ${appearanceOpen ? 'is-open' : ''}" id="sidebar-appearance-drawer">
+          <div class="sidebar-appearance-drawer__header">
+            <span class="sidebar-appearance-drawer__title">Trip Cover Image</span>
+            <button type="button" class="sidebar-appearance-drawer__close" id="sidebar-btn-close-appearance" aria-label="Close appearance picker">✕</button>
+          </div>
+          <div class="sidebar-cover-pills">
+            ${PRESET_COVERS.map(
+              (cover) => `
+              <button 
+                type="button" 
+                class="sidebar-cover-pill ${settings.coverImage === cover.url ? 'sidebar-cover-pill--active' : ''}" 
+                data-cover-url="${cover.url}"
+                title="${cover.name}"
+              >
+                <span class="sidebar-cover-pill__thumb" style="background-image: url('${cover.thumb}');"></span>
+                <span class="sidebar-cover-pill__name">${cover.name}</span>
+                ${settings.coverImage === cover.url ? `
+                  <svg class="sidebar-cover-pill__check" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                ` : ''}
+              </button>
+            `
+            ).join('')}
+          </div>
+          <div class="sidebar-cover-input-row">
+            <input 
+              type="url" 
+              class="sidebar-cover-input" 
+              id="sidebar-custom-cover-input" 
+              placeholder="Custom image URL..." 
+              value="${PRESET_COVERS.some((c) => c.url === settings.coverImage) ? '' : (settings.coverImage || '')}"
+            />
+            <button type="button" class="sidebar-cover-apply-btn" id="sidebar-btn-apply-cover">Apply</button>
+          </div>
         </div>
 
         <!-- Drawer Body (Scrollable) -->
@@ -54,7 +100,7 @@ export function createSidebar(options = {}) {
           <div class="sidebar-section">
             <button type="button" class="sidebar-hud-card" id="sidebar-btn-live-hud">
               <div class="sidebar-hud-card__icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                   <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
                 </svg>
               </div>
@@ -63,70 +109,26 @@ export function createSidebar(options = {}) {
                   <strong>Live Day HUD Mode</strong>
                   <span class="sidebar-hud-card__pill">DAY-OF</span>
                 </div>
-                <span>Focus on current activity, transit countdown & QR passes</span>
+                <span>Focus on active stop, countdown & QR passes</span>
               </div>
-              <svg class="sidebar-item__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="sidebar-item__arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </button>
           </div>
 
-          <!-- 2. Trip Appearance: Header Cover Customization -->
-          <div class="sidebar-section">
-            <div class="sidebar-section__label">Trip Appearance</div>
-            <div class="sidebar-appearance-card">
-              <span class="sidebar-appearance-card__desc">Choose trip hero cover or paste custom image URL:</span>
-              
-              <!-- Preset Covers Grid -->
-              <div class="sidebar-cover-grid">
-                ${PRESET_COVERS.map(
-                  (cover) => `
-                  <button 
-                    type="button" 
-                    class="sidebar-cover-chip ${settings.coverImage === cover.url ? 'sidebar-cover-chip--active' : ''}" 
-                    data-cover-url="${cover.url}"
-                    title="${cover.name}"
-                  >
-                    <div class="sidebar-cover-chip__img" style="background-image: url('${cover.thumb}');"></div>
-                    <span class="sidebar-cover-chip__label">${cover.name}</span>
-                    ${settings.coverImage === cover.url ? `
-                      <span class="sidebar-cover-chip__check">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                          <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                      </span>
-                    ` : ''}
-                  </button>
-                `
-                ).join('')}
-              </div>
-
-              <!-- Custom URL Input -->
-              <div class="sidebar-custom-url-row">
-                <input 
-                  type="url" 
-                  class="sidebar-url-input" 
-                  id="sidebar-custom-cover-input" 
-                  placeholder="Paste custom image URL..." 
-                  value="${PRESET_COVERS.some((c) => c.url === settings.coverImage) ? '' : (settings.coverImage || '')}"
-                />
-                <button type="button" class="btn btn--secondary btn--sm" id="sidebar-btn-apply-cover">Apply</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. Trip Preferences & AI Reshuffle -->
+          <!-- 2. AI Copilot & Pacing -->
           <div class="sidebar-section">
             <div class="sidebar-section__label">AI Copilot & Pacing</div>
-            <div class="sidebar-copilot-card">
-              <div class="sidebar-pace-wrap">
-                <span class="sidebar-copilot-card__title">Pacing Preference:</span>
+            <div class="sidebar-card">
+              <div class="sidebar-card__row">
+                <span class="sidebar-card__sublabel">Schedule Pacing:</span>
                 <div class="sidebar-pace-chips">
                   <button type="button" class="sidebar-pace-btn ${settings.pace === 'chill' ? 'sidebar-pace-btn--active' : ''}" data-pace="chill">
-                    Chill (2-3)
+                    Chill
                   </button>
                   <button type="button" class="sidebar-pace-btn ${settings.pace === 'balanced' ? 'sidebar-pace-btn--active' : ''}" data-pace="balanced">
-                    Balanced (4)
+                    Balanced
                   </button>
                   <button type="button" class="sidebar-pace-btn ${settings.pace === 'turbo' ? 'sidebar-pace-btn--active' : ''}" data-pace="turbo">
                     High Energy
@@ -134,15 +136,15 @@ export function createSidebar(options = {}) {
                 </div>
               </div>
 
-              <div class="sidebar-reshuffle-divider"></div>
+              <div class="sidebar-card__divider"></div>
 
               <div class="sidebar-reshuffle-row">
                 <div class="sidebar-reshuffle-text">
-                  <strong>Contingency Reshuffle</strong>
+                  <strong>Weather Contingency</strong>
                   <span>Auto-swap outdoor spots if rain is forecast</span>
                 </div>
                 <button type="button" class="btn btn--secondary btn--sm" id="sidebar-btn-reshuffle">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M23 4v6h-6"></path>
                     <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
                   </svg>
@@ -152,14 +154,14 @@ export function createSidebar(options = {}) {
             </div>
           </div>
 
-          <!-- 4. Collaboration & Discussions Hub -->
+          <!-- 3. Collaboration & Planning -->
           <div class="sidebar-section">
-            <div class="sidebar-section__label">Collaboration</div>
+            <div class="sidebar-section__label">Planning & Collaboration</div>
 
             <!-- Group Discussions Hub -->
             <button type="button" class="sidebar-item" id="sidebar-btn-chat-hub">
               <div class="sidebar-item__icon" style="background: rgba(37, 99, 235, 0.12); color: #2563EB;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>
               </div>
@@ -167,15 +169,15 @@ export function createSidebar(options = {}) {
                 <span class="sidebar-item__title">Discussion Threads & Polls</span>
                 <span class="sidebar-item__desc">Chat history, active mini-polls & votes</span>
               </div>
-              <svg class="sidebar-item__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="sidebar-item__arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </button>
 
             <!-- Trip Setup Wizard (Dynamic Dates & Travelers) -->
             <button type="button" class="sidebar-item" id="sidebar-btn-setup">
-              <div class="sidebar-item__icon sidebar-item__icon--primary">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <div class="sidebar-item__icon" style="background: rgba(234, 88, 12, 0.12); color: #EA580C;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                   <line x1="16" y1="2" x2="16" y2="6"></line>
                   <line x1="8" y1="2" x2="8" y2="6"></line>
@@ -186,19 +188,19 @@ export function createSidebar(options = {}) {
                 <span class="sidebar-item__title">Trip Dates & Questionnaire</span>
                 <span class="sidebar-item__desc">Adjust dates, party size, and vibe</span>
               </div>
-              <svg class="sidebar-item__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="sidebar-item__arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="9 18 15 12 9 6"></polyline>
               </svg>
             </button>
           </div>
 
-          <!-- 5. Notifications Item (Toggleable Accordion) -->
+          <!-- 4. Notifications Item (Toggleable Accordion) -->
           <div class="sidebar-section">
             <div class="sidebar-section__label">Alerts & Updates</div>
             <div class="sidebar-item-group">
               <button type="button" class="sidebar-item" id="sidebar-btn-notifications">
-                <div class="sidebar-item__icon sidebar-item__icon--warning">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="sidebar-item__icon" style="background: rgba(245, 158, 11, 0.12); color: #D97706;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                     <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                   </svg>
@@ -210,7 +212,7 @@ export function createSidebar(options = {}) {
                   </div>
                   <span class="sidebar-item__desc">Schedule alerts, transit & bookings</span>
                 </div>
-                <svg class="sidebar-item__chevron" id="sidebar-notif-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform: ${notifsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'}">
+                <svg class="sidebar-item__chevron" id="sidebar-notif-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="transform: ${notifsExpanded ? 'rotate(0deg)' : 'rotate(-90deg)'}; transition: transform 200ms ease;">
                   <polyline points="6 9 12 15 18 9"></polyline>
                 </svg>
               </button>
@@ -268,11 +270,30 @@ export function createSidebar(options = {}) {
     const notifContainer = container.querySelector('#sidebar-notifs-container');
     const notifChevron = container.querySelector('#sidebar-notif-chevron');
     const reshuffleBtn = container.querySelector('#sidebar-btn-reshuffle');
+    const editCoverBtn = container.querySelector('#sidebar-btn-edit-cover');
+    const closeAppearanceBtn = container.querySelector('#sidebar-btn-close-appearance');
     const applyCoverBtn = container.querySelector('#sidebar-btn-apply-cover');
     const customCoverInput = container.querySelector('#sidebar-custom-cover-input');
 
     if (backdrop) backdrop.addEventListener('click', close);
     if (closeBtn) closeBtn.addEventListener('click', close);
+
+    // Toggle appearance sub-drawer via subtle pencil icon
+    if (editCoverBtn) {
+      editCoverBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        appearanceOpen = !appearanceOpen;
+        renderSidebar();
+      });
+    }
+
+    if (closeAppearanceBtn) {
+      closeAppearanceBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        appearanceOpen = false;
+        renderSidebar();
+      });
+    }
 
     // Live HUD Launcher
     if (liveHudBtn) {
@@ -284,10 +305,10 @@ export function createSidebar(options = {}) {
       });
     }
 
-    // Cover preset chips
-    container.querySelectorAll('.sidebar-cover-chip').forEach((chip) => {
-      chip.addEventListener('click', () => {
-        const coverUrl = chip.getAttribute('data-cover-url');
+    // Cover preset pills
+    container.querySelectorAll('.sidebar-cover-pill').forEach((pill) => {
+      pill.addEventListener('click', () => {
+        const coverUrl = pill.getAttribute('data-cover-url');
         if (coverUrl) {
           updateTripCover(coverUrl);
           renderSidebar();
@@ -364,10 +385,10 @@ export function createSidebar(options = {}) {
 
   function open() {
     isOpen = true;
-    renderSidebar();
     container.classList.add('sidebar-container--open');
     container.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    renderSidebar();
   }
 
   function close() {
@@ -377,14 +398,13 @@ export function createSidebar(options = {}) {
     document.body.style.overflow = '';
   }
 
-  // Keyboard Escape listener
-  document.addEventListener('keydown', (e) => {
+  // Keyboard navigation: Escape key closes sidebar
+  window.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && isOpen) {
       close();
     }
   });
 
-  // Initial render
   renderSidebar();
 
   return {
