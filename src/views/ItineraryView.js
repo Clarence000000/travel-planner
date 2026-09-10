@@ -897,7 +897,7 @@ export function createItineraryView() {
                 </svg>
               </div>
               <div class="timeline-card__advisory-text">
-                <strong>Schedule Advisory:</strong> ${block.advisory || 'Siam Road Char Koay Teow is closed on Mondays. Consider swapping with Day 3.'}
+                <strong>Schedule Advisory:</strong> ${(typeof block.advisory === 'object' ? block.advisory.text : block.advisory) || 'Siam Road Char Koay Teow is closed on Mondays. Consider swapping with Day 3.'}
               </div>
             </div>
             <div class="timeline-card__advisory-actions">
@@ -915,6 +915,7 @@ export function createItineraryView() {
         // 3. Weather Alert Banner on Penang Hill
         const isPenangHill =
           block.id === 'd1-penang-hill' ||
+          block.id === 'penang-hill-canopy' ||
           (block.title && block.title.includes('Penang Hill')) ||
           (block.id === 'd1-2' && block.title && block.title.includes('Penang'));
 
@@ -2047,6 +2048,26 @@ export function createItineraryView() {
     showScheduleToast('🌧️ Monsoon Weather Alert triggered on Penang Hill');
   };
   window.addEventListener('wandersync:weather_alert', handleWeatherAlert);
+  window.addEventListener('wandersync:monsoon_alert', handleWeatherAlert);
+  window.addEventListener('wandersync:contingency_rain', handleWeatherAlert);
+  window.addEventListener('wandersync:contingency_1', () => {
+    const list = getItineraryData();
+    const target = list.find(b => b.id === 'd1-penang-hill' || b.id === 'penang-hill-canopy' || (b.title && b.title.includes('Penang Hill')));
+    if (target) handleContingencyOption(target.id, 'fallback');
+  });
+  window.addEventListener('wandersync:contingency_2', () => {
+    const list = getItineraryData();
+    const target = list.find(b => b.id === 'd1-penang-hill' || b.id === 'penang-hill-canopy' || (b.title && b.title.includes('Penang Hill')));
+    if (target) handleContingencyOption(target.id, 'freetime');
+  });
+  window.addEventListener('wandersync:contingency_3', () => {
+    const list = getItineraryData();
+    const target = list.find(b => b.id === 'd1-penang-hill' || b.id === 'penang-hill-canopy' || (b.title && b.title.includes('Penang Hill')));
+    if (target) handleContingencyOption(target.id, 'reflow');
+  });
+  window.addEventListener('wandersync:siam_road_advisory', () => {
+    insertSiamRoadSlot();
+  });
 
   const handleClearWeather = () => {
     weatherAlertActive = false;
@@ -2089,7 +2110,9 @@ export function createItineraryView() {
       if (
         data.type === 'WEATHER_ALERT' ||
         data.type === 'TRIGGER_CONTINGENCY' ||
-        data.type === 'RAIN_DISRUPTION'
+        data.type === 'RAIN_DISRUPTION' ||
+        data.type === 'TRIGGER_MONSOON' ||
+        data.type === 'CONTINGENCY_RAIN'
       ) {
         weatherAlertActive = true;
         render();
@@ -2106,6 +2129,20 @@ export function createItineraryView() {
         confirmProposedBlock(data.blockId);
       } else if (data.type === 'SHIFT_TO_DAY3' && data.blockId) {
         shiftBlockToDay3(data.blockId);
+      } else if (data.type === 'CONTINGENCY_1') {
+        const list = getItineraryData();
+        const target = list.find(b => b.id === 'd1-penang-hill' || b.id === 'penang-hill-canopy' || (b.title && b.title.includes('Penang Hill')));
+        if (target) handleContingencyOption(target.id, 'fallback');
+      } else if (data.type === 'CONTINGENCY_2') {
+        const list = getItineraryData();
+        const target = list.find(b => b.id === 'd1-penang-hill' || b.id === 'penang-hill-canopy' || (b.title && b.title.includes('Penang Hill')));
+        if (target) handleContingencyOption(target.id, 'freetime');
+      } else if (data.type === 'CONTINGENCY_3') {
+        const list = getItineraryData();
+        const target = list.find(b => b.id === 'd1-penang-hill' || b.id === 'penang-hill-canopy' || (b.title && b.title.includes('Penang Hill')));
+        if (target) handleContingencyOption(target.id, 'reflow');
+      } else if (data.type === 'TRIGGER_SIAM_ROAD_ADVISORY') {
+        insertSiamRoadSlot();
       }
     };
   } catch (err) {
