@@ -5305,3 +5305,441 @@
   text-align: center;
   line-height: 1.4;
 }
+
+/* ==========================================================================
+   Act 1: Genesis & Reel Extraction Customizer (Apple iOS 26 Liquid Glass)
+   ========================================================================== */
+
+.demo-reel-card--hero {
+  border: 1.5px solid rgba(232, 98, 26, 0.4);
+  background: linear-gradient(135deg, rgba(255, 240, 230, 0.5) 0%, rgba(253, 246, 238, 0.75) 100%);
+  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.08);
+}
+
+.demo-reel-card--hero:hover {
+  border-color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(255, 240, 230, 0.85) 0%, rgba(255, 255, 255, 0.95) 100%);
+  box-shadow: 0 4px 14px rgba(232, 98, 26, 0.16);
+}
+
+.customize-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: #047857;
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  margin-top: 6px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.customize-badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10B981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.7;
+  }
+}
+
+.customize-source-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px 14px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(253, 246, 238, 0.65) 100%);
+  border: 1px solid rgba(232, 98, 26, 0.2);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+  margin-bottom: var(--space-3);
+}
+
+.customize-source-card__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #F58529 0%, #DD2A7B 50%, #8134AF 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(221, 42, 123, 0.3);
+}
+
+.customize-source-card__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.customize-source-card__creator {
+  font-size: 11px;
+  font-weight: var(--font-extrabold);
+  color: var(--color-primary);
+  letter-spacing: -0.01em;
+}
+
+.customize-source-card__title {
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customize-source-card__tag {
+  font-size: 9px;
+  font-weight: var(--font-bold);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: rgba(16, 185, 129, 0.12);
+  color: #065F46;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  flex-shrink: 0;
+}
+
+.customize-dates-section,
+.customize-anchors-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: var(--space-3);
+}
+
+.customize-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.customize-duration-summary {
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+  background: rgba(232, 98, 26, 0.08);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.duration-pills-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.duration-pill {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 8px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 12px;
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.duration-pill:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(232, 98, 26, 0.4);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.duration-pill:active {
+  transform: scale(0.98);
+}
+
+.duration-pill--active {
+  background: linear-gradient(135deg, #FFF0E6 0%, #FFFFFF 100%);
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary);
+  font-weight: var(--font-bold);
+  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.8);
+}
+
+.duration-pill__indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #D1D5DB;
+  transition: all 0.2s;
+}
+
+.duration-pill--active .duration-pill__indicator {
+  background: var(--color-primary);
+  box-shadow: 0 0 6px rgba(232, 98, 26, 0.7);
+}
+
+.duration-pill__label {
+  white-space: nowrap;
+}
+
+.customize-date-inputs-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.customize-date-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.customize-date-label {
+  font-size: 10px;
+  font-weight: var(--font-bold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.customize-date-input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.customize-date-input:focus {
+  border-color: var(--color-primary);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(232, 98, 26, 0.15);
+}
+
+.customize-date-arrow {
+  color: var(--color-text-tertiary);
+  font-size: 14px;
+  font-weight: var(--font-bold);
+  padding-top: 14px;
+}
+
+.customize-drag-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-medium);
+}
+
+.customize-anchors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Apple iOS 26 Liquid Glass Draggable Card */
+.customize-anchor-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04), inset 0 1px 1.5px rgba(255, 255, 255, 0.95);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  user-select: none;
+}
+
+.customize-anchor-card:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(232, 98, 26, 0.3);
+  box-shadow: 0 6px 22px rgba(232, 98, 26, 0.1), inset 0 1px 1.5px rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
+}
+
+.customize-anchor-card.is-dragging {
+  opacity: 0.45;
+  transform: scale(0.97);
+  border: 1.5px dashed var(--color-primary);
+}
+
+.customize-anchor-card.is-drag-over {
+  border-color: var(--color-primary);
+  background: rgba(255, 240, 230, 0.8);
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(232, 98, 26, 0.2);
+}
+
+/* Vertical Drag Handle ⋮⋮ */
+.customize-drag-handle {
+  width: 24px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: grab;
+  color: var(--color-text-tertiary);
+  padding: 0;
+  transition: color 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.customize-drag-handle:active {
+  cursor: grabbing;
+  transform: scale(1.1);
+}
+
+.customize-drag-handle:hover {
+  color: var(--color-primary);
+}
+
+.drag-handle-dots {
+  font-size: 17px;
+  letter-spacing: -2px;
+  line-height: 1;
+  font-weight: 900;
+  user-select: none;
+}
+
+.customize-anchor-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.customize-anchor-top-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.customize-anchor-pin {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.customize-anchor-title {
+  font-size: 12px;
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: 1.3;
+  margin: 0;
+}
+
+.customize-anchor-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.customize-anchor-time {
+  font-weight: var(--font-semibold);
+  color: var(--color-primary);
+}
+
+.customize-anchor-dot {
+  opacity: 0.6;
+}
+
+.customize-anchor-loc {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Day Dropdown Pill [Day 1 ▾] */
+.customize-day-select-wrap {
+  flex-shrink: 0;
+}
+
+.customize-day-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background: rgba(232, 98, 26, 0.08);
+  border: 1px solid rgba(232, 98, 26, 0.25);
+  border-radius: var(--radius-pill);
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+  outline: none;
+  backdrop-filter: blur(8px);
+}
+
+.customize-day-select:hover {
+  background: rgba(232, 98, 26, 0.15);
+  border-color: var(--color-primary);
+  transform: translateY(-0.5px);
+}
+
+.customize-day-select:focus {
+  box-shadow: 0 0 0 2px rgba(232, 98, 26, 0.25);
+}
+
+#btn-build-itinerary {
+  background: linear-gradient(135deg, #E8621A 0%, #D04F0D 100%);
+  border: none;
+  color: #ffffff;
+  box-shadow: 0 4px 16px rgba(232, 98, 26, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  gap: 8px;
+}
+
+#btn-build-itinerary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(232, 98, 26, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+#btn-build-itinerary:active {
+  transform: translateY(0);
+}
