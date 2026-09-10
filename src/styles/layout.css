@@ -201,7 +201,6 @@
   opacity: 1;
 }
 
-/* Translucent Frosted Glass Drawer Panel with Illustrated Cat Pattern Backdrop */
 .sidebar-drawer {
   position: absolute;
   top: 0;
@@ -209,24 +208,21 @@
   bottom: 0;
   width: 300px;
   max-width: 86%;
-  background-color: var(--color-background);
+  background-color: #FAF7F2;
   background-image:
-    linear-gradient(180deg, rgba(245, 239, 235, 0.65) 0%, rgba(245, 239, 235, 0.78) 100%),
+    linear-gradient(180deg, rgba(250, 247, 242, 0.94) 0%, rgba(248, 244, 239, 0.96) 100%),
     url('../assets/cat-bg.jpg');
   background-repeat: no-repeat;
   background-position: center top;
   background-size: cover;
-  backdrop-filter: blur(28px) saturate(190%);
-  -webkit-backdrop-filter: blur(28px) saturate(190%);
   display: flex;
   flex-direction: column;
   border-top-right-radius: 28px;
   border-bottom-right-radius: 28px;
-  /* Thin 1px light-refractive border and specular top highlight */
-  border-right: 1px solid var(--color-border);
+  border-right: 1px solid rgba(200, 179, 155, 0.35);
   box-shadow:
-    16px 0 48px rgba(38, 41, 46, 0.18),
-    inset -1px 0 0 rgba(255, 255, 255, 0.95),
+    16px 0 48px rgba(38, 41, 46, 0.16),
+    inset -1px 0 0 rgba(255, 255, 255, 0.9),
     inset 0 1px 1.5px rgba(255, 255, 255, 1);
   transform: translateX(-100%);
   transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -238,19 +234,15 @@
   transform: translateX(0);
 }
 
-/* Frosted Glass Header with Liquid Curve & Specular Shine */
+/* Header — Solid cream surface so text is always crisp */
 .sidebar-header {
   padding: 18px 18px 14px;
   border-top-right-radius: 28px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgba(200, 179, 155, 0.3);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background: linear-gradient(135deg,
-      rgba(245, 239, 235, 0.85) 0%,
-      rgba(245, 239, 235, 0.72) 100%);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  background: #FAF7F2;
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
 }
 
@@ -399,11 +391,12 @@
 }
 
 .sidebar-section__label {
-  font-size: 10.5px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.9px;
-  color: #64748B;
+  letter-spacing: 1.1px;
+  /* Slate with slightly warmer tint — sharp but not harsh */
+  color: #6D7C8A;
   padding: 0 4px;
 }
 
@@ -412,22 +405,18 @@
   flex-direction: column;
 }
 
-/* Continuous Squircle Liquid Glass Card Panel */
+/* Solid white card — content readable regardless of backdrop */
 .sidebar-item {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 13px 15px;
   border-radius: 20px;
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.72) 0%,
-      rgba(255, 255, 255, 0.54) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.82);
+  background: #FFFFFF;
+  border: 1px solid rgba(200, 179, 155, 0.28);
   box-shadow:
-    0 8px 24px rgba(15, 23, 42, 0.05),
+    0 2px 8px rgba(38, 41, 46, 0.06),
     inset 0 1px 1px rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
   text-align: left;
   cursor: pointer;
   transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -435,12 +424,10 @@
 }
 
 .sidebar-item:hover {
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.88) 0%,
-      rgba(255, 255, 255, 0.70) 100%);
-  border-color: rgba(37, 99, 235, 0.4);
+  background: #FFFFFF;
+  border-color: rgba(216, 88, 34, 0.28);
   box-shadow:
-    0 12px 30px rgba(37, 99, 235, 0.10),
+    0 6px 18px rgba(216, 88, 34, 0.08),
     inset 0 1px 1px #FFFFFF;
   transform: translateY(-1.5px) scale(1.01);
 }
@@ -555,28 +542,22 @@
   transition: all 200ms ease;
 }
 
-/* Notification Glass Cards */
+/* Notification cards — solid white so text stays readable */
 .sidebar-notif-card {
   display: flex;
   gap: 10px;
   padding: 11px 13px;
   border-radius: 16px;
-  background: linear-gradient(180deg,
-      rgba(255, 255, 255, 0.74) 0%,
-      rgba(255, 255, 255, 0.58) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.86);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.03),
-    inset 0 1px 1px rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: #FFFFFF;
+  border: 1px solid rgba(200, 179, 155, 0.25);
+  box-shadow: 0 2px 8px rgba(38, 41, 46, 0.05);
   transition: all 180ms ease;
 }
 
 .sidebar-notif-card:hover {
-  background: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 1);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  background: #FFFFFF;
+  border-color: rgba(200, 179, 155, 0.45);
+  box-shadow: 0 4px 14px rgba(38, 41, 46, 0.08);
 }
 
 /* Glowing Beveled Status Dots */
@@ -703,10 +684,8 @@
   gap: 10px;
   padding: 12px 14px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px dashed rgba(148, 163, 184, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px dashed rgba(200, 179, 155, 0.45);
 }
 
 .sidebar-nav-grid {
@@ -783,12 +762,10 @@
 
 .sidebar-footer {
   padding: 13px 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.65);
-  background: rgba(255, 255, 255, 0.52);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  border-top: 1px solid rgba(200, 179, 155, 0.3);
+  background: #FAF7F2;
   font-size: 10.5px;
-  color: #64748B;
+  color: #6D7C8A;
   text-align: center;
   font-weight: 600;
 }

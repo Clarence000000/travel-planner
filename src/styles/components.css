@@ -4680,16 +4680,18 @@
   background: var(--color-primary);
 }
 
-/* Sleek Sidebar Cards */
+/* Sleek Sidebar Cards — solid white with warm-taupe border for clean lift */
 .sidebar-card {
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.92);
+  background: #FFFFFF;
+  border: 1px solid rgba(200, 179, 155, 0.30);
   border-radius: 18px;
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03);
+  box-shadow:
+    0 2px 8px rgba(38, 41, 46, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95);
 }
 
 .sidebar-card__row {
@@ -4740,11 +4742,13 @@
   color: var(--color-primary);
 }
 
+/* Active pace pill — warm brand orange (Terracotta #D85822), NOT harsh black */
 .sidebar-pace-btn--active {
-  background: #0F172A;
+  background: #D85822;
   color: #FFFFFF;
-  border-color: #0F172A;
+  border-color: #D85822;
   font-weight: 700;
+  box-shadow: 0 2px 8px rgba(216, 88, 34, 0.28);
 }
 
 .sidebar-reshuffle-row {
