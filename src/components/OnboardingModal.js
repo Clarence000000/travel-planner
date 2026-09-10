@@ -784,7 +784,7 @@ export function createOnboardingModal(options = {}) {
     showToastNotice('Itinerary generated! Dates synced and transit buffers optimized.');
 
     if (typeof onComplete === 'function') {
-      onComplete(type);
+      onComplete(type, survey);
     }
   }
 

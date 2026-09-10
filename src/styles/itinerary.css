@@ -684,6 +684,27 @@
   gap: 9px;
 }
 
+.detail-panel__note-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+  border-radius: 10px;
+  padding: 8px 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.detail-panel__notes {
+  margin: 0;
+  font-family: inherit;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #334155;
+  font-weight: 400;
+  word-break: break-word;
+}
+
 .detail-panel__note-tag {
   display: flex;
   align-items: center;
@@ -1596,12 +1617,14 @@
   color: #334155;
 }
 
-.form-input, .form-select, .form-textarea {
+.form-input, .form-select, .form-textarea, textarea.form-input {
+  font-family: inherit;
   width: 100%;
   padding: 10px 14px;
   border-radius: 14px;
   border: 1px solid rgba(255, 255, 255, 0.88);
   font-size: var(--text-sm);
+  line-height: 1.5;
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);

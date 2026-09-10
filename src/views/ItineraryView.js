@@ -21,6 +21,7 @@ import {
   removeItineraryDay,
   deleteItineraryBlock,
   cancelItineraryBlock,
+  updateItineraryBlock,
   onItineraryChange,
 } from '../models/itineraryData.js';
 import {
@@ -165,7 +166,17 @@ export function createItineraryView() {
         render();
         showScheduleToast('Activity added to timeline');
       },
+      onUpdate: (updatedBlock) => {
+        updateItineraryBlock(updatedBlock);
+        itineraryList = getItineraryData();
+        expandedCardIds.add(updatedBlock.id);
+        render();
+        showScheduleToast('Activity details updated');
+      },
     });
+
+    document.body.appendChild(statusModal.element);
+    document.body.appendChild(addBlockModal.element);
   }
 
   function getDayBlocks() {
@@ -193,17 +204,11 @@ export function createItineraryView() {
     );
 
     const bannerImg = settings.coverImage || './src/assets/bg-itinerary.png';
-    const cityTitle = settings.destination.split(',')[0];
+    const cityTitle = (settings.destination || settings.title || 'Tokyo').split(',')[0].trim();
 
     container.innerHTML = `
       <!-- Atmospheric Vertical Asset Banner -->
       <div class="view-banner" style="background-image: url('${bannerImg}');">
-        <button type="button" class="view-banner__back-btn" id="btn-back-to-trips" title="Return to My Trips">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="15 18 9 12 15 6"></polyline>
-          </svg>
-          <span>My Trips</span>
-        </button>
         <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -212,7 +217,7 @@ export function createItineraryView() {
           </svg>
         </button>
         <div class="view-banner__scrim">
-          <span class="view-banner__badge">
+          <span class="view-banner__badge" id="itinerary-banner-badge">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
             ${cityTitle} • Day ${currentDay} of ${dayList.length} • ${rawBlocks.length} Stops
           </span>
@@ -238,21 +243,7 @@ export function createItineraryView() {
         </div>
       </div>
 
-      <!-- Action Toolbar -->
-      <div class="itinerary-actions-bar">
-        <div class="itinerary-btn-group">
-          <button type="button" class="btn btn--primary btn--sm" id="propose-block-btn">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            <span>Propose Activity</span>
-          </button>
 
-          <!-- Day 1 Quick Live HUD Trigger -->
-          <button type="button" class="btn btn--secondary btn--sm btn-live-hud-trigger" id="btn-open-live-hud" title="Launch focused Day-of HUD execution mode">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            <span style="color: #2563EB; font-weight: 700;">Live HUD</span>
-          </button>
-        </div>
-      </div>
 
       <!-- Transit Buffer Warning Banner (if any buffer deficit exists) -->
       ${
@@ -278,91 +269,44 @@ export function createItineraryView() {
       ${
         rawBlocks.length === 0
           ? `
-        <div class="timeline-feed timeline-feed--empty-dashed" id="timeline-feed-target">
-          <!-- Dashed vertical spine rail -->
-          <div class="timeline-empty-spine" aria-hidden="true"></div>
+        <div class="timeline-feed" id="timeline-feed-target">
+          <div class="timeline-item-wrapper timeline-item-wrapper--empty" id="btn-empty-propose-slot" role="button" tabindex="0" title="Click to propose an event">
+            <!-- Retain original blue timeline node pin with SVG icon of time -->
+            <div class="timeline-node-pin timeline-node-pin--time">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Time">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            </div>
 
-          <!-- Ghost Slot 1 (Morning) -->
-          <div class="ghost-slot-card" data-slot-preset="morning" role="button" tabindex="0">
-            <div class="ghost-slot-pin">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div class="ghost-slot-body">
-              <div class="ghost-slot-time">09:00 – 11:30 • Morning Slot</div>
-              <h4 class="ghost-slot-title">Unscheduled Activity</h4>
-              <p class="ghost-slot-hint">Ready for your morning spot. Propose an activity or import from wishlist.</p>
-            </div>
-            <button type="button" class="ghost-slot-add-btn" data-slot-preset="morning" title="Add Morning Activity">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
+            <!-- Single greyed out dashed event card -->
+            <article class="timeline-card timeline-card--empty-dashed">
+              <div class="timeline-card__empty-dashed-content">
+                <div class="timeline-card__empty-icon-wrap">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                  </svg>
+                </div>
+                <div class="timeline-card__empty-text-wrap">
+                  <h4 class="timeline-card__empty-title">Propose an event</h4>
+                  <p class="timeline-card__empty-desc">Tap to add your first stop or activity to Day ${currentDay}</p>
+                </div>
+              </div>
+            </article>
           </div>
-
-          <!-- Dashed Transit Buffer Connector -->
-          <div class="ghost-transit-buffer">
-            <div class="ghost-transit-pill">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/></svg>
-              <span>Transit cushion calculated automatically</span>
-            </div>
-          </div>
-
-          <!-- Ghost Slot 2 (Afternoon) -->
-          <div class="ghost-slot-card" data-slot-preset="afternoon" role="button" tabindex="0">
-            <div class="ghost-slot-pin">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div class="ghost-slot-body">
-              <div class="ghost-slot-time">12:00 – 15:00 • Afternoon Slot</div>
-              <h4 class="ghost-slot-title">Unscheduled Activity</h4>
-              <p class="ghost-slot-hint">Ideal for dining, sightseeing, or cultural exploring.</p>
-            </div>
-            <button type="button" class="ghost-slot-add-btn" data-slot-preset="afternoon" title="Add Afternoon Activity">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-          </div>
-
-          <!-- Dashed Transit Buffer Connector -->
-          <div class="ghost-transit-buffer">
-            <div class="ghost-transit-pill">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              <span>Subway & walking buffer calculated on lock</span>
-            </div>
-          </div>
-
-          <!-- Ghost Slot 3 (Evening) -->
-          <div class="ghost-slot-card" data-slot-preset="evening" role="button" tabindex="0">
-            <div class="ghost-slot-pin">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div class="ghost-slot-body">
-              <div class="ghost-slot-time">17:30 – 21:00 • Evening Slot</div>
-              <h4 class="ghost-slot-title">Unscheduled Activity</h4>
-              <p class="ghost-slot-hint">Dinner reservations, izakaya crawling, or night viewpoints.</p>
-            </div>
-            <button type="button" class="ghost-slot-add-btn" data-slot-preset="evening" title="Add Evening Activity">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            </button>
-          </div>
-
-          <!-- Empty Timeline Action Toolbar -->
-          <div class="empty-timeline-actions">
-            <button type="button" class="btn btn--primary btn--sm" id="btn-empty-propose">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              <span>Propose Activity</span>
-            </button>
-            <button type="button" class="btn btn--secondary btn--sm" id="btn-empty-whiteboard">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-              <span>Idea Whiteboard</span>
-            </button>
-            ${
-              dayList.length > 1
-                ? `
-              <button type="button" class="btn btn--secondary btn--sm" id="btn-empty-remove-day" style="color: #DC2626;">
+          ${
+            dayList.length > 1
+              ? `
+            <div class="timeline-empty-remove-wrap">
+              <button type="button" class="btn-empty-remove-day" id="btn-empty-remove-day">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 <span>Remove Day ${currentDay}</span>
               </button>
-            `
-                : ''
-            }
-          </div>
+            </div>
+          `
+              : ''
+          }
         </div>
       `
           : `
@@ -747,7 +691,7 @@ export function createItineraryView() {
                   }
 
                   ${
-                    block.dressCode
+                    block.dressCode && block.dressCode.toLowerCase() !== 'none' && block.dressCode.trim() !== ''
                       ? `
                     <div class="detail-panel__note-tag">
                       <span class="detail-panel__note-label">
@@ -842,16 +786,18 @@ export function createItineraryView() {
                         <span>Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
                       </button>
 
-                      <!-- Cancel Event (Day-Of Execution) -->
-                      <button type="button" class="btn-card-action btn-card-action--cancel" data-cancel-block="${block.id}" title="Cancel event (Day-Of Contingency)">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
-                        <span>Cancel</span>
+                      <!-- Edit Block Action -->
+                      <button type="button" class="btn-card-action btn-card-action--edit" data-edit-block="${block.id}" title="Edit activity details" aria-label="Edit activity">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        <span>Edit</span>
                       </button>
 
                       <!-- Delete Block (Planning Phase) -->
-                      <button type="button" class="btn-card-action btn-card-action--delete" data-delete-block="${block.id}" title="Delete block from schedule">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        <span>Delete</span>
+                      <button type="button" class="btn-card-action btn-card-action--delete btn-card-action--icon-only" data-delete-block="${block.id}" title="Delete block from schedule" aria-label="Delete block">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                       </button>
                     </div>
 
@@ -921,7 +867,10 @@ export function createItineraryView() {
       });
     }
 
-    // 2. Day selector chips
+    // 2. Enable horizontal drag & wheel scrolling on Day selector chips
+    enableDragScroll(container.querySelector('.day-chip-row'));
+
+    // Day selector chips
     container.querySelectorAll('.day-chip[data-day]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const day = parseInt(btn.getAttribute('data-day'), 10);
@@ -943,11 +892,21 @@ export function createItineraryView() {
       });
     }
 
+    // 2B. Propose Event Button in header
+
+
     // 2C. Empty Day Actions
-    const emptyPropose = container.querySelector('#btn-empty-propose');
-    if (emptyPropose) {
-      emptyPropose.addEventListener('click', () => {
+    const emptyProposeSlot = container.querySelector('#btn-empty-propose-slot');
+    if (emptyProposeSlot) {
+      const handlePropose = () => {
         if (addBlockModal) addBlockModal.open(currentDay);
+      };
+      emptyProposeSlot.addEventListener('click', handlePropose);
+      emptyProposeSlot.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handlePropose();
+        }
       });
     }
 
@@ -961,21 +920,7 @@ export function createItineraryView() {
       });
     }
 
-    // 2D. Live HUD Trigger
-    const liveHudBtn = container.querySelector('#btn-open-live-hud');
-    if (liveHudBtn) {
-      liveHudBtn.addEventListener('click', () => {
-        setActiveTab('dashboard');
-      });
-    }
 
-    // 3. Propose Activity Button
-    const proposeBtn = container.querySelector('#propose-block-btn');
-    if (proposeBtn && addBlockModal) {
-      proposeBtn.addEventListener('click', () => {
-        addBlockModal.open(currentDay);
-      });
-    }
 
     // Reset Itinerary Button
     const resetBtn = container.querySelector('#reset-itinerary-btn');
@@ -1010,6 +955,18 @@ export function createItineraryView() {
         const block = itineraryList.find((b) => b.id === blockId);
         if (block && statusModal) {
           statusModal.open(block);
+        }
+      });
+    });
+
+    // 4B2. Card Edit Button
+    container.querySelectorAll('[data-edit-block]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-edit-block');
+        const block = itineraryList.find((b) => b.id === blockId);
+        if (block && addBlockModal) {
+          addBlockModal.open(block.day || currentDay, {}, block);
         }
       });
     });
@@ -1411,15 +1368,6 @@ export function createItineraryView() {
 
   function openQuickThreadDrawer(blockId) {
     const block = itineraryList.find((b) => b.id === blockId) || {};
-    const thread = getThreadById(blockId) || {
-      blockId,
-      title: 'Activity Discussion',
-      eventTitle: 'Itinerary Stop',
-      category: 'location',
-      location: 'Tokyo & Kyoto',
-      messages: [],
-    };
-
     const backdrop = document.createElement('div');
     backdrop.className = 'quick-thread-backdrop';
 
@@ -1431,6 +1379,15 @@ export function createItineraryView() {
     }
 
     function renderThreadContent() {
+      const thread = getThreadById(blockId) || {
+        blockId,
+        title: block.title || 'Activity Discussion',
+        eventTitle: block.title || 'Itinerary Stop',
+        category: block.category || 'general',
+        location: block.location || 'Tokyo & Kyoto',
+        day: block.day || currentDay,
+        messages: [],
+      };
       backdrop.innerHTML = `
         <div class="quick-thread-sheet" role="dialog" aria-labelledby="qt-title">
           <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(15, 23, 42, 0.08); padding-bottom: 10px;">
@@ -1500,14 +1457,17 @@ export function createItineraryView() {
         });
       }
 
+      const feed = backdrop.querySelector('.chat-feed');
+      if (feed) feed.scrollTop = feed.scrollHeight;
+
       const handleSend = () => {
         const text = input.value.trim();
         if (!text) return;
-        addMessageToThread(blockId, {
-          sender: 'You',
-          text,
-          time: 'Just now',
-          isCurrentUser: true,
+        addMessageToThread(blockId, text, {
+          title: block.title,
+          category: block.category,
+          location: block.location,
+          day: block.day || currentDay,
         });
         input.value = '';
         renderThreadContent();
@@ -1536,6 +1496,24 @@ export function createItineraryView() {
     render();
   });
 
+  // Global listener for opening propose activity modal
+  if (!window.TravelApp) window.TravelApp = {};
+  window.TravelApp.openProposeActivity = (day) => {
+    if (addBlockModal) addBlockModal.open(day || currentDay);
+  };
+
+  const handleOpenPropose = (e) => {
+    const targetDay = (e && e.detail && e.detail.day) || currentDay;
+    if (addBlockModal) addBlockModal.open(targetDay);
+  };
+  window.addEventListener('open-propose-activity', handleOpenPropose);
+
+  // Update header and timeline whenever trip settings update
+  const handleSettingsUpdate = () => {
+    render();
+  };
+  window.addEventListener('trip-settings-updated', handleSettingsUpdate);
+
   // Initialize and return
   initModals();
   render();
@@ -1549,6 +1527,8 @@ export function createItineraryView() {
     },
     destroy: () => {
       unsubscribe();
+      window.removeEventListener('open-propose-activity', handleOpenPropose);
+      window.removeEventListener('trip-settings-updated', handleSettingsUpdate);
     },
   };
 }

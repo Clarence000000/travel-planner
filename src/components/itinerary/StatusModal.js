@@ -148,6 +148,9 @@ export function createStatusModal({ onSave }) {
   });
 
   function open(block) {
+    if (!document.body.contains(backdrop)) {
+      document.body.appendChild(backdrop);
+    }
     currentBlock = block;
     titleEl.textContent = `Status: ${block.title}`;
     fallbackInput.value = block.fallback || '';

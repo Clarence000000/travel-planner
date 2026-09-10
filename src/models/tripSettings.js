@@ -93,6 +93,8 @@ export function getTripSettings() {
       endDate: activeTrip.endDate || DEFAULT_SETTINGS.endDate,
       totalDays: activeTrip.totalDays || DEFAULT_SETTINGS.totalDays,
       coverImage: activeTrip.coverImage || DEFAULT_SETTINGS.coverImage,
+      pace: activeTrip.pace || DEFAULT_SETTINGS.pace,
+      vibe: activeTrip.vibe || DEFAULT_SETTINGS.vibe,
     };
   }
 
@@ -129,6 +131,8 @@ export function saveTripSettings(updates) {
       endDate: next.endDate,
       totalDays: next.totalDays,
       coverImage: next.coverImage,
+      pace: next.pace,
+      vibe: next.vibe,
     });
   }
 

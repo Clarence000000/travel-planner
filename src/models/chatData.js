@@ -6,8 +6,7 @@
 
 import { getItineraryData } from './itineraryData.js';
 
-const STORAGE_KEY = 'travel_planner_chat_v5';
-const PREV_STORAGE_KEY = 'travel_planner_chat_v3';
+const STORAGE_KEY = 'travel_planner_chat_v6';
 
 export const THREAD_CATEGORIES = [
   {
@@ -127,371 +126,24 @@ export function getThreadDay(thread) {
   return null;
 }
 
-
+// Initial threads on clean slate: General discussion only
 const INITIAL_THREADS = [
-  // ── 1. Food & Dining ──
-  {
-    blockId: 'd1-3',
-    title: 'Rooftop Matcha & Food Market',
-    eventTitle: 'Rooftop Matcha & Street Food Market',
-    category: 'food',
-    location: 'Nakamise Street & Asakusa Rooftop',
-    participantCount: 4,
-    poll: {
-      id: 'poll-d1-3',
-      status: 'closed',
-      question: 'Which lunch spot should we lock in for the group?',
-      options: [
-        { id: 'opt-soba', label: 'Traditional Soba Noodles', votes: 3 },
-        { id: 'opt-seafood', label: 'Tsukiji Fresh Seafood Bowl', votes: 1 },
-      ],
-      userVote: 'opt-soba',
-    },
-    messages: [
-      {
-        id: 'm1',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'The handmade soba place has vegan and gluten-friendly options which fits everyone!',
-        time: '10:14 AM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm2',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: "Agreed! Let's vote Option A so the schedule auto-updates the reservation time.",
-        time: '10:16 AM',
-        isCurrentUser: true,
-      },
-      {
-        id: 'm3',
-        sender: 'Kenji M.',
-        avatar: 'KM',
-        text: 'Rooftop seats have a stunning view of the temple pagoda too. Perfect for sunny weather.',
-        time: '10:20 AM',
-        isCurrentUser: false,
-      },
-    ],
-  },
-  {
-    blockId: 'd1-5',
-    title: 'Izakaya Gathering & Craft Skewers',
-    eventTitle: 'Izakaya Gathering & Craft Skewers',
-    category: 'food',
-    location: 'Omoide Yokocho, Shinjuku',
-    participantCount: 4,
-    poll: null,
-    messages: [
-      {
-        id: 'm-iz1',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'Reservation is confirmed for 7:00 PM under Clarence! They have a 2-hour dining limit.',
-        time: '04:15 PM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm-iz2',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Perfect. We should definitely order the charcoal-grilled tsukune with raw egg yolk dip.',
-        time: '04:20 PM',
-        isCurrentUser: true,
-      },
-      {
-        id: 'm-iz3',
-        sender: 'Sakura K.',
-        avatar: 'SK',
-        text: 'Do they have vegetarian yakitori skewers like shiitake and shishito peppers?',
-        time: '04:25 PM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm-iz4',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'Yes, full vegetable kushiyaki menu available!',
-        time: '04:28 PM',
-        isCurrentUser: false,
-      },
-    ],
-  },
-
-  // ── 2. Locations & Sights ──
-  {
-    blockId: 'd1-2',
-    title: 'Senso-ji Temple Walk',
-    eventTitle: 'Senso-ji Temple & Traditional Street Walk',
-    category: 'location',
-    location: 'Asakusa, Taito City',
-    participantCount: 4,
-    poll: null,
-    messages: [
-      {
-        id: 'm201',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'Remember to carry 100-yen coins for fortune omikuji sticks!',
-        time: '09:40 AM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm202',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Got cash ready! Meet at the Kaminarimon Thunder Gate entrance at 10:40 AM.',
-        time: '09:45 AM',
-        isCurrentUser: true,
-      },
-    ],
-  },
-  {
-    blockId: 'd1-4',
-    title: 'teamLab Borderless',
-    eventTitle: 'teamLab Borderless Digital Art Museum',
-    category: 'location',
-    location: 'Azabudai Hills',
-    participantCount: 4,
-    poll: {
-      id: 'poll-d1-4',
-      status: 'active',
-      question: 'Which gallery section should we explore first?',
-      options: [
-        { id: 'opt-crystal', label: 'Infinite Crystal World', votes: 2 },
-        { id: 'opt-forest', label: 'Forest of Resonating Lamps', votes: 1 },
-      ],
-      userVote: null,
-    },
-    messages: [
-      {
-        id: 'm301',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'Heads up: floors are mirrored in the crystal room, avoid skirts or wear shorts underneath!',
-        time: '11:05 AM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm302',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Good catch! Added to the slot requirements list.',
-        time: '11:12 AM',
-        isCurrentUser: true,
-      },
-    ],
-  },
-  {
-    blockId: 'd2-2',
-    title: 'Arashiyama Bamboo Grove',
-    eventTitle: 'Arashiyama Bamboo Grove & River Walk',
-    category: 'location',
-    location: 'Ukyo Ward, Kyoto',
-    participantCount: 4,
-    poll: null,
-    messages: [
-      {
-        id: 'm401',
-        sender: 'Kenji M.',
-        avatar: 'KM',
-        text: 'Weather radar shows possible light rain in the afternoon. Let the schedule optimizer prep the indoor backup.',
-        time: '08:15 AM',
-        isCurrentUser: false,
-      },
-    ],
-  },
-
-  // ── 3. Hotel & Stay ──
-  {
-    blockId: 'd1-1',
-    title: 'Shinjuku Granbell Hotel Check-In',
-    eventTitle: 'Hotel Check-In & Luggage Drop',
-    category: 'hotel',
-    location: 'Shinjuku Granbell Hotel',
-    participantCount: 4,
-    poll: null,
-    messages: [
-      {
-        id: 'm-h1',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'Front desk confirmed we can store our large suitcases free of charge before the 3:00 PM check-in.',
-        time: '08:15 AM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm-h2',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Booking ref is TK-9821. Have your passports ready for quick scanning at the front kiosk.',
-        time: '08:20 AM',
-        isCurrentUser: true,
-      },
-      {
-        id: 'm-h3',
-        sender: 'Ren T.',
-        avatar: 'RT',
-        text: 'Got it! Did we request twin beds or double for room 402?',
-        time: '08:22 AM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm-h4',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Twin beds confirmed for both rooms. Keycards will be ready by afternoon!',
-        time: '08:25 AM',
-        isCurrentUser: true,
-      },
-    ],
-  },
-
-  // ── 4. Transit & Travel ──
-  {
-    blockId: 'd2-1',
-    title: 'Shinkansen Bullet Train to Kyoto',
-    eventTitle: 'Shinkansen Bullet Train to Kyoto',
-    category: 'transit',
-    location: 'Tokyo Station → Kyoto Station',
-    participantCount: 4,
-    poll: {
-      id: 'poll-d2-1',
-      status: 'closed',
-      question: 'Which Shinkansen bento box should we grab at Tokyo Station?',
-      options: [
-        { id: 'opt-ekiben-beef', label: 'Yonezawa Wagyu Bento', votes: 3 },
-        { id: 'opt-ekiben-sushi', label: 'Edo-style Nigiri Bento', votes: 1 },
-      ],
-      userVote: 'opt-ekiben-beef',
-    },
-    messages: [
-      {
-        id: 'm-t1',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'JR Rail Passes are all validated! We are in Car 6, reserved seats 12A through 12D.',
-        time: '07:05 AM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm-t2',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Seats D & E get the Mt. Fuji view on the right side ~45 minutes after leaving Tokyo!',
-        time: '07:10 AM',
-        isCurrentUser: true,
-      },
-      {
-        id: 'm-t3',
-        sender: 'Kenji M.',
-        avatar: 'KM',
-        text: 'Huge ekiben shop right outside the Shinkansen gates. Grabbing lunch boxes now.',
-        time: '07:14 AM',
-        isCurrentUser: false,
-      },
-    ],
-  },
-
-  // ── Day 3 Threads ──
-  {
-    blockId: 'd3-1',
-    day: 3,
-    title: 'Shibuya Sky Observatory Deck',
-    eventTitle: 'Shibuya Sky Observatory Deck',
-    category: 'location',
-    location: 'Shibuya Scramble Square',
-    participantCount: 4,
-    poll: {
-      id: 'poll-d3-1',
-      status: 'active',
-      question: 'Which viewing slot should we reserve for Shibuya Sky?',
-      options: [
-        { id: 'opt-sunset', label: 'Golden Hour Sunset (4:40 PM)', votes: 2 },
-        { id: 'opt-neon', label: 'Night Neon Lights (7:30 PM)', votes: 1 },
-      ],
-      userVote: null,
-    },
-    messages: [
-      {
-        id: 'm-d3-1',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'Sunset tickets sell out days in advance! Open-air 360-degree glass view of the scramble crossing.',
-        time: '09:10 AM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm-d3-2',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Voted for Golden Hour. Remember they require locking bags in coin lockers before going onto the helipad.',
-        time: '09:15 AM',
-        isCurrentUser: true,
-      },
-    ],
-  },
-  {
-    blockId: 'd3-2',
-    day: 3,
-    title: 'Farewell Wagyu BBQ Feast',
-    eventTitle: 'Farewell Wagyu BBQ Feast',
-    category: 'food',
-    location: 'Shibuya Crossing View Grill',
-    participantCount: 4,
-    poll: null,
-    messages: [
-      {
-        id: 'm-d3-3',
-        sender: 'Sakura K.',
-        avatar: 'SK',
-        text: 'Final group dinner of the trip! The restaurant window overlooks the entire Shibuya Crossing.',
-        time: '01:20 PM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm-d3-4',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Table is confirmed for our group. Great way to celebrate before the airport express train.',
-        time: '01:25 PM',
-        isCurrentUser: true,
-      },
-    ],
-  },
-
-  // ── 5. General & Planning ──
   {
     blockId: 'general',
-    title: 'General Trip Discussion',
-    eventTitle: 'Group Discussion & Logistics',
+    day: null,
+    title: 'General Discussion',
+    eventTitle: 'General Trip Discussion',
     category: 'general',
-    location: 'Tokyo & Kyoto 2026',
+    location: 'Trip Wide',
     participantCount: 4,
     poll: null,
     messages: [
       {
-        id: 'm501',
+        id: 'msg-gen-1',
         sender: 'Wei Gang',
         avatar: 'WG',
-        text: 'Welcome everyone to Tokyo! Check the Itinerary tab for Day 1 blocks.',
-        time: '08:30 AM',
-        isCurrentUser: false,
-      },
-      {
-        id: 'm502',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Make sure your mobile Suica/Pasmo cards are topped up on Apple Wallet or Google Pay.',
-        time: '08:35 AM',
-        isCurrentUser: true,
-      },
-      {
-        id: 'm503',
-        sender: 'Sakura K.',
-        avatar: 'SK',
-        text: 'Pocket Wi-Fi picked up from Haneda Terminal 3. Connection is super fast!',
-        time: '08:40 AM',
+        text: 'Welcome to the trip! Use this general thread to chat, coordinate schedule ideas, and discuss bookings.',
+        time: '09:00 AM',
         isCurrentUser: false,
       },
     ],
@@ -500,10 +152,7 @@ const INITIAL_THREADS = [
 
 export function getChatThreads() {
   try {
-    let raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      raw = localStorage.getItem(PREV_STORAGE_KEY);
-    }
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -512,12 +161,10 @@ export function getChatThreads() {
           category: normalizeCategory(t.category),
         }));
 
-        // Ensure key starter threads exist for each category
-        INITIAL_THREADS.forEach((init) => {
-          if (!normalized.some((t) => t.blockId === init.blockId)) {
-            normalized.push(init);
-          }
-        });
+        // Ensure starter 'general' thread is always present
+        if (!normalized.some((t) => t.blockId === 'general')) {
+          normalized.unshift(INITIAL_THREADS[0]);
+        }
 
         return normalized;
       }
@@ -548,6 +195,7 @@ export function getThreadById(blockId) {
     if (itineraryBlock) {
       return {
         blockId,
+        day: itineraryBlock.day || null,
         title: itineraryBlock.title,
         eventTitle: itineraryBlock.title,
         category: normalizeCategory(itineraryBlock.category),
@@ -564,9 +212,24 @@ export function getThreadById(blockId) {
   return null;
 }
 
-export function addMessageToThread(blockId, text, metadata = {}) {
+export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
   const threads = getChatThreads();
   let thread = threads.find((t) => t.blockId === blockId);
+
+  let rawText = '';
+  let senderName = 'Clarence (You)';
+  let avatar = 'CL';
+  let isCurrentUser = true;
+
+  if (typeof textOrMsg === 'string') {
+    rawText = textOrMsg;
+  } else if (textOrMsg && typeof textOrMsg === 'object') {
+    rawText = textOrMsg.text || '';
+    if (textOrMsg.sender) senderName = textOrMsg.sender;
+    if (textOrMsg.avatar) avatar = textOrMsg.avatar;
+    if (textOrMsg.isCurrentUser !== undefined) isCurrentUser = textOrMsg.isCurrentUser;
+    metadata = { ...metadata, ...textOrMsg };
+  }
 
   if (!thread) {
     // Dynamically populate metadata from itinerary block or passed metadata
@@ -577,11 +240,13 @@ export function addMessageToThread(blockId, text, metadata = {}) {
     } catch (e) {}
 
     const title = metadata.title || (itineraryBlock ? itineraryBlock.title : `Discussion (${blockId})`);
-    const location = metadata.location || (itineraryBlock ? itineraryBlock.location : 'Tokyo & Kyoto');
+    const location = metadata.location || (itineraryBlock ? itineraryBlock.location : 'Trip Wide');
     const rawCategory = metadata.category || (itineraryBlock ? itineraryBlock.category : 'general');
+    const day = metadata.day || (itineraryBlock ? itineraryBlock.day : null);
 
     thread = {
       blockId,
+      day,
       title,
       eventTitle: title,
       category: normalizeCategory(rawCategory),
@@ -598,11 +263,11 @@ export function addMessageToThread(blockId, text, metadata = {}) {
 
   const newMessage = {
     id: 'msg-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
-    sender: 'Clarence (You)',
-    avatar: 'CL',
-    text: text.trim(),
+    sender: senderName,
+    avatar,
+    text: String(rawText).trim(),
     time: timeStr,
-    isCurrentUser: true,
+    isCurrentUser,
   };
 
   thread.messages.push(newMessage);
@@ -610,20 +275,24 @@ export function addMessageToThread(blockId, text, metadata = {}) {
   return { thread, newMessage };
 }
 
-export function createChatThread({ title, category, day = null, location, initialMessage, poll = null }) {
+export function createChatThread({ blockId, title, category, day = null, location, initialMessage, poll = null }) {
   const threads = getChatThreads();
-  const blockId = 'custom-' + Date.now();
+  const id = blockId || ('custom-' + Date.now());
+
+  const existing = threads.find((t) => t.blockId === id);
+  if (existing) return existing;
+
   const normalizedCategory = normalizeCategory(category || 'general');
   const now = new Date();
   const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   const messages = [];
-  if (initialMessage && initialMessage.trim()) {
+  if (initialMessage && String(initialMessage).trim()) {
     messages.push({
       id: 'msg-' + Date.now(),
       sender: 'Clarence (You)',
       avatar: 'CL',
-      text: initialMessage.trim(),
+      text: String(initialMessage).trim(),
       time: timeStr,
       isCurrentUser: true,
     });
@@ -636,12 +305,12 @@ export function createChatThread({ title, category, day = null, location, initia
   }
 
   const newThread = {
-    blockId,
+    blockId: id,
     day: parsedDay,
-    title: title.trim(),
-    eventTitle: title.trim(),
+    title: (title || 'New Discussion').trim(),
+    eventTitle: (title || 'New Discussion').trim(),
     category: normalizedCategory,
-    location: location?.trim() || 'Tokyo & Kyoto',
+    location: location?.trim() || 'Trip Wide',
     participantCount: 4,
     poll,
     messages,

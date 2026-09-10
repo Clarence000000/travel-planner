@@ -7,7 +7,7 @@
  * Zero-State & Multi-Trip Styles
  * Conforms to Apple iOS 26 "Liquid Glass" design language:
  * Frosted glassmorphism, 1px light refractive borders, top specular highlights,
- * continuous squircles, dashed timeline rails, and crisp vector iconography.
+ * continuous squircles, and crisp vector iconography.
  */
 
 /* ── "My Trips" Portfolio View ── */
@@ -215,172 +215,129 @@
   background: rgba(220, 38, 38, 0.08);
 }
 
-/* ── Banner Navigation Back Button ── */
-.view-banner__back-btn {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.95);
-  border-radius: 9999px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #0F172A;
+/* ── Empty Day Timeline Propose Event Card ── */
+.timeline-item-wrapper--empty {
+  position: relative;
+  margin-bottom: var(--space-3);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), inset 0 1px 1px #FFFFFF;
-  z-index: 10;
-  transition: all 150ms ease;
 }
 
-.view-banner__back-btn:hover {
-  background: #FFFFFF;
-  transform: translateX(-2px);
-}
-
-/* ── Dashed Timeline Rail & Ghost Slots ── */
-.timeline-feed--empty-dashed {
-  position: relative;
-  padding: 12px 16px 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.timeline-empty-spine {
+.timeline-node-pin--time {
   position: absolute;
-  left: 31px;
-  top: 24px;
-  bottom: 80px;
-  width: 2px;
-  border-left: 2px dashed rgba(232, 98, 26, 0.38);
-  pointer-events: none;
-  z-index: 1;
-}
-
-.ghost-slot-card {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.52) 100%);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1.5px dashed rgba(15, 23, 42, 0.18);
-  border-radius: 20px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.9);
-  transition: all 200ms ease;
-}
-
-.ghost-slot-card:hover {
-  border-color: rgba(232, 98, 26, 0.5);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 247, 237, 0.75) 100%);
-  transform: translateY(-1px);
-}
-
-.ghost-slot-pin {
-  width: 32px;
-  height: 32px;
+  left: -48px;
+  top: 14px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: #FFFFFF;
-  border: 1.5px dashed rgba(232, 98, 26, 0.5);
+  border: 2px solid #2563EB;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28), inset 0 1px 1px #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #E8621A;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-  flex-shrink: 0;
+  z-index: 3;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  box-sizing: border-box;
 }
 
-.ghost-slot-body {
+.timeline-item-wrapper--empty:hover .timeline-node-pin--time {
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.42);
+  transform: scale(1.06);
+}
+
+.timeline-card--empty-dashed {
+  background: rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1.5px dashed rgba(100, 116, 139, 0.35);
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.03);
+  transition: all 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timeline-item-wrapper--empty:hover .timeline-card--empty-dashed {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: #2563EB;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12), inset 0 1px 1px #FFFFFF;
+  transform: translateY(-1.5px);
+}
+
+.timeline-card__empty-dashed-content {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.timeline-card__empty-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px dashed rgba(37, 99, 235, 0.3);
+  color: #2563EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 180ms ease;
+}
+
+.timeline-item-wrapper--empty:hover .timeline-card__empty-icon-wrap {
+  background: #2563EB;
+  color: #FFFFFF;
+  border-style: solid;
+}
+
+.timeline-card__empty-text-wrap {
   flex: 1;
   min-width: 0;
 }
 
-.ghost-slot-time {
-  font-size: 10.5px;
+.timeline-card__empty-title {
+  font-size: 14px;
   font-weight: 700;
-  color: #64748B;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-bottom: 2px;
+  color: #475569;
+  margin: 0 0 2px 0;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
 }
 
-.ghost-slot-title {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #1E293B;
-  margin-bottom: 2px;
+.timeline-item-wrapper--empty:hover .timeline-card__empty-title {
+  color: #0F172A;
 }
 
-.ghost-slot-hint {
-  font-size: 11px;
-  color: #64748B;
+.timeline-card__empty-desc {
+  font-size: 11.5px;
+  color: #94A3B8;
+  margin: 0;
   line-height: 1.35;
 }
 
-.ghost-slot-add-btn {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(232, 98, 26, 0.1);
-  border: 1px solid rgba(232, 98, 26, 0.25);
-  color: #E8621A;
+.timeline-empty-remove-wrap {
+  margin-top: 8px;
   display: flex;
+  justify-content: flex-end;
+}
+
+.btn-empty-remove-day {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
   cursor: pointer;
-  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
   transition: all 150ms ease;
 }
 
-.ghost-slot-add-btn:hover {
-  background: #E8621A;
-  color: #FFFFFF;
-  transform: scale(1.08);
-}
-
-/* Dashed Transit Buffer */
-.ghost-transit-buffer {
-  position: relative;
-  z-index: 2;
-  margin: 6px 0 6px 40px;
-  display: flex;
-  align-items: center;
-}
-
-.ghost-transit-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px dashed rgba(37, 99, 235, 0.35);
-  border-radius: 9999px;
-  font-size: 10.5px;
-  font-weight: 600;
-  color: #2563EB;
-}
-
-/* Empty Timeline Actions */
-.empty-timeline-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 18px;
-  position: relative;
-  z-index: 3;
-}
-
-.empty-timeline-actions .btn {
-  flex: 1;
-  justify-content: center;
+.btn-empty-remove-day:hover {
+  color: #DC2626;
+  background: rgba(220, 38, 38, 0.08);
 }
 
 /* ── Ideas Whiteboard 0-State ── */

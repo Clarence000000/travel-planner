@@ -96,7 +96,7 @@ export const SAMPLE_ITINERARY = [
     fallback: 'Shinjuku Lumine 1 Food Hall',
     fallbackReason: 'crowd',
     notes: 'Charcoal grilled skewers in narrow atmospheric alleyways.',
-    dressCode: 'Casual (smoke-friendly environment)',
+    dressCode: null,
   },
   {
     id: 'd1-6',
@@ -312,6 +312,17 @@ export function resetItineraryData() {
 export function addItineraryBlock(block) {
   const list = getItineraryData();
   list.push(sanitizeBlock(block));
+  saveItineraryData(list);
+  return list;
+}
+
+/**
+ * Update an existing block in itinerary
+ */
+export function updateItineraryBlock(updatedBlock) {
+  let list = getItineraryData();
+  const sanitized = sanitizeBlock(updatedBlock);
+  list = list.map((b) => (b.id === sanitized.id ? { ...b, ...sanitized } : b));
   saveItineraryData(list);
   return list;
 }

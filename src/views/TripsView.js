@@ -2,26 +2,22 @@
  * View: My Trips / Trips Portfolio (Clean Zero-State Landing)
  * Displays list of all trip itineraries or an atmospheric clean-slate
  * invitation to create a new trip with Apple iOS 26 Liquid Glass styling.
+ * Connects directly to the original AI Questionnaire & Reels Importer modal.
  */
 
 import { getTrips, setActiveTripId, deleteTrip, subscribeTrips } from '../models/tripsModel.js';
 import { formatDateRange } from '../models/tripSettings.js';
-import { createCreateTripModal } from '../components/CreateTripModal.js';
 
 export function createTripsView(options = {}) {
   const onOpenTrip = options.onOpenTrip || options.onSelectTrip;
+  const onOpenOnboarding = options.onOpenOnboarding || (() => {
+    if (window.TravelApp && window.TravelApp.openOnboarding) {
+      window.TravelApp.openOnboarding();
+    }
+  });
+
   const container = document.createElement('div');
   container.className = 'feature-view trips-view';
-
-  // Create modal instance
-  const createModal = createCreateTripModal({
-    onCreated: (newTrip) => {
-      if (typeof onOpenTrip === 'function') {
-        onOpenTrip(newTrip);
-      }
-    },
-  });
-  document.body.appendChild(createModal.element);
 
   function render() {
     const trips = getTrips();
@@ -158,12 +154,12 @@ export function createTripsView(options = {}) {
     // Event listeners
     const createFirstBtn = container.querySelector('#btn-create-first-trip');
     if (createFirstBtn) {
-      createFirstBtn.addEventListener('click', () => createModal.open());
+      createFirstBtn.addEventListener('click', () => onOpenOnboarding());
     }
 
     const createNavBtn = container.querySelector('#btn-create-trip-nav');
     if (createNavBtn) {
-      createNavBtn.addEventListener('click', () => createModal.open());
+      createNavBtn.addEventListener('click', () => onOpenOnboarding());
     }
 
     container.querySelectorAll('.trip-summary-card').forEach((card) => {

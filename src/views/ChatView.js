@@ -24,6 +24,8 @@ import {
   getThreadDay,
 } from '../models/chatData.js';
 import { enableDragScroll } from '../utils/dragScroll.js';
+import { getTripSettings } from '../models/tripSettings.js';
+import { getActiveTrip } from '../models/tripsModel.js';
 
 export function createChatView(initialBlockId = null) {
   const container = document.createElement('div');
@@ -53,14 +55,17 @@ export function createChatView(initialBlockId = null) {
   function renderThreadsHub() {
     const allThreads = getChatThreads();
 
-    // Compute day counts
+    const tripSettings = getTripSettings();
+    const totalTripDays = Math.max(1, tripSettings.totalDays || 3);
+
+    // Compute dynamic day counts
     const dayCounts = {
       all: allThreads.length,
-      1: allThreads.filter((t) => getThreadDay(t) === 1).length,
-      2: allThreads.filter((t) => getThreadDay(t) === 2).length,
-      3: allThreads.filter((t) => getThreadDay(t) === 3).length,
       trip: allThreads.filter((t) => getThreadDay(t) === null).length,
     };
+    for (let d = 1; d <= totalTripDays; d++) {
+      dayCounts[d] = allThreads.filter((t) => getThreadDay(t) === d).length;
+    }
 
     // Filter threads by currently selected day
     let dayScopedThreads = allThreads;
@@ -117,25 +122,24 @@ export function createChatView(initialBlockId = null) {
           </button>
         </div>
 
-        <!-- Days Filter Chips Bar -->
+        <!-- Days Filter Chips Bar (Dynamic duration from Trip Settings) -->
         <div class="thread-day-filter-bar" role="tablist" aria-label="Filter threads by day">
           <button type="button" role="tab" aria-selected="${hubDayFilter === 'all'}" class="day-filter-chip ${hubDayFilter === 'all' ? 'day-filter-chip--active' : ''}" data-day-filter="all">
             ${getDayCalendarIconSvg(13)}
             <span>All Days</span>
             <span class="day-filter-chip__count">(${dayCounts.all})</span>
           </button>
-          <button type="button" role="tab" aria-selected="${hubDayFilter === 1 || hubDayFilter === '1'}" class="day-filter-chip ${hubDayFilter === 1 || hubDayFilter === '1' ? 'day-filter-chip--active' : ''}" data-day-filter="1">
-            <span>Day 1 • Tokyo</span>
-            <span class="day-filter-chip__count">(${dayCounts[1]})</span>
-          </button>
-          <button type="button" role="tab" aria-selected="${hubDayFilter === 2 || hubDayFilter === '2'}" class="day-filter-chip ${hubDayFilter === 2 || hubDayFilter === '2' ? 'day-filter-chip--active' : ''}" data-day-filter="2">
-            <span>Day 2 • Kyoto</span>
-            <span class="day-filter-chip__count">(${dayCounts[2]})</span>
-          </button>
-          <button type="button" role="tab" aria-selected="${hubDayFilter === 3 || hubDayFilter === '3'}" class="day-filter-chip ${hubDayFilter === 3 || hubDayFilter === '3' ? 'day-filter-chip--active' : ''}" data-day-filter="3">
-            <span>Day 3 • Shibuya</span>
-            <span class="day-filter-chip__count">(${dayCounts[3]})</span>
-          </button>
+          ${Array.from({ length: totalTripDays }, (_, i) => i + 1)
+            .map((dayNum) => {
+              const isActive = hubDayFilter === dayNum || hubDayFilter === String(dayNum);
+              return `
+                <button type="button" role="tab" aria-selected="${isActive}" class="day-filter-chip ${isActive ? 'day-filter-chip--active' : ''}" data-day-filter="${dayNum}">
+                  <span>Day ${dayNum}</span>
+                  <span class="day-filter-chip__count">(${dayCounts[dayNum] || 0})</span>
+                </button>
+              `;
+            })
+            .join('')}
           <button type="button" role="tab" aria-selected="${hubDayFilter === 'trip'}" class="day-filter-chip ${hubDayFilter === 'trip' ? 'day-filter-chip--active' : ''}" data-day-filter="trip">
             <span>Trip-Wide</span>
             <span class="day-filter-chip__count">(${dayCounts.trip})</span>
@@ -246,13 +250,22 @@ export function createChatView(initialBlockId = null) {
       });
     }
 
+    // Start category thread from empty category button
+    hubElem.querySelectorAll('.btn-create-in-cat').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const cat = btn.getAttribute('data-category') || 'general';
+        openNewThreadModal(cat);
+      });
+    });
+
 
 
     container.appendChild(hubElem);
   }
 
   function renderCategorisedSectionsHTML(scopedThreads, filter) {
-    if (scopedThreads.length === 0) {
+    if (scopedThreads.length === 0 && filter === 'all') {
       const dayText = hubDayFilter === 'all' ? '' : (hubDayFilter === 'trip' ? 'Trip-Wide ' : `Day ${hubDayFilter} `);
       return renderEmptyState(`No ${dayText}discussions match your active filter.`);
     }
@@ -417,6 +430,18 @@ export function createChatView(initialBlockId = null) {
     const day = getThreadDay(thread);
     const dayLabel = day ? `Day ${day}` : 'Trip-Wide';
 
+    // Trip-wide travelers count
+    const activeTrip = getActiveTrip();
+    const tripMembers = (activeTrip && activeTrip.members && activeTrip.members.length > 0)
+      ? activeTrip.members
+      : ['You', 'Sarah', 'Alex', 'Kenji'];
+    const totalTripTravelers = tripMembers.length;
+
+    // Check if location is specific venue/stop rather than generic/trip-wide
+    const locLower = (thread.location || '').toLowerCase().trim();
+    const isGenericLoc = !locLower || ['general', 'trip wide', 'trip-wide', 'all', 'planning', 'general discussion', 'tokyo & kyoto'].includes(locLower);
+    const showLocation = !isGenericLoc && normCat !== 'general';
+
     const convElem = document.createElement('div');
     convElem.className = 'thread-conversation';
 
@@ -424,8 +449,8 @@ export function createChatView(initialBlockId = null) {
       <!-- Back Navigation & Thread Info Header -->
       <div class="thread-conv-header">
         <button type="button" class="btn-back-threads" id="btn-back-to-threads" aria-label="Back to all threads">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
-          <span>All Threads</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          <span>Threads</span>
         </button>
         <div class="thread-conv-header__info">
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
@@ -433,8 +458,12 @@ export function createChatView(initialBlockId = null) {
             <span class="thread-day-pill">${getDayCalendarIconSvg(10)} <span>${dayLabel}</span></span>
           </div>
           <span class="thread-conv-header__meta">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: -1px; margin-right: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-            ${escapeHtml(thread.location)} • ${thread.participantCount || 4} travelers
+            ${showLocation ? `
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <span>${escapeHtml(thread.location)}</span>
+              <span style="opacity: 0.5;">•</span>
+            ` : ''}
+            <span>${totalTripTravelers} travelers</span>
           </span>
         </div>
       </div>
@@ -596,16 +625,19 @@ export function createChatView(initialBlockId = null) {
             <input type="hidden" id="input-thread-category" value="${defaultCategory}" />
           </div>
 
-          <!-- Trip Day Schedule -->
+          <!-- Trip Day Schedule (Dynamic days from Trip Settings) -->
           <div class="form-group" style="margin-top: var(--space-3);">
             <label class="form-label" style="display: block; font-size: var(--text-xs); font-weight: var(--font-bold); color: var(--color-text-secondary); margin-bottom: 6px;">
               Trip Day Schedule
             </label>
             <div class="new-thread-day-chips" id="modal-day-selector-group">
               <button type="button" class="new-thread-day-chip ${hubDayFilter === 'all' || hubDayFilter === 'trip' ? 'new-thread-day-chip--active' : ''}" data-day="all">Trip-Wide / All</button>
-              <button type="button" class="new-thread-day-chip ${hubDayFilter === 1 || hubDayFilter === '1' ? 'new-thread-day-chip--active' : ''}" data-day="1">Day 1 • Tokyo</button>
-              <button type="button" class="new-thread-day-chip ${hubDayFilter === 2 || hubDayFilter === '2' ? 'new-thread-day-chip--active' : ''}" data-day="2">Day 2 • Kyoto</button>
-              <button type="button" class="new-thread-day-chip ${hubDayFilter === 3 || hubDayFilter === '3' ? 'new-thread-day-chip--active' : ''}" data-day="3">Day 3 • Shibuya</button>
+              ${Array.from({ length: getTripSettings().totalDays || 3 }, (_, i) => i + 1)
+                .map((dayNum) => {
+                  const isActive = hubDayFilter === dayNum || hubDayFilter === String(dayNum);
+                  return `<button type="button" class="new-thread-day-chip ${isActive ? 'new-thread-day-chip--active' : ''}" data-day="${dayNum}">Day ${dayNum}</button>`;
+                })
+                .join('')}
             </div>
             <input type="hidden" id="input-thread-day" value="${hubDayFilter !== 'all' ? hubDayFilter : 'all'}" />
           </div>

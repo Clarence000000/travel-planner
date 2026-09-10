@@ -173,12 +173,19 @@ export function createBottomNav() {
     // Action menu items
     if (e.target.closest('#action-propose-activity')) {
       toggleActionMenu(false);
-      setActiveTab('itinerary');
-      // Trigger propose activity event
+      const active = getActiveTab();
+      if (!active || active.id !== 'itinerary') {
+        setActiveTab('itinerary');
+      }
       setTimeout(() => {
-        const proposeBtn = document.getElementById('propose-block-btn') || document.getElementById('empty-add-btn');
-        if (proposeBtn) proposeBtn.click();
-      }, 100);
+        if (window.TravelApp && typeof window.TravelApp.openProposeActivity === 'function') {
+          window.TravelApp.openProposeActivity();
+        } else {
+          window.dispatchEvent(new CustomEvent('open-propose-activity'));
+          const proposeBtn = document.getElementById('btn-timeline-propose') || document.getElementById('btn-empty-propose-slot');
+          if (proposeBtn) proposeBtn.click();
+        }
+      }, 60);
       return;
     }
 
@@ -194,11 +201,19 @@ export function createBottomNav() {
 
     if (e.target.closest('#action-add-wishlist')) {
       toggleActionMenu(false);
-      setActiveTab('ideas');
+      const active = getActiveTab();
+      if (!active || active.id !== 'ideas') {
+        setActiveTab('ideas');
+      }
       setTimeout(() => {
-        const addIdeaBtn = document.getElementById('btn-add-idea');
-        if (addIdeaBtn) addIdeaBtn.click();
-      }, 100);
+        if (window.TravelApp && typeof window.TravelApp.openAddWishlistModal === 'function') {
+          window.TravelApp.openAddWishlistModal();
+        } else {
+          window.dispatchEvent(new CustomEvent('open-add-wishlist'));
+          const addIdeaBtn = document.getElementById('btn-open-add-wishlist') || document.getElementById('btn-add-idea');
+          if (addIdeaBtn) addIdeaBtn.click();
+        }
+      }, 60);
       return;
     }
   });

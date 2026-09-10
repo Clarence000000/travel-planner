@@ -20,7 +20,8 @@ import { createAssistantView } from './views/AssistantView.js';
 import { createIdeasView } from './views/IdeasView.js';
 import { createDashboardView } from './views/DashboardView.js';
 import { createTripsView } from './views/TripsView.js';
-import { getActiveTrip, setActiveTripId, getTrips } from './models/tripsModel.js';
+import { getActiveTrip, setActiveTripId, getTrips, createTrip } from './models/tripsModel.js';
+import { saveTripSettings } from './models/tripSettings.js';
 import { onTabChange, setActiveTab, getActiveTab, getNavTabs } from './config/navigation.js';
 
 export function initApp() {
@@ -36,11 +37,30 @@ export function initApp() {
   const appShell = document.createElement('div');
   appShell.className = 'app-shell';
 
-  // 2. Onboarding & Data Import Modal Component (available via sidebar)
+  // 2. Onboarding & Data Import Modal Component
   const onboardingModal = createOnboardingModal({
-    onComplete: () => {
-      const activeTab = getActiveTab();
-      renderView(activeTab);
+    onComplete: (type, survey) => {
+      const city = (survey?.destination || 'Tokyo').split(',')[0].trim();
+      const newTrip = createTrip({
+        title: `${city} Expedition`,
+        destination: survey?.destination || 'Tokyo, Japan',
+        startDate: survey?.startDate || '2026-10-12',
+        endDate: survey?.endDate || '2026-10-14',
+        totalDays: survey?.duration || 3,
+        coverImage: './src/assets/bg-itinerary.png',
+      });
+      setActiveTripId(newTrip.id);
+      saveTripSettings({
+        title: newTrip.title,
+        destination: newTrip.destination,
+        startDate: newTrip.startDate,
+        endDate: newTrip.endDate,
+        totalDays: newTrip.totalDays,
+        coverImage: newTrip.coverImage,
+      });
+      window.location.hash = '#itinerary';
+      setActiveTab('itinerary');
+      renderView({ id: 'itinerary' });
     },
   });
   appShell.appendChild(onboardingModal.element);
@@ -136,6 +156,9 @@ export function initApp() {
           window.location.hash = '#itinerary';
           setActiveTab('itinerary');
         },
+        onOpenOnboarding: () => {
+          onboardingModal.open();
+        },
       });
       viewContainer.appendChild(tripsView.element);
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -161,7 +184,7 @@ export function initApp() {
         view = createIdeasView();
         break;
       case 'dashboard':
-        view = createDashboardView();
+        view = createItineraryView();
         break;
       default:
         view = createItineraryView();

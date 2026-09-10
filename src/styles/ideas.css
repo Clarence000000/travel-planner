@@ -52,11 +52,49 @@
 
 /* ──────────────── Wishlist Styles ──────────────── */
 
+.wishlist-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-bottom: var(--space-4);
+}
+
 .wishlist-controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+  padding: 0 2px;
+}
+
+.card-origin-badge--category {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563EB;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  text-transform: capitalize;
+}
+
+.wishlist-controls__summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wishlist-count-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #2563EB;
+}
+
+.wishlist-count-desc {
+  font-size: 12px;
+  color: #64748B;
 }
 
 .category-filter-bar {
@@ -428,28 +466,45 @@
 }
 
 .sticky-note__delete {
-  background: transparent;
+  background: rgba(0, 0, 0, 0.08);
   border: none;
-  font-size: 11px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
   cursor: pointer;
-  opacity: 0.5;
-  padding: 0;
-  transition: opacity var(--transition-fast);
+  opacity: 0.7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  color: inherit;
+  margin-left: auto;
 }
 
 .sticky-note__delete:hover {
   opacity: 1;
+  background: rgba(0, 0, 0, 0.18);
+  transform: scale(1.1);
 }
 
 .sticky-note__title-input {
   background: transparent;
   border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   outline: none;
   font-size: 12px;
   font-weight: var(--font-bold);
   font-family: inherit;
   color: inherit;
   width: 100%;
+  padding: 2px 0 4px;
+}
+
+.sticky-note__title-input:focus {
+  border-bottom-color: rgba(0, 0, 0, 0.25);
 }
 
 .sticky-note__content {
@@ -460,9 +515,11 @@
   resize: none;
   font-size: 11px;
   font-family: inherit;
-  line-height: 1.35;
+  line-height: 1.4;
   color: inherit;
   width: 100%;
+  min-height: 60px;
+  padding: 4px 0;
 }
 
 .sticky-note__footer {
