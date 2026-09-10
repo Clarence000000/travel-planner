@@ -3,11 +3,46 @@
  * Stores schedule blocks for dynamic days with category,
  * status lifecycle, requirements, required transit travel times,
  * and day-of contingency cancellation & reflow logic.
+ *
+ * Supports Tokyo default data and Penang Malaysia interactive demo dataset.
  */
 
 import { timeToMinutes, minutesTo24, recalculateDaySchedule } from '../utils/bufferEngine.js';
 import { getTripSettings, saveTripSettings } from './tripSettings.js';
 import { getActiveTripId } from './tripsModel.js';
+import {
+  PENANG_CHEW_JETTY,
+  PENANG_HILL_CANOPY,
+  PENANG_CHENDUL_GAP,
+  PENANG_SIAM_ROAD_CKT,
+  PENANG_FALLBACKS,
+  PENANG_DAY2_BLOCKS,
+  PENANG_DAY3_BLOCKS,
+  PENANG_FULL_SAMPLE_ITINERARY,
+  getPenangDay1Sparse,
+  getPenangProposalBlock,
+  getPenangDay2Blocks,
+  getPenangDay3Blocks,
+  getPenangFallback,
+  getPenangSeedData,
+} from './penangSeedData.js';
+
+export {
+  PENANG_CHEW_JETTY,
+  PENANG_HILL_CANOPY,
+  PENANG_CHENDUL_GAP,
+  PENANG_SIAM_ROAD_CKT,
+  PENANG_FALLBACKS,
+  PENANG_DAY2_BLOCKS,
+  PENANG_DAY3_BLOCKS,
+  PENANG_FULL_SAMPLE_ITINERARY,
+  getPenangDay1Sparse,
+  getPenangProposalBlock,
+  getPenangDay2Blocks,
+  getPenangDay3Blocks,
+  getPenangFallback,
+  getPenangSeedData,
+};
 
 export const SAMPLE_ITINERARY = [
   // ── Day 1 (Tokyo Arrival & Ancient Taito) ──
@@ -58,7 +93,7 @@ export const SAMPLE_ITINERARY = [
     location: 'Nakamise Shopping Street',
     transitToNextMinutes: 45,
     transitMode: 'Ginza Line + Chuo-Sobu Line',
-    requirements: ['Cash Only (\u00a51,000 notes)', 'Napkins'],
+    requirements: ['Cash Only (¥1,000 notes)', 'Napkins'],
     fallback: 'Asakusa Underground Food Court',
     fallbackReason: 'crowd',
     notes: 'Famous fluffy jumbo melonpan. Eat in designated courtyard.',
@@ -228,7 +263,7 @@ function notifyItineraryListeners(items) {
   });
 }
 
-function sanitizeBlock(block) {
+export function sanitizeBlock(block) {
   const clean = (str) =>
     typeof str === 'string'
       ? str.replace(/[\p{Extended_Pictographic}\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim()
@@ -254,7 +289,24 @@ function sanitizeBlock(block) {
     fallback: block.fallback ? clean(block.fallback) : null,
     fallbackReason: block.fallbackReason || 'general',
     notes: clean(block.notes),
+    advisory: block.advisory ? { ...block.advisory } : null,
   };
+}
+
+/**
+ * Check whether the active trip is configured for Penang, Malaysia
+ */
+export function isPenangTrip() {
+  try {
+    const settings = getTripSettings();
+    return Boolean(
+      settings &&
+      typeof settings.destination === 'string' &&
+      /penang/i.test(settings.destination)
+    );
+  } catch (e) {
+    return false;
+  }
 }
 
 /**
@@ -298,33 +350,100 @@ export function clearItineraryData() {
 }
 
 /**
- * Load sample itinerary data (for explicit demo / reference)
+ * Load sample itinerary data (switches between Penang and Tokyo depending on destination)
  */
 export function resetItineraryData() {
-  const defaults = JSON.parse(JSON.stringify(SAMPLE_ITINERARY)).map(sanitizeBlock);
+  const isPenang = isPenangTrip();
+  const source = isPenang ? PENANG_FULL_SAMPLE_ITINERARY : SAMPLE_ITINERARY;
+  const defaults = JSON.parse(JSON.stringify(source)).map(sanitizeBlock);
   saveItineraryData(defaults);
   return defaults;
+}
+
+/**
+ * Explicitly reset itinerary to Penang full 3-day reference
+ */
+export function resetPenangItineraryData() {
+  const defaults = JSON.parse(JSON.stringify(PENANG_FULL_SAMPLE_ITINERARY)).map(sanitizeBlock);
+  saveItineraryData(defaults);
+  return defaults;
+}
+
+/**
+ * Initialize Penang Sparse Day 1:
+ * Clears current blocks and seeds Day 1 with strictly Chew Jetty and Penang Hill,
+ * leaving Day 2 and Day 3 empty and ready for background simulation.
+ * Configures 3-day date range (Oct 12 – Oct 14, 2026).
+ */
+export function initPenangSparseDay1(options = {}) {
+  saveTripSettings({
+    title: 'Penang Heritage & Nature Expedition',
+    destination: 'Penang, Malaysia',
+    startDate: '2026-10-12',
+    endDate: '2026-10-14',
+    totalDays: 3,
+  });
+
+  const blocks = [
+    { ...PENANG_CHEW_JETTY },
+    { ...PENANG_HILL_CANOPY },
+  ];
+
+  if (options.includeAdvisory) {
+    blocks.push({ ...PENANG_SIAM_ROAD_CKT });
+  }
+
+  const sanitized = blocks.map(sanitizeBlock);
+  sanitized.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+  saveItineraryData(sanitized);
+  return sanitized;
+}
+
+/**
+ * Helper to add Siam Road Char Koay Teow with its closure advisory to Day 1
+ */
+export function addSiamRoadAdvisoryBlock() {
+  return addOrUpdateBlock({ ...PENANG_SIAM_ROAD_CKT, day: 1 });
+}
+
+/**
+ * Add or update a block in the itinerary.
+ * If a block with the same id exists, updates it. Otherwise appends it.
+ * Re-sorts the affected day chronologically.
+ */
+export function addOrUpdateBlock(block) {
+  if (!block || !block.id) return getItineraryData();
+  const sanitized = sanitizeBlock(block);
+  let list = getItineraryData();
+  const index = list.findIndex((b) => b.id === sanitized.id);
+
+  if (index >= 0) {
+    list[index] = { ...list[index], ...sanitized };
+  } else {
+    list.push(sanitized);
+  }
+
+  list.sort((a, b) => {
+    if (a.day !== b.day) return a.day - b.day;
+    return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+  });
+
+  saveItineraryData(list);
+  return list;
 }
 
 /**
  * Add a new block to itinerary
  */
 export function addItineraryBlock(block) {
-  const list = getItineraryData();
-  list.push(sanitizeBlock(block));
-  saveItineraryData(list);
-  return list;
+  return addOrUpdateBlock(block);
 }
 
 /**
  * Update an existing block in itinerary
  */
 export function updateItineraryBlock(updatedBlock) {
-  let list = getItineraryData();
-  const sanitized = sanitizeBlock(updatedBlock);
-  list = list.map((b) => (b.id === sanitized.id ? { ...b, ...sanitized } : b));
-  saveItineraryData(list);
-  return list;
+  return addOrUpdateBlock(updatedBlock);
 }
 
 /**
@@ -333,6 +452,127 @@ export function updateItineraryBlock(updatedBlock) {
 export function deleteItineraryBlock(blockId) {
   let list = getItineraryData();
   list = list.filter((b) => b.id !== blockId);
+  saveItineraryData(list);
+  return list;
+}
+
+/**
+ * Shift a block from its current day to targetDay and recalculate schedules.
+ * Clears/resolves schedule conflict advisories when relocated to appropriate day.
+ */
+export function shiftBlockToDay(blockId, targetDay) {
+  let list = getItineraryData();
+  const targetDayNum = Number(targetDay) || 1;
+  const index = list.findIndex(
+    (b) => b.id === blockId || (blockId.includes('siam') && b.id.includes('siam'))
+  );
+  if (index === -1) return list;
+
+  const originalBlock = list[index];
+  const origDay = originalBlock.day;
+
+  const shiftedBlock = {
+    ...originalBlock,
+    day: targetDayNum,
+    advisory: null, // Clear Monday advisory since moved to Day 3 (Wednesday)
+  };
+
+  // Adjust timing or title if shifting Siam Road CKT to Day 3 lunch
+  if (shiftedBlock.id.includes('siam') || shiftedBlock.title.includes('Siam Road')) {
+    shiftedBlock.title = 'Siam Road Char Koay Teow (Rescheduled)';
+    if (targetDayNum === 3) {
+      shiftedBlock.startTime = '12:30';
+      shiftedBlock.endTime = '14:00';
+    }
+  }
+
+  list[index] = sanitizeBlock(shiftedBlock);
+
+  // Re-sort affected days
+  const sourceBlocks = list.filter((b) => b.day === origDay);
+  sourceBlocks.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+  const targetBlocks = list.filter((b) => b.day === targetDayNum);
+  targetBlocks.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+  const otherBlocks = list.filter((b) => b.day !== origDay && b.day !== targetDayNum);
+  list = [...otherBlocks, ...sourceBlocks, ...targetBlocks];
+
+  saveItineraryData(list);
+  return list;
+}
+
+/**
+ * Confirm a proposed block:
+ * Flips status from 'proposed' to 'confirmed' and recalculates buffers.
+ */
+export function confirmProposedBlock(blockId) {
+  let list = getItineraryData();
+  const index = list.findIndex(
+    (b) =>
+      b.id === blockId ||
+      (blockId.includes('chendul') && b.id.includes('chendul')) ||
+      (blockId === 'd1-gap-meal' && b.id.includes('chendul'))
+  );
+  if (index === -1) return list;
+
+  const target = list[index];
+  list[index] = {
+    ...target,
+    status: 'confirmed',
+  };
+
+  saveItineraryData(list);
+  return list;
+}
+
+/**
+ * Resolve contingency disruption for a block (Penang 3-way contingency support)
+ * Modes:
+ * - 'fallback': Swaps block to designated indoor fallback (e.g. The Top Komtar)
+ * - 'freetime': Converts slot to relaxed cafe window (ChinaHouse Heritage Cafe)
+ * - 'reflow': Cancels block and pulls downstream events forward
+ */
+export function resolveContingencyBlock(blockId, mode = 'fallback') {
+  let list = getItineraryData();
+  const targetIndex = list.findIndex(
+    (b) => b.id === blockId || (blockId.includes('hill') && b.id.includes('hill'))
+  );
+  if (targetIndex === -1) return list;
+
+  const target = list[targetIndex];
+
+  if (mode === 'fallback') {
+    const fallbackData = PENANG_FALLBACKS.komtar;
+    list[targetIndex] = sanitizeBlock({
+      ...target,
+      id: fallbackData.id,
+      title: fallbackData.title,
+      location: fallbackData.location,
+      notes: fallbackData.notes,
+      requirements: fallbackData.requirements,
+      fallback: null,
+      fallbackReason: null,
+      contingencyResolved: true,
+      contingencyMode: 'fallback',
+    });
+  } else if (mode === 'freetime') {
+    const chinaHouse = PENANG_FALLBACKS.chinahouse;
+    list[targetIndex] = sanitizeBlock({
+      ...target,
+      status: 'confirmed',
+      title: `Free-Time Pocket: ${chinaHouse.title}`,
+      location: chinaHouse.location,
+      notes: `Held as relaxed indoor cafe window at ChinaHouse. ${chinaHouse.notes}`,
+      requirements: chinaHouse.requirements,
+      fallback: null,
+      contingencyResolved: true,
+      contingencyMode: 'freetime',
+    });
+  } else if (mode === 'reflow') {
+    return cancelItineraryBlock(target.id, 'reflow');
+  }
+
   saveItineraryData(list);
   return list;
 }
@@ -365,9 +605,7 @@ export function cancelItineraryBlock(blockId, mode = 'free-time') {
     return list;
   } else if (mode === 'reflow') {
     const dayNumber = target.day;
-    // Remove the target block
     list = list.filter((b) => b.id !== blockId);
-    // Recalculate schedule for remaining blocks on that day
     const dayBlocks = list.filter((b) => b.day === dayNumber);
     const otherDays = list.filter((b) => b.day !== dayNumber);
     const recomputed = recalculateDaySchedule(dayBlocks);
@@ -409,9 +647,7 @@ export function addItineraryDay() {
  */
 export function removeItineraryDay(dayNumber) {
   let list = getItineraryData();
-  // Remove any blocks on this day
   list = list.filter((b) => b.day !== dayNumber);
-  // Re-index remaining days higher than dayNumber
   list = list.map((b) => {
     if (b.day > dayNumber) {
       return { ...b, day: b.day - 1 };
@@ -433,12 +669,12 @@ export function applyReshuffle(strategy = 'rain-delay') {
   let list = getItineraryData();
 
   if (strategy === 'rain-delay') {
-    // Swap outdoor bamboo grove on Day 2 with indoor museum fallback
     list = list.map((b) => {
-      if (b.id === 'd2-2') {
+      if (b.id === 'd2-2' || b.id === 'penang-hill-canopy') {
+        const fb = b.fallback || 'The Top Komtar Indoor Theme Park & Glass Rainbow Skywalk';
         return {
           ...b,
-          title: b.fallback || 'Kyoto Railway Museum & Crafts',
+          title: fb,
           category: 'activity',
           status: 'confirmed',
           notes: 'Swapped to indoor venue due to forecasted rain.',
