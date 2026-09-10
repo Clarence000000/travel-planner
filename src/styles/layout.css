@@ -13,27 +13,23 @@
   transition: background-image var(--transition-base);
 }
 
-/* ──────────────── Background Assets (Uploaded Cat Pattern Wallpaper) ──────────────── */
+/* ──────────────── Main App Shell Background (Clean Soft Cream #F5EFEB) ──────────────── */
 
 .app-shell,
 .app-shell[data-active-tab="itinerary"],
 .app-shell[data-active-tab="chat"],
 .app-shell[data-active-tab="assistant"],
 .app-shell[data-active-tab="ideas"],
-.app-shell[data-active-tab="dashboard"] {
-  background-image:
-    linear-gradient(180deg, rgba(247, 244, 238, 0.78) 0%, rgba(247, 244, 238, 0.85) 100%),
-    url('../assets/cat-bg.jpg');
-  background-repeat: repeat;
-  background-size: 360px auto;
-  background-position: top center;
-  background-attachment: fixed;
+.app-shell[data-active-tab="dashboard"],
+.app-shell[data-active-tab="trips"] {
+  background-color: var(--color-background);
+  background-image: none;
 }
 
 /* ──────────────── Viewport Occlusion Guards ────────────────
-   These fixed guards match the wallpaper background seamlessly.
+   These fixed guards match the clean soft cream background seamlessly.
    They prevent scrolled content from visibly poking out into the 12px gap
-   above the sticky cat photo banner or the 12px gap below the floating navigation bar.
+   above the sticky top banner or below the floating navigation bar.
 */
 
 .app-shell__top-guard,
@@ -45,14 +41,7 @@
   max-width: var(--mobile-max-width);
   pointer-events: none;
   background-color: var(--color-background);
-  background-image:
-    linear-gradient(180deg, rgba(247, 244, 238, 0.78) 0%, rgba(247, 244, 238, 0.85) 100%),
-    url('../assets/cat-bg.jpg');
-  background-repeat: repeat;
-  background-position: top center;
-  background-size: 360px auto;
-  background-attachment: fixed;
-  transition: background-image var(--transition-base);
+  background-image: none;
 }
 
 .app-shell__top-guard {
@@ -65,23 +54,6 @@
   bottom: 0;
   height: 14px;
   z-index: 90;
-}
-
-/* Sync occlusion guard wallpapers seamlessly with the cat background */
-.app-shell[data-active-tab="itinerary"] .app-shell__top-guard,
-.app-shell[data-active-tab="itinerary"] .app-shell__bottom-guard,
-.app-shell[data-active-tab="chat"] .app-shell__top-guard,
-.app-shell[data-active-tab="chat"] .app-shell__bottom-guard,
-.app-shell[data-active-tab="assistant"] .app-shell__top-guard,
-.app-shell[data-active-tab="assistant"] .app-shell__bottom-guard,
-.app-shell[data-active-tab="ideas"] .app-shell__top-guard,
-.app-shell[data-active-tab="ideas"] .app-shell__bottom-guard,
-.app-shell[data-active-tab="dashboard"] .app-shell__top-guard,
-.app-shell[data-active-tab="dashboard"] .app-shell__bottom-guard {
-  background-image:
-    linear-gradient(180deg, rgba(247, 244, 238, 0.78) 0%, rgba(247, 244, 238, 0.85) 100%),
-    url('../assets/cat-bg.jpg');
-  background-size: 360px auto;
 }
 
 /* ──────────────── Sticky Cat Photo Header ──────────────── */
@@ -229,7 +201,7 @@
   opacity: 1;
 }
 
-/* Translucent Frosted Glass Drawer Panel with Illustrated Cat & Travel Backdrop */
+/* Translucent Frosted Glass Drawer Panel with Illustrated Cat Pattern Backdrop */
 .sidebar-drawer {
   position: absolute;
   top: 0;
@@ -239,8 +211,8 @@
   max-width: 86%;
   background-color: var(--color-background);
   background-image:
-    linear-gradient(180deg, rgba(245, 239, 235, 0.42) 0%, rgba(245, 239, 235, 0.58) 100%),
-    url('../assets/bg-sidebar.png');
+    linear-gradient(180deg, rgba(245, 239, 235, 0.65) 0%, rgba(245, 239, 235, 0.78) 100%),
+    url('../assets/cat-bg.jpg');
   background-repeat: no-repeat;
   background-position: center top;
   background-size: cover;

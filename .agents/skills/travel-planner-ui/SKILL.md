@@ -50,15 +50,15 @@ application — a mobile-first, browser-based web app featuring Apple's iOS 26
 
 1. **Root Mobile Shell (`.app-shell`)**:
    - Centered container (`max-width: 430px`, `min-height: 100dvh`).
-   - Dynamic vertical cat pattern wallpapers synced via `data-active-tab` with `background-attachment: fixed`.
-2. **Atmospheric Sticky Cat Photo Banner Header (`.view-banner`)**:
+   - Clean, calming Soft Cream backdrop (`--color-background: #F5EFEB`) without background imagery to eliminate glare.
+2. **Atmospheric Sticky Banner Header (`.view-banner`)**:
    - Sticky at `top: 12px` (`height: 124px`, `border-radius: 28px`).
-   - Embeds page-specific cat illustration artwork with an integrated glass circular menu button (`.view-banner__menu-btn`) to trigger the slide-out sidebar.
+   - Embeds page-specific illustration artwork with an integrated glass circular menu button (`.view-banner__menu-btn`) to trigger the slide-out sidebar.
 3. **Viewport Occlusion Guards (`.app-shell__top-guard`, `.app-shell__bottom-guard`)**:
    - Fixed masks at `top: 0` (`height: 14px; z-index: 39`) and `bottom: 0` (`height: 14px; z-index: 90`).
-   - Seamlessly match the active tab's fixed cat pattern background so scrolled content never pokes out above the cat photo banner or below the floating navigation dock.
+   - Seamlessly match the clean Soft Cream backdrop (`#F5EFEB`) so scrolled content never pokes out above the top banner or below the floating navigation dock.
 4. **Slide-Out Liquid Glass Sidebar Drawer (`.sidebar-drawer`)**:
-   - Full-height frosted glass drawer (`backdrop-filter: blur(28px)`) layered over atmospheric travel & cat illustration backdrop (`bg-sidebar.png`).
+   - Full-height frosted glass drawer (`backdrop-filter: blur(28px)`) layered over the illustrated cat wallpaper backdrop (`cat-bg.jpg` / `bg-sidebar.png`).
    - Contains Trip Management, quick tab-switch chips, and live notification glass cards.
 5. **Floating Liquid Glass Bottom Dock Bar (`.bottom-nav`)**:
    - Floating dock pill at `bottom: 12px` (`height: 66px`, `border-radius: 32px`, `backdrop-filter: blur(28px)`).
