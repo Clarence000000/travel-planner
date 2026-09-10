@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>WanderSync Presenter Remote · Penang Edition</title>
+  <style>
+    :root {
+      --bg-base: #090A0F;
+      --bg-gradient: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 70%),
+                           radial-gradient(circle at 100% 100%, rgba(232, 98, 26, 0.12), transparent 60%);
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-highlight: rgba(255, 255, 255, 0.2);
+      --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+      --text-main: #F8FAFC;
+      --text-muted: #94A3B8;
+      --accent-orange: #E8621A;
+      --accent-indigo: #6366F1;
+      --accent-emerald: #10B981;
+      --accent-amber: #F59E0B;
+      --accent-rose: #F43F5E;
+      --accent-sky: #0EA5E9;
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: var(--bg-gradient);
+      background-attachment: fixed;
+      font-family: var(--font-sans);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+
+    .remote-container {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(28px) saturate(190%);
+      -webkit-backdrop-filter: blur(28px) saturate(190%);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: var(--glass-shadow);
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    }
+
+    /* Header */
+    .remote-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #E8621A, #F59E0B);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(232, 98, 26, 0.4);
+      font-size: 20px;
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #FFF, #CBD5E1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Connection Pill */
+    .connection-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 30px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 12px;
+      font-weight: 600;
+      color: #34D399;
+      transition: all 0.3s ease;
+    }
+
+    .connection-status-pill.disconnected {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #FBBF24;
+    }
+
+    .status-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 10px #10B981;
+      animation: pulseGlow 1.8s infinite;
+    }
+
+    .connection-status-pill.disconnected .status-pulse-dot {
+      background: #F59E0B;
+      box-shadow: 0 0 10px #F59E0B;
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Quick Tab Switcher */
+    .tab-switcher-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .tab-nav-btn {
+      flex: 1;
+      min-width: 75px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .tab-nav-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Act Cards */
+    .act-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .act-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-orange);
+      background: rgba(232, 98, 26, 0.12);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(232, 98, 26, 0.25);
+    }
+
+    .act-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #FFF;
+      margin-top: 4px;
+    }
+
+    .act-subtext {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+
+    /* Action Buttons */
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    @media (min-width: 480px) {
+      .action-grid.action-grid--split {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .btn-liquid {
+      position: relative;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #FFF;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-align: center;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-liquid:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .btn-liquid:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-liquid--primary {
+      background: linear-gradient(135deg, rgba(232, 98, 26, 0.8), rgba(245, 158, 11, 0.7));
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 4px 16px rgba(232, 98, 26, 0.35);
+    }
+
+    .btn-liquid--primary:hover {
+      background: linear-gradient(135deg, rgba(232, 98, 26, 0.95), rgba(245, 158, 11, 0.85));
+    }
+
+    .btn-liquid--emerald {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.7));
+      border-color: rgba(16, 185, 129, 0.4);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-liquid--emerald:hover {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.85));
+    }
+
+    .btn-liquid--amber {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), rgba(217, 119, 6, 0.7));
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-liquid--rose {
+      background: linear-gradient(135deg, rgba(244, 63, 94, 0.8), rgba(225, 29, 72, 0.7));
+      border-color: rgba(244, 63, 94, 0.4);
+      box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35);
+    }
+
+    .btn-liquid--indigo {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(79, 70, 229, 0.7));
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+    }
+
+    /* Live Activity Console */
+    .console-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .console-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .console-clear-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .console-log {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 12px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      max-height: 180px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .log-item {
+      display: flex;
+      gap: 8px;
+      color: #CBD5E1;
+      line-height: 1.4;
+      word-break: break-all;
+    }
+
+    .log-time {
+      color: #64748B;
+      flex-shrink: 0;
+    }
+
+    .log-type {
+      font-weight: 700;
+      color: var(--accent-orange);
+      flex-shrink: 0;
+    }
+
+    .log-type.incoming {
+      color: #34D399;
+    }
+
+    /* Footer */
+    .remote-footer {
+      text-align: center;
+      font-size: 11px;
+      color: #64748B;
+      padding-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="remote-container">
+
+    <!-- Top Bar -->
+    <header class="glass-card remote-header">
+      <div class="brand-title">
+        <div class="brand-logo">🧭</div>
+        <div class="brand-text">
+          <h1>WanderSync Remote</h1>
+          <p>Presenter Surface · Penang 3-Day Live</p>
+        </div>
+      </div>
+      <div class="connection-status-pill" id="connection-pill">
+        <span class="status-pulse-dot"></span>
+        <span id="connection-text">Channel Connected</span>
+      </div>
+    </header>
+
+    <!-- Quick Navigation Bar -->
+    <section class="glass-card" style="padding: 12px;">
+      <div class="tab-switcher-row">
+        <button type="button" class="tab-nav-btn" data-tab="trips">
+          <span>🧳</span>
+          <span>Trips</span>
+        </button>
+        <button type="button" class="tab-nav-btn" data-tab="ideas">
+          <span>💡</span>
+          <span>Ideas / Reels</span>
+        </button>
+        <button type="button" class="tab-nav-btn" data-tab="itinerary">
+          <span>📅</span>
+          <span>Itinerary</span>
+        </button>
+        <button type="button" class="tab-nav-btn" data-tab="chat">
+          <span>💬</span>
+          <span>Chat Feed</span>
+        </button>
+        <button type="button" class="tab-nav-btn" data-tab="dashboard">
+          <span>⚡</span>
+          <span>Live HUD</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Act 1: Dynamic Genesis -->
+    <section class="glass-card">
+      <div class="act-header">
+        <span class="act-tag">Act 1</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Social Ingestion</span>
+      </div>
+      <h2 class="act-title">Dynamic Genesis</h2>
+      <p class="act-subtext">Ingest TikTok/IG reel inspiration, trigger customizer, and populate sparse Day 1 anchor itinerary.</p>
+      <div class="action-grid action-grid--split">
+        <button type="button" class="btn-liquid btn-liquid--primary" id="btn-act1-genesis">
+          <span>✨</span>
+          <span>Launch Reel Genesis</span>
+        </button>
+        <button type="button" class="btn-liquid" id="btn-act1-populate">
+          <span>📍</span>
+          <span>Populate Day 1 Anchors</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Act 2: Ambient Background -->
+    <section class="glass-card">
+      <div class="act-header">
+        <span class="act-tag" style="color: var(--accent-indigo); background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.25);">Act 2</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Non-Blocking Worker</span>
+      </div>
+      <h2 class="act-title">Ambient Background Engine</h2>
+      <p class="act-subtext">Simulate background synthesis of Day 2 while Clarence explores without UI locking or spinners.</p>
+      <div class="action-grid action-grid--split">
+        <button type="button" class="btn-liquid btn-liquid--indigo" id="btn-act2-worker">
+          <span>⚙️</span>
+          <span>Trigger Day 2 Worker</span>
+        </button>
+        <button type="button" class="btn-liquid" id="btn-act2-entopia">
+          <span>🦋</span>
+          <span>Add Entopia Day 2</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Act 3: Contextual Chat Banter -->
+    <section class="glass-card">
+      <div class="act-header">
+        <span class="act-tag" style="color: var(--accent-sky); background: rgba(14, 165, 233, 0.12); border-color: rgba(14, 165, 233, 0.25);">Act 3</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Intelligence Influx</span>
+      </div>
+      <h2 class="act-title">Contextual Chat Banter</h2>
+      <p class="act-subtext">Tony & Wei Gang banter triggers WanderBot meal gap detection for Penang Road Teochew Chendul.</p>
+      <div class="action-grid action-grid--split">
+        <button type="button" class="btn-liquid btn-liquid--primary" id="btn-act3-banter">
+          <span>💬</span>
+          <span>Trigger Chat Banter</span>
+        </button>
+        <button type="button" class="btn-liquid" id="btn-act3-proposal">
+          <span>🤖</span>
+          <span>Insert Proposed Slot</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Act 4: Group Consensus Vote -->
+    <section class="glass-card">
+      <div class="act-header">
+        <span class="act-tag" style="color: var(--accent-emerald); background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.25);">Act 4</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Instant Alignment</span>
+      </div>
+      <h2 class="act-title">Group Consensus Vote</h2>
+      <p class="act-subtext">Simulate 2-step voting (Wei Gang 50% -> Tony 100%) and morph proposed slot to solid confirmed state.</p>
+      <div class="action-grid">
+        <button type="button" class="btn-liquid btn-liquid--emerald" id="btn-act4-vote">
+          <span>🗳️</span>
+          <span>Trigger 2-Step Consensus Vote</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Act 4b: Schedule Conflict Advisory -->
+    <section class="glass-card">
+      <div class="act-header">
+        <span class="act-tag" style="color: var(--accent-amber); background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25);">Act 4b</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Heuristic Guardian</span>
+      </div>
+      <h2 class="act-title">Schedule Conflict Advisory</h2>
+      <p class="act-subtext">Detects Monday closure rule for Siam Road Char Koay Teow and offers intelligent reschedule advice.</p>
+      <div class="action-grid">
+        <button type="button" class="btn-liquid btn-liquid--amber" id="btn-act4b-siam">
+          <span>⚠️</span>
+          <span>Trigger Siam Road Advisory</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Act 5: Tropical Monsoon Disruption & Contingency Engine -->
+    <section class="glass-card">
+      <div class="act-header">
+        <span class="act-tag" style="color: var(--accent-rose); background: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.25);">Act 5</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Disruption Recovery</span>
+      </div>
+      <h2 class="act-title">Tropical Monsoon Disruption</h2>
+      <p class="act-subtext">Penang thunderstorm alert with multi-option contingency recovery pathways.</p>
+      <div class="action-grid">
+        <button type="button" class="btn-liquid btn-liquid--rose" id="btn-act5-monsoon">
+          <span>⛈️</span>
+          <span>Broadcast Monsoon Alert</span>
+        </button>
+      </div>
+
+      <div style="margin-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recovery Contingencies:</span>
+        <div class="action-grid" style="margin-top: 8px;">
+          <button type="button" class="btn-liquid" id="btn-contingency-1">
+            <span>🏢</span>
+            <span>Contingency 1: Indoor Fallback (The Top Komtar)</span>
+          </button>
+          <button type="button" class="btn-liquid" id="btn-contingency-2">
+            <span>☕</span>
+            <span>Contingency 2: Free-Time Pocket (ChinaHouse)</span>
+          </button>
+          <button type="button" class="btn-liquid" id="btn-contingency-3">
+            <span>🔄</span>
+            <span>Contingency 3: Chronological Reflow</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Global Fast Forward & Reset -->
+    <section class="glass-card">
+      <div class="action-grid action-grid--split">
+        <button type="button" class="btn-liquid btn-liquid--indigo" id="btn-fast-forward">
+          <span>⚡</span>
+          <span>Fast Forward Full Demo</span>
+        </button>
+        <button type="button" class="btn-liquid" id="btn-reset-all">
+          <span>↺</span>
+          <span>Reset All Demo State</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Live Event Console Log -->
+    <section class="glass-card">
+      <div class="console-header">
+        <div class="console-title">
+          <span>📡</span>
+          <span>BroadcastChannel Activity Log</span>
+        </div>
+        <button type="button" class="console-clear-btn" id="btn-clear-log">Clear</button>
+      </div>
+      <div class="console-log" id="console-log">
+        <div class="log-item">
+          <span class="log-time">[Init]</span>
+          <span class="log-type">SYS</span>
+          <span>BroadcastChannel 'wandersync_simulation' initialized.</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="remote-footer">
+      WanderSync Presentation Controller · Apple Liquid Glass Architecture · Channel: <code>wandersync_simulation</code>
+    </footer>
+
+  </div>
+
+  <script>
+    // ── BroadcastChannel Engine ──
+    const CHANNEL_NAME = 'wandersync_simulation';
+    const channel = new BroadcastChannel(CHANNEL_NAME);
+
+    const logContainer = document.getElementById('console-log');
+    const connPill = document.getElementById('connection-pill');
+    const connText = document.getElementById('connection-text');
+
+    function log(type, message, isIncoming = false) {
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+      
+      const item = document.createElement('div');
+      item.className = 'log-item';
+      item.innerHTML = `
+        <span class="log-time">[${timeStr}]</span>
+        <span class="log-type ${isIncoming ? 'incoming' : ''}">${escapeHtml(type)}</span>
+        <span>${escapeHtml(typeof message === 'object' ? JSON.stringify(message) : message)}</span>
+      `;
+      logContainer.appendChild(item);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function send(type, payload = {}) {
+      const message = {
+        type,
+        payload,
+        sender: 'remote_controller',
+        timestamp: Date.now()
+      };
+      channel.postMessage(message);
+      log('SENT: ' + type, payload, false);
+    }
+
+    // Heartbeat PING
+    let lastPong = Date.now();
+    function ping() {
+      send('PING');
+    }
+    setInterval(ping, 4000);
+    ping();
+
+    channel.onmessage = (event) => {
+      const msg = event.data;
+      if (!msg || !msg.type) return;
+
+      if (msg.type === 'PONG') {
+        lastPong = Date.now();
+        connPill.classList.remove('disconnected');
+        connText.textContent = 'Main App Online';
+        return;
+      }
+
+      log('RECV: ' + msg.type, msg.payload || {}, true);
+    };
+
+    // Check heartbeat timeout
+    setInterval(() => {
+      if (Date.now() - lastPong > 6000) {
+        connPill.classList.add('disconnected');
+        connText.textContent = 'Seeking Main Tab...';
+      }
+    }, 2000);
+
+    // ── Tab Quick Buttons ──
+    document.querySelectorAll('.tab-nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        send('SWITCH_TAB', { tab });
+      });
+    });
+
+    // ── Act 1 ──
+    document.getElementById('btn-act1-genesis').addEventListener('click', () => {
+      send('START_REEL_GENESIS');
+    });
+
+    document.getElementById('btn-act1-populate').addEventListener('click', () => {
+      send('POPULATE_DAY1_ANCHORS');
+    });
+
+    // ── Act 2 ──
+    document.getElementById('btn-act2-worker').addEventListener('click', () => {
+      send('TRIGGER_DAY2_WORKER');
+    });
+
+    document.getElementById('btn-act2-entopia').addEventListener('click', () => {
+      send('ADD_ENTOPIA_DAY2');
+    });
+
+    // ── Act 3 ──
+    document.getElementById('btn-act3-banter').addEventListener('click', () => {
+      send('TRIGGER_CHAT_BANTER');
+    });
+
+    document.getElementById('btn-act3-proposal').addEventListener('click', () => {
+      send('INSERT_PROPOSAL', {
+        blockId: 'd1-chendul',
+        day: 1,
+        time: '12:30 PM',
+        title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+        status: 'proposed'
+      });
+    });
+
+    // ── Act 4 ──
+    document.getElementById('btn-act4-vote').addEventListener('click', () => {
+      send('VOTE_CONSENSUS', {
+        pollId: 'poll-chendul',
+        blockId: 'd1-chendul'
+      });
+    });
+
+    // ── Act 4b ──
+    document.getElementById('btn-act4b-siam').addEventListener('click', () => {
+      send('TRIGGER_SIAM_ROAD_ADVISORY');
+    });
+
+    // ── Act 5 ──
+    document.getElementById('btn-act5-monsoon').addEventListener('click', () => {
+      send('TRIGGER_MONSOON');
+    });
+
+    document.getElementById('btn-contingency-1').addEventListener('click', () => {
+      send('CONTINGENCY_1');
+    });
+
+    document.getElementById('btn-contingency-2').addEventListener('click', () => {
+      send('CONTINGENCY_2');
+    });
+
+    document.getElementById('btn-contingency-3').addEventListener('click', () => {
+      send('CONTINGENCY_3');
+    });
+
+    // ── Fast Forward ──
+    document.getElementById('btn-fast-forward').addEventListener('click', () => {
+      log('MACRO', 'Beginning Fast Forward Automation...');
+      send('POPULATE_DAY1_ANCHORS');
+      setTimeout(() => send('TRIGGER_DAY2_WORKER'), 600);
+      setTimeout(() => send('ADD_ENTOPIA_DAY2'), 1200);
+      setTimeout(() => send('TRIGGER_CHAT_BANTER'), 1800);
+      setTimeout(() => send('INSERT_PROPOSAL'), 3200);
+      setTimeout(() => send('VOTE_CONSENSUS'), 4500);
+    });
+
+    // ── Reset ──
+    document.getElementById('btn-reset-all').addEventListener('click', () => {
+      send('RESET_ALL');
+    });
+
+    // ── Clear Log ──
+    document.getElementById('btn-clear-log').addEventListener('click', () => {
+      logContainer.innerHTML = '';
+    });
+  </script>
+</body>
+</html>
