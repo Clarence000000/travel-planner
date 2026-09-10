@@ -23,17 +23,18 @@ application — a mobile-first, browser-based web app featuring Apple's iOS 26
 
 ## Quick Reference
 
-| Token              | Value                                                      |
+| Token / Role       | Value                                                      |
 | :----------------- | :--------------------------------------------------------- |
-| Primary color      | `#E8621A` (radiant burnt orange / amber CTA)               |
-| Secondary color    | `#2563EB` (vibrant electric blue for transit & accents)    |
-| Background         | `#F5F0E8` (warm cream with dynamic cat wallpaper pattern)  |
-| Glass Surface      | `linear-gradient(135deg, rgba(255,255,255,0.76) 0%, rgba(255,255,255,0.58) 100%)` |
-| Glass Alt Surface  | `rgba(255, 255, 255, 0.62)` (subtle secondary panel)      |
-| Glass Border       | `1px solid rgba(255, 255, 255, 0.88)` (light-refractive)   |
-| Specular Highlight | `inset 0 1px 1.5px rgba(255, 255, 255, 0.95)`              |
-| Text primary       | `#0F172A` / `#1A1A1A` (deep slate / rich dark)             |
-| Text secondary     | `#475569` / `#64748B` (refined slate gray)                 |
+| **60% Base / Background** | `#F5EFEB` (Soft Cream screen backdrop, card surface tint, empty state fills) |
+| **30% Structure & Text**  | Charcoal `#26292E` (primary text, activity titles, time headers) <br> Slate `#6D7C8A` (subtitles, "TBD", buffer duration, inactive icons, timeline connector line) <br> Warm Taupe `#C8B39B` (card borders, dividers, unselected day chips, subtle drop shadows) |
+| **10% Brand Accent**      | `#D85822` (Terracotta: selected day chip, active timeline dots, active bottom nav tab, center FAB `+`) |
+| **Supporting Functional** | Honey Gold `#E9A33B` (exclusively for "Proposed" status tags, star ratings) <br> Warm Ochre `#B57738` (secondary category chips like "Sightseeing") |
+| Glass Surface      | `linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(245, 239, 235, 0.65) 100%)` |
+| Glass Alt Surface  | `rgba(245, 239, 235, 0.58)` (subtle secondary frosted panel) |
+| Glass Border       | `1px solid rgba(200, 179, 155, 0.45)` (Warm Taupe refractive border) |
+| Specular Highlight | `inset 0 1px 1.5px rgba(255, 255, 255, 0.98)`              |
+| Text primary       | `#26292E` (Charcoal for maximum readability without glare) |
+| Text secondary     | `#6D7C8A` (Slate / Blue-Grey for refined hierarchy)        |
 | Border radius (sm) | `8px`                                                      |
 | Border radius (md) | `14px` (capsules & buttons)                                |
 | Border radius (lg) | `20px` (cards & modules)                                   |
@@ -49,15 +50,15 @@ application — a mobile-first, browser-based web app featuring Apple's iOS 26
 
 1. **Root Mobile Shell (`.app-shell`)**:
    - Centered container (`max-width: 430px`, `min-height: 100dvh`).
-   - Dynamic vertical cat pattern wallpapers synced via `data-active-tab` with `background-attachment: fixed`.
-2. **Atmospheric Sticky Cat Photo Banner Header (`.view-banner`)**:
+   - Clean, calming Soft Cream backdrop (`--color-background: #F5EFEB`) without background imagery to eliminate glare.
+2. **Atmospheric Sticky Banner Header (`.view-banner`)**:
    - Sticky at `top: 12px` (`height: 124px`, `border-radius: 28px`).
-   - Embeds page-specific cat illustration artwork with an integrated glass circular menu button (`.view-banner__menu-btn`) to trigger the slide-out sidebar.
+   - Embeds page-specific illustration artwork with an integrated glass circular menu button (`.view-banner__menu-btn`) to trigger the slide-out sidebar.
 3. **Viewport Occlusion Guards (`.app-shell__top-guard`, `.app-shell__bottom-guard`)**:
    - Fixed masks at `top: 0` (`height: 14px; z-index: 39`) and `bottom: 0` (`height: 14px; z-index: 90`).
-   - Seamlessly match the active tab's fixed cat pattern background so scrolled content never pokes out above the cat photo banner or below the floating navigation dock.
+   - Seamlessly match the clean Soft Cream backdrop (`#F5EFEB`) so scrolled content never pokes out above the top banner or below the floating navigation dock.
 4. **Slide-Out Liquid Glass Sidebar Drawer (`.sidebar-drawer`)**:
-   - Full-height frosted glass drawer (`backdrop-filter: blur(32px)`).
+   - Full-height frosted glass drawer (`backdrop-filter: blur(28px)`) layered over the illustrated cat wallpaper backdrop (`cat-bg.jpg` / `bg-sidebar.png`).
    - Contains Trip Management, quick tab-switch chips, and live notification glass cards.
 5. **Floating Liquid Glass Bottom Dock Bar (`.bottom-nav`)**:
    - Floating dock pill at `bottom: 12px` (`height: 66px`, `border-radius: 32px`, `backdrop-filter: blur(28px)`).
@@ -122,10 +123,11 @@ Read the page layout patterns (App Shell, Itinerary, Chat, Assistant, Ideas, Das
 - **Beveled Icon Capsules**: Icons, badges, and counters sit in their own translucent frosted glass capsules rather than flat circles.
 - **Floating Symmetrical Elements**: Both the cat photo header (`top: 12px`) and the bottom navigation bar (`bottom: 12px`) float with 12px margins and squircle corners.
 - **Clean Occlusion**: Top and bottom occlusion guards keep scrolling content contained strictly between the cat banner and bottom dock.
-- **Burnt Orange CTA**: The vibrant burnt orange `#E8621A` is reserved for primary actions, active indicators, and glowing highlights.
-- **Electric Blue Transit**: Accent blue `#2563EB` is used for timeline spines, transit nodes, buffer connectors, and time tags.
+- **Terracotta Brand Accent (10%)**: Warm Terracotta `#D85822` is reserved for focused interactive actions: selected day chip (Day 1), active timeline dots, active bottom nav tab (Itinerary), and the primary center floating action button (+).
+- **Slate & Blue-Grey Timeline Spine**: Slate `#6D7C8A` is used for vertical timeline spines, transit buffer durations, and inactive icons.
+- **Warm Taupe Structure**: Warm Taupe `#C8B39B` is used for card borders, dividers, unselected day chips (Day 2, Day 3), and subtle warm drop shadows.
 - **Rounded everything**: All cards, buttons, inputs, and images use generous border-radius (minimum `12px` for small elements, `24px` for cards, `9999px` for pills).
-- **Warm palette**: The background is a warm cream (`#F5F0E8`), never pure white. Cards are translucent white/glass to provide contrast against the cream background.
-- **Bottom navigation always visible**: The 5-tab bottom nav is fixed and always visible. The active tab label and icon are highlighted in burnt orange.
+- **60% Base Soft Cream Background**: The background is a calm soft cream (`#F5EFEB`), never stark white. Cards are translucent frosted glass with warm surface tints (`rgba(245, 239, 235, 0.76)`).
+- **Bottom navigation always visible**: The bottom nav is fixed and always visible. The active tab and primary FAB highlight in Terracotta `#D85822`.
 - **Clean vector metadata**: Metadata (locations, dates, categories) uses crisp inline SVG icons (e.g. pin, calendar, clock) followed by clean text, never platform-dependent emojis.
-- **Chip/tag & pill pattern**: Horizontally scrollable chip rows for filtering (categories, amenities, quick filters). Use an inline SVG icon inside the chip alongside concise text — never emojis. Active chip is filled orange with white text and white icon; inactive chips have a subtle border with transparent or glass-tinted background.
+- **Chip/tag & pill pattern**: Horizontally scrollable chip rows for filtering. Selected day chip is filled Terracotta `#D85822` with white text; unselected chips have a Warm Taupe `#C8B39B` border with soft cream glass-tinted background. Secondary status tags ("Proposed") use Honey Gold (`#E9A33B`); secondary category chips ("Sightseeing") use Warm Ochre (`#B57738`).

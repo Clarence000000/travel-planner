@@ -122,22 +122,23 @@
   border-radius: 9999px;
   font-size: var(--text-xs);
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.68);
+  background: rgba(245, 239, 235, 0.72);
   backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  color: #475569;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 
-    0 2px 8px rgba(0, 0, 0, 0.03),
+  box-shadow:
+    0 2px 8px rgba(200, 179, 155, 0.18),
     inset 0 1px 0.5px rgba(255, 255, 255, 0.9);
   transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .filter-chip:hover {
-  background: rgba(255, 255, 255, 0.85);
-  color: #0F172A;
+  background: rgba(255, 255, 255, 0.92);
+  border-color: #B59E83;
+  color: var(--color-text-primary);
   transform: translateY(-1px);
 }
 
@@ -146,13 +147,13 @@
 }
 
 .filter-chip--active {
-  background: linear-gradient(135deg, rgba(234, 88, 12, 0.92) 0%, rgba(217, 74, 5, 0.88) 100%);
-  border-color: rgba(255, 255, 255, 0.7);
-  color: #FFFFFF;
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: #FFFFFF !important;
   font-weight: 700;
-  box-shadow: 
-    0 4px 16px rgba(234, 88, 12, 0.35),
-    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 4px 16px rgba(216, 88, 34, 0.35),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
 }
 
 .wishlist-grid {
@@ -162,11 +163,9 @@
 }
 
 .wishlist-card {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.76) 0%,
-    rgba(255, 255, 255, 0.58) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.76) 0%,
+      rgba(255, 255, 255, 0.58) 100%);
   backdrop-filter: blur(24px) saturate(180%);
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border-radius: 22px;
@@ -179,11 +178,9 @@
 }
 
 .wishlist-card:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.88) 0%,
-    rgba(255, 255, 255, 0.70) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(255, 255, 255, 0.70) 100%);
   transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(15, 23, 42, 0.10), inset 0 1px 1.5px #FFFFFF;
 }
@@ -365,11 +362,25 @@
   transform: scale(1.15);
 }
 
-.swatch--yellow { background-color: #FEF08A; }
-.swatch--peach  { background-color: #FED7AA; }
-.swatch--mint   { background-color: #A7F3D0; }
-.swatch--sky    { background-color: #BAE6FD; }
-.swatch--purple { background-color: #E9D5FF; }
+.swatch--yellow {
+  background-color: #FEF08A;
+}
+
+.swatch--peach {
+  background-color: #FED7AA;
+}
+
+.swatch--mint {
+  background-color: #A7F3D0;
+}
+
+.swatch--sky {
+  background-color: #BAE6FD;
+}
+
+.swatch--purple {
+  background-color: #E9D5FF;
+}
 
 .whiteboard-instructions {
   font-size: 11px;
@@ -579,8 +590,13 @@
 }
 
 @keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 .schedule-modal__title {
@@ -601,7 +617,8 @@
   color: var(--color-text-secondary);
 }
 
-.schedule-modal__input, .schedule-modal__select {
+.schedule-modal__input,
+.schedule-modal__select {
   padding: 10px 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
@@ -639,8 +656,23 @@
 }
 
 @keyframes toastFade {
-  0% { opacity: 0; transform: translate(-50%, -10px); }
-  10% { opacity: 1; transform: translate(-50%, 0); }
-  85% { opacity: 1; transform: translate(-50%, 0); }
-  100% { opacity: 0; transform: translate(-50%, -10px); }
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  85% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
 }

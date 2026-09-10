@@ -504,14 +504,14 @@ export function createItineraryView() {
         <!-- Day Selector Chips Row with dynamic Add Day button -->
         <div class="day-chip-row" role="tablist" aria-label="Trip Days">
           ${dayList
-            .map(
-              (d) => `
+        .map(
+          (d) => `
             <button type="button" class="day-chip ${currentDay === d ? 'day-chip--active' : ''}" data-day="${d}">
               Day ${d}${d === 2 && day2HasActivity && currentDay !== 2 ? '<span class="day-chip__dot">●</span>' : ''}
             </button>
           `
-            )
-            .join('')}
+        )
+        .join('')}
           <button type="button" class="day-chip day-chip--add" id="btn-add-day" title="Add next trip day">
             + Add Day
           </button>
@@ -519,9 +519,8 @@ export function createItineraryView() {
       </div>
 
       <!-- Transit Buffer Warning Banner (if any buffer deficit exists) -->
-      ${
-        activeWarnings.length > 0
-          ? `
+      ${activeWarnings.length > 0
+        ? `
         <div class="alert-banner alert-banner--warning">
           <div class="alert-banner__icon">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -535,13 +534,12 @@ export function createItineraryView() {
           </div>
         </div>
       `
-          : ''
+        : ''
       }
 
       <!-- Timeline Feed or Empty Day Canvas -->
-      ${
-        rawBlocks.length === 0
-          ? `
+      ${rawBlocks.length === 0
+        ? `
         <div class="timeline-feed" id="timeline-feed-target">
           <div class="timeline-item-wrapper timeline-item-wrapper--empty" id="btn-empty-propose-slot" role="button" tabindex="0" title="Click to propose an event">
             <div class="timeline-node-pin timeline-node-pin--time">
@@ -566,9 +564,8 @@ export function createItineraryView() {
               </div>
             </article>
           </div>
-          ${
-            dayList.length > 1
-              ? `
+          ${dayList.length > 1
+          ? `
             <div class="timeline-empty-remove-wrap">
               <button type="button" class="btn-empty-remove-day" id="btn-empty-remove-day">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -576,8 +573,8 @@ export function createItineraryView() {
               </button>
             </div>
           `
-              : ''
-          }
+          : ''
+        }
         </div>
       `
           : `
@@ -936,6 +933,7 @@ export function createItineraryView() {
           `
             : '';
 
+
         let cardContent = '';
 
         if (!isExpanded) {
@@ -966,20 +964,18 @@ export function createItineraryView() {
                 <div class="timeline-card__body-col">
                   <div class="timeline-card__title-row">
                     <h3 class="timeline-card__title">${block.title}</h3>
-                    ${
-                      isReel
-                        ? `
+                    ${isReel
+              ? `
                       <button type="button" class="card-origin-badge card-origin-badge--reel" data-preview-reel-id="${block.id}" title="Watch Reel Preview">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                         <span>Reel Pick</span>
                       </button>
                     `
-                        : ''
-                    }
+              : ''
+            }
                   </div>
-                  ${
-                    block.location
-                      ? `
+                  ${block.location
+              ? `
                     <div class="timeline-card__location-row" title="${block.location}">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -1060,20 +1056,18 @@ export function createItineraryView() {
                   <div class="timeline-card__showcase-info">
                     <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
                       <h3 class="timeline-card__title timeline-card__title--expanded">${block.title}</h3>
-                      ${
-                        isReel
-                          ? `
+                      ${isReel
+              ? `
                         <button type="button" class="card-origin-badge card-origin-badge--reel" data-preview-reel-id="${block.id}" title="Watch Reel Preview">
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                           <span>Watch Reel</span>
                         </button>
                       `
-                          : ''
-                      }
+              : ''
+            }
                     </div>
-                    ${
-                      block.location
-                        ? `
+                    ${block.location
+              ? `
                       <div class="detail-panel__location" title="${block.location}">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -1082,8 +1076,8 @@ export function createItineraryView() {
                         <span>${block.location}</span>
                       </div>
                     `
-                        : ''
-                    }
+              : ''
+            }
                   </div>
                 </div>
 
@@ -1104,12 +1098,11 @@ export function createItineraryView() {
                       <span>${block.transitToNextMinutes}m (${block.transitMode || 'Metro'})</span>
                     </div>
                   `
-                      : ''
-                  }
+              : ''
+            }
 
-                  ${
-                    block.dressCode && block.dressCode.toLowerCase() !== 'none' && block.dressCode.trim() !== ''
-                      ? `
+                  ${block.dressCode && block.dressCode.toLowerCase() !== 'none' && block.dressCode.trim() !== ''
+              ? `
                     <div class="detail-panel__note-tag">
                       <span class="detail-panel__note-label">
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></svg>
@@ -1118,14 +1111,13 @@ export function createItineraryView() {
                       <span>${block.dressCode}</span>
                     </div>
                   `
-                      : ''
-                  }
+              : ''
+            }
 
                   ${block.notes ? `<p class="detail-panel__notes">${block.notes}</p>` : ''}
 
-                  ${
-                    cleanReqs.length > 0
-                      ? `
+                  ${cleanReqs.length > 0
+              ? `
                     <div class="detail-panel__checklist-section">
                       <div class="checklist-section__header">
                         <span class="checklist-section__title">
@@ -1138,9 +1130,9 @@ export function createItineraryView() {
                       </div>
                       <div class="detail-panel__checklist">
                         ${cleanReqs
-                          .map((r, idx) => {
-                            const isChecked = checkedRequirements.has(`${block.id}-${idx}`);
-                            return `
+                .map((r, idx) => {
+                  const isChecked = checkedRequirements.has(`${block.id}-${idx}`);
+                  return `
                             <div class="checklist-item ${isChecked ? 'checklist-item--checked' : ''}" data-req-toggle="${block.id}" data-req-idx="${idx}" role="checkbox" aria-checked="${isChecked}" tabindex="0">
                               <span class="checklist-checkbox ${isChecked ? 'checklist-checkbox--checked' : ''}">
                                 ${isChecked ? '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
@@ -1148,31 +1140,30 @@ export function createItineraryView() {
                               <span class="checklist-item__text">${r}</span>
                             </div>
                           `;
-                          })
-                          .join('')}
+                })
+                .join('')}
                       </div>
                     </div>
                   `
-                      : ''
-                  }
+              : ''
+            }
 
-                  ${
-                    block.fallback
-                      ? (() => {
-                          let reasonLabel = 'Backup Option';
-                          let reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-                          if (block.fallbackReason === 'weather') {
-                            reasonLabel = 'Rain / Inclement Weather';
-                            reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/><path d="M8 19v2"/><path d="M8 13v2"/><path d="M12 21v2"/><path d="M12 15v2"/><path d="M16 19v2"/><path d="M16 13v2"/></svg>';
-                          } else if (block.fallbackReason === 'crowd') {
-                            reasonLabel = 'Crowded / Long Queue';
-                            reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
-                          } else if (block.fallbackReason === 'closed') {
-                            reasonLabel = 'Closed / Sold Out';
-                            reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>';
-                          }
+                  ${block.fallback
+              ? (() => {
+                let reasonLabel = 'Backup Option';
+                let reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+                if (block.fallbackReason === 'weather') {
+                  reasonLabel = 'Rain / Inclement Weather';
+                  reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/><path d="M8 19v2"/><path d="M8 13v2"/><path d="M12 21v2"/><path d="M12 15v2"/><path d="M16 19v2"/><path d="M16 13v2"/></svg>';
+                } else if (block.fallbackReason === 'crowd') {
+                  reasonLabel = 'Crowded / Long Queue';
+                  reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
+                } else if (block.fallbackReason === 'closed') {
+                  reasonLabel = 'Closed / Sold Out';
+                  reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>';
+                }
 
-                          return `
+                return `
                           <div class="contingency-card">
                             <div class="contingency-card__header">
                               <span class="contingency-card__badge contingency-card__badge--${block.fallbackReason || 'default'}">
@@ -1189,9 +1180,9 @@ export function createItineraryView() {
                             </div>
                           </div>
                         `;
-                        })()
-                      : ''
-                  }
+              })()
+              : ''
+            }
 
                   <!-- Bottom Action Row: Thread, Edit, Delete, and Drag Handle -->
                   <div class="detail-panel__bottom-row">
@@ -1298,9 +1289,8 @@ export function createItineraryView() {
             ${cardContent}
 
             <!-- Transit Buffer Connector Pill -->
-            ${
-              buffer
-                ? `
+            ${buffer
+            ? `
               <div class="timeline-transit-connector ${buffer.isDeficit ? 'timeline-transit-connector--warning' : ''}">
                 <div class="transit-connector-pill">
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -1311,8 +1301,8 @@ export function createItineraryView() {
                 </div>
               </div>
             `
-                : ''
-            }
+            : ''
+          }
           </div>
           ${gapCardHtml}
         `;
@@ -1912,12 +1902,11 @@ export function createItineraryView() {
           </div>
 
           <div class="chat-feed" style="max-height: 250px; overflow-y: auto; padding-right: 4px; display: flex; flex-direction: column; gap: 8px;">
-            ${
-              thread.messages.length === 0
-                ? `<p style="font-size: 12px; color: #64748B; text-align: center; padding: 24px 0;">No messages in this activity thread yet. Start the discussion below!</p>`
-                : thread.messages
-                    .map(
-                      (m) => `
+            ${thread.messages.length === 0
+          ? `<p style="font-size: 12px; color: #64748B; text-align: center; padding: 24px 0;">No messages in this activity thread yet. Start the discussion below!</p>`
+          : thread.messages
+            .map(
+              (m) => `
               <div class="chat-message ${m.isCurrentUser ? 'chat-message--outgoing' : 'chat-message--incoming'}">
                 ${!m.isCurrentUser ? `<div class="user-avatar-initials" style="width: 26px; height: 26px; font-size: 10px;">${m.avatar || m.sender.slice(0, 2).toUpperCase()}</div>` : ''}
                 <div class="chat-message__bubble">
@@ -1927,9 +1916,9 @@ export function createItineraryView() {
                 </div>
               </div>
             `
-                    )
-                    .join('')
-            }
+            )
+            .join('')
+        }
           </div>
 
           <div style="display: flex; gap: 8px; align-items: center;">

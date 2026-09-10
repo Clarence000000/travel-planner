@@ -41,7 +41,7 @@ export function createIdeasView() {
 
   function render() {
     const settings = getTripSettings();
-    const coverBg = settings.coverImage || './src/assets/bg-itinerary.png';
+    const coverBg = './src/assets/bg-ideas.jpg';
     const cityTitle = (settings.destination || settings.title || 'Tokyo').split(',')[0].trim();
 
     container.innerHTML = `
@@ -161,25 +161,24 @@ export function createIdeasView() {
       ${categories.length > 1 ? `
       <div class="category-filter-bar" role="tablist" aria-label="Filter wishlist by type">
         ${categories.map((cat) => {
-          const count = cat === 'all'
-            ? allItems.length
-            : allItems.filter((i) => (i.category || '').toLowerCase().trim() === cat).length;
-          const label = cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1);
-          const isActive = currentCategory.toLowerCase() === cat.toLowerCase();
-          return `
+      const count = cat === 'all'
+        ? allItems.length
+        : allItems.filter((i) => (i.category || '').toLowerCase().trim() === cat).length;
+      const label = cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1);
+      const isActive = currentCategory.toLowerCase() === cat.toLowerCase();
+      return `
             <button type="button" role="tab" aria-selected="${isActive}" class="filter-chip ${isActive ? 'filter-chip--active' : ''}" data-cat="${cat}">
               <span>${label}</span>
               <span class="filter-chip__count" style="font-size: 10.5px; opacity: 0.85; margin-left: 4px;">(${count})</span>
             </button>
           `;
-        }).join('')}
+    }).join('')}
       </div>
       ` : ''}
 
       <div class="wishlist-grid">
-        ${
-          items.length === 0
-            ? `<div class="ideas-zero-grid" style="grid-column: 1 / -1;">
+        ${items.length === 0
+        ? `<div class="ideas-zero-grid" style="grid-column: 1 / -1;">
                 <div class="ideas-zero-card">
                   <div class="ideas-zero-card__icon">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8621A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -207,9 +206,9 @@ export function createIdeasView() {
                   </div>
                 </div>
               </div>`
-            : items
-                .map(
-                  (item) => `
+        : items
+          .map(
+            (item) => `
             <div class="wishlist-card ${item.source === 'reel' ? 'wishlist-card--has-reel' : ''}" data-id="${item.id}">
               <div class="wishlist-card__image-wrap">
                 <img src="${item.imageUrl || './src/assets/card-temple.png'}" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
@@ -217,26 +216,24 @@ export function createIdeasView() {
                   <span class="card-origin-badge card-origin-badge--category">
                     ${item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Activity'}
                   </span>
-                  ${
-                    item.source === 'reel'
-                      ? `
+                  ${item.source === 'reel'
+                ? `
                     <span class="card-origin-badge card-origin-badge--reel">
                       <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                       <span>Reel Pick</span>
                     </span>
                   `
-                      : ''
-                  }
-                  ${
-                    item.isScheduled
-                      ? `
+                : ''
+              }
+                  ${item.isScheduled
+                ? `
                     <span class="wishlist-card__status-tag">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       <span>Scheduled Day ${item.scheduledDay || 1}</span>
                     </span>
                   `
-                      : ''
-                  }
+                : ''
+              }
                   <span class="wishlist-card__cost">${item.estimatedCost || 'Free'}</span>
                 </div>
               </div>
@@ -248,9 +245,8 @@ export function createIdeasView() {
                 
                 <div class="wishlist-card__meta">
                   <span class="wishlist-card__author">Added by ${item.addedBy}</span>
-                  ${
-                    item.url
-                      ? `<a href="${item.url}" target="_blank" rel="noopener" class="wishlist-card__link">
+                  ${item.url
+                ? `<a href="${item.url}" target="_blank" rel="noopener" class="wishlist-card__link">
                           <span>Explore link</span>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -258,8 +254,8 @@ export function createIdeasView() {
                             <line x1="10" y1="14" x2="21" y2="3"></line>
                           </svg>
                         </a>`
-                      : ''
-                  }
+                : ''
+              }
                 </div>
 
                 <div class="wishlist-card__actions">
@@ -277,9 +273,9 @@ export function createIdeasView() {
               </div>
             </div>
           `
-                )
-                .join('')
-        }
+          )
+          .join('')
+      }
       </div>
     `;
 
@@ -353,8 +349,8 @@ export function createIdeasView() {
 
       <div class="whiteboard-canvas" id="whiteboard-canvas-surface">
         ${notes
-          .map(
-            (n) => `
+        .map(
+          (n) => `
           <div 
             class="sticky-note sticky-note--${n.color || 'yellow'}" 
             id="note-elem-${n.id}"
@@ -385,8 +381,8 @@ export function createIdeasView() {
             </div>
           </div>
         `
-          )
-          .join('')}
+        )
+        .join('')}
       </div>
     `;
 

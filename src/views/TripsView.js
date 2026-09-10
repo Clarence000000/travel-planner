@@ -37,9 +37,8 @@ export function createTripsView(options = {}) {
       </div>
 
       <div class="trips-content-wrap" style="padding: 16px;">
-        ${
-          trips.length === 0
-            ? `
+        ${trips.length === 0
+        ? `
           <!-- Pure Clean Slate Zero-State Card -->
           <div class="trips-zero-card">
             <div class="trips-zero-card__icon-capsule">
@@ -97,7 +96,7 @@ export function createTripsView(options = {}) {
             </div>
           </div>
         `
-            : `
+        : `
           <!-- Populated Trips List -->
           <div class="trips-list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
             <span style="font-size: 14px; font-weight: 700; color: var(--color-text-primary);">
@@ -111,9 +110,9 @@ export function createTripsView(options = {}) {
 
           <div class="trips-cards-grid" style="display: flex; flex-direction: column; gap: 14px;">
             ${trips
-              .map((trip) => {
-                const dateLabel = formatDateRange(trip.startDate, trip.endDate, trip.totalDays);
-                return `
+          .map((trip) => {
+            const dateLabel = formatDateRange(trip.startDate, trip.endDate, trip.totalDays);
+            return `
               <div class="trip-summary-card" data-trip-id="${trip.id}">
                 <div class="trip-summary-card__cover" style="background-image: url('${trip.coverImage || './src/assets/bg-itinerary.png'}');">
                   <span class="trip-summary-card__tag">
@@ -143,11 +142,11 @@ export function createTripsView(options = {}) {
                 </div>
               </div>
             `;
-              })
-              .join('')}
+          })
+          .join('')}
           </div>
         `
-        }
+      }
       </div>
     `;
 
