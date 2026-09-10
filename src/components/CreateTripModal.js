@@ -82,12 +82,12 @@ export function createCreateTripModal(options = {}) {
             <label class="onboarding-label">Cover Artwork</label>
             <div class="preset-covers-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
               ${PRESET_COVERS.map(
-                (cov) => `
+      (cov) => `
                 <button type="button" class="preset-cover-btn ${selectedCover === cov.url ? 'is-selected' : ''}" data-cover-url="${cov.url}" title="${cov.name}" style="border: 2px solid ${selectedCover === cov.url ? '#E8621A' : 'transparent'}; border-radius: 12px; overflow: hidden; padding: 0; cursor: pointer; aspect-ratio: 1; position: relative;">
                   <img src="${cov.thumb}" alt="${cov.name}" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
                 </button>
               `
-              ).join('')}
+    ).join('')}
             </div>
           </div>
         </div>

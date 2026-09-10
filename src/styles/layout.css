@@ -13,60 +13,25 @@
   transition: background-image var(--transition-base);
 }
 
-/* ──────────────── Dynamic Vertical Background Assets per Page (Cat Patterns) ──────────────── */
+/* ──────────────── Background Assets (Uploaded Cat Pattern Wallpaper) ──────────────── */
 
-.app-shell[data-active-tab="itinerary"] {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-itinerary.png');
-  background-repeat: repeat;
-  background-size: 240px auto;
-  background-position: top center;
-  background-attachment: fixed;
-}
-
-.app-shell[data-active-tab="chat"] {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-chat.png');
-  background-repeat: repeat;
-  background-size: 220px auto;
-  background-position: top center;
-  background-attachment: fixed;
-}
-
-.app-shell[data-active-tab="assistant"] {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-assistant.png');
-  background-repeat: repeat;
-  background-size: 230px auto;
-  background-position: top center;
-  background-attachment: fixed;
-}
-
-.app-shell[data-active-tab="ideas"] {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-chat.png');
-  background-repeat: repeat;
-  background-size: 230px auto;
-  background-position: top center;
-  background-attachment: fixed;
-}
-
+.app-shell,
+.app-shell[data-active-tab="itinerary"],
+.app-shell[data-active-tab="chat"],
+.app-shell[data-active-tab="assistant"],
+.app-shell[data-active-tab="ideas"],
 .app-shell[data-active-tab="dashboard"] {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-dashboard.png');
+  background-image:
+    linear-gradient(180deg, rgba(247, 244, 238, 0.78) 0%, rgba(247, 244, 238, 0.85) 100%),
+    url('../assets/cat-bg.jpg');
   background-repeat: repeat;
-  background-size: 230px auto;
+  background-size: 360px auto;
   background-position: top center;
   background-attachment: fixed;
 }
 
 /* ──────────────── Viewport Occlusion Guards ────────────────
-   These fixed guards match the active tab's wallpaper background seamlessly.
+   These fixed guards match the wallpaper background seamlessly.
    They prevent scrolled content from visibly poking out into the 12px gap
    above the sticky cat photo banner or the 12px gap below the floating navigation bar.
 */
@@ -80,8 +45,12 @@
   max-width: var(--mobile-max-width);
   pointer-events: none;
   background-color: var(--color-background);
+  background-image:
+    linear-gradient(180deg, rgba(247, 244, 238, 0.78) 0%, rgba(247, 244, 238, 0.85) 100%),
+    url('../assets/cat-bg.jpg');
   background-repeat: repeat;
   background-position: top center;
+  background-size: 360px auto;
   background-attachment: fixed;
   transition: background-image var(--transition-base);
 }
@@ -98,45 +67,21 @@
   z-index: 90;
 }
 
-/* Sync occlusion guard wallpapers with active tab backgrounds */
+/* Sync occlusion guard wallpapers seamlessly with the cat background */
 .app-shell[data-active-tab="itinerary"] .app-shell__top-guard,
-.app-shell[data-active-tab="itinerary"] .app-shell__bottom-guard {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-itinerary.png');
-  background-size: 240px auto;
-}
-
+.app-shell[data-active-tab="itinerary"] .app-shell__bottom-guard,
 .app-shell[data-active-tab="chat"] .app-shell__top-guard,
-.app-shell[data-active-tab="chat"] .app-shell__bottom-guard {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-chat.png');
-  background-size: 220px auto;
-}
-
+.app-shell[data-active-tab="chat"] .app-shell__bottom-guard,
 .app-shell[data-active-tab="assistant"] .app-shell__top-guard,
-.app-shell[data-active-tab="assistant"] .app-shell__bottom-guard {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-assistant.png');
-  background-size: 230px auto;
-}
-
+.app-shell[data-active-tab="assistant"] .app-shell__bottom-guard,
 .app-shell[data-active-tab="ideas"] .app-shell__top-guard,
-.app-shell[data-active-tab="ideas"] .app-shell__bottom-guard {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-chat.png');
-  background-size: 230px auto;
-}
-
+.app-shell[data-active-tab="ideas"] .app-shell__bottom-guard,
 .app-shell[data-active-tab="dashboard"] .app-shell__top-guard,
 .app-shell[data-active-tab="dashboard"] .app-shell__bottom-guard {
-  background-image: 
-    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
-    url('../assets/bg-dashboard.png');
-  background-size: 230px auto;
+  background-image:
+    linear-gradient(180deg, rgba(247, 244, 238, 0.78) 0%, rgba(247, 244, 238, 0.85) 100%),
+    url('../assets/cat-bg.jpg');
+  background-size: 360px auto;
 }
 
 /* ──────────────── Sticky Cat Photo Header ──────────────── */
@@ -284,7 +229,7 @@
   opacity: 1;
 }
 
-/* Translucent Frosted Glass Drawer Panel (Liquid Glass Surface) */
+/* Translucent Frosted Glass Drawer Panel with Illustrated Cat & Travel Backdrop */
 .sidebar-drawer {
   position: absolute;
   top: 0;
@@ -292,22 +237,23 @@
   bottom: 0;
   width: 300px;
   max-width: 86%;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.88) 0%,
-    rgba(255, 255, 255, 0.76) 50%,
-    rgba(255, 255, 255, 0.84) 100%
-  );
-  backdrop-filter: blur(32px) saturate(200%) contrast(96%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%) contrast(96%);
+  background-color: var(--color-background);
+  background-image:
+    linear-gradient(180deg, rgba(245, 239, 235, 0.42) 0%, rgba(245, 239, 235, 0.58) 100%),
+    url('../assets/bg-sidebar.png');
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: cover;
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
   display: flex;
   flex-direction: column;
   border-top-right-radius: 28px;
   border-bottom-right-radius: 28px;
   /* Thin 1px light-refractive border and specular top highlight */
-  border-right: 1px solid rgba(255, 255, 255, 0.88);
-  box-shadow: 
-    16px 0 48px rgba(15, 23, 42, 0.14),
+  border-right: 1px solid var(--color-border);
+  box-shadow:
+    16px 0 48px rgba(38, 41, 46, 0.18),
     inset -1px 0 0 rgba(255, 255, 255, 0.95),
     inset 0 1px 1.5px rgba(255, 255, 255, 1);
   transform: translateX(-100%);
@@ -324,15 +270,13 @@
 .sidebar-header {
   padding: 18px 18px 14px;
   border-top-right-radius: 28px;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 247, 237, 0.7) 0%,
-    rgba(239, 246, 255, 0.7) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(245, 239, 235, 0.85) 0%,
+      rgba(245, 239, 235, 0.72) 100%);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.95);
@@ -450,7 +394,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.05),
     inset 0 1px 1px rgba(255, 255, 255, 0.95);
 }
@@ -503,13 +447,11 @@
   gap: 12px;
   padding: 13px 15px;
   border-radius: 20px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.72) 0%,
-    rgba(255, 255, 255, 0.54) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.54) 100%);
   border: 1px solid rgba(255, 255, 255, 0.82);
-  box-shadow: 
+  box-shadow:
     0 8px 24px rgba(15, 23, 42, 0.05),
     inset 0 1px 1px rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(24px) saturate(180%);
@@ -521,13 +463,11 @@
 }
 
 .sidebar-item:hover {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.88) 0%,
-    rgba(255, 255, 255, 0.70) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(255, 255, 255, 0.70) 100%);
   border-color: rgba(37, 99, 235, 0.4);
-  box-shadow: 
+  box-shadow:
     0 12px 30px rgba(37, 99, 235, 0.10),
     inset 0 1px 1px #FFFFFF;
   transform: translateY(-1.5px) scale(1.01);
@@ -549,7 +489,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 
+  box-shadow:
     0 4px 12px rgba(0, 0, 0, 0.06),
     inset 0 1px 1px rgba(255, 255, 255, 1);
   transition: transform 180ms ease;
@@ -562,7 +502,7 @@
 .sidebar-item__icon--primary {
   background: linear-gradient(135deg, rgba(255, 237, 213, 0.88) 0%, rgba(254, 215, 170, 0.7) 100%);
   color: #EA580C;
-  box-shadow: 
+  box-shadow:
     0 4px 14px rgba(234, 88, 12, 0.22),
     inset 0 1px 1px rgba(255, 255, 255, 1);
 }
@@ -570,7 +510,7 @@
 .sidebar-item__icon--warning {
   background: linear-gradient(135deg, rgba(254, 243, 199, 0.88) 0%, rgba(253, 230, 138, 0.7) 100%);
   color: #D97706;
-  box-shadow: 
+  box-shadow:
     0 4px 14px rgba(217, 119, 6, 0.22),
     inset 0 1px 1px rgba(255, 255, 255, 1);
 }
@@ -617,7 +557,7 @@
   border-radius: 9999px;
   letter-spacing: 0.2px;
   border: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(239, 68, 68, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
   flex-shrink: 0;
@@ -649,13 +589,11 @@
   gap: 10px;
   padding: 11px 13px;
   border-radius: 16px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.74) 0%,
-    rgba(255, 255, 255, 0.58) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.74) 0%,
+      rgba(255, 255, 255, 0.58) 100%);
   border: 1px solid rgba(255, 255, 255, 0.86);
-  box-shadow: 
+  box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.03),
     inset 0 1px 1px rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
@@ -681,21 +619,21 @@
 
 .sidebar-notif-card--success .sidebar-notif-dot {
   background: #10B981;
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(16, 185, 129, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 .sidebar-notif-card--warning .sidebar-notif-dot {
   background: #F59E0B;
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(245, 158, 11, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
 
 .sidebar-notif-card--info .sidebar-notif-dot {
   background: #3B82F6;
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(59, 130, 246, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
@@ -727,7 +665,7 @@
 
 .sidebar-notif-card--alert .sidebar-notif-dot {
   background: #EF4444;
-  box-shadow: 
+  box-shadow:
     0 0 10px rgba(239, 68, 68, 0.7),
     inset 0 1px 0 rgba(255, 255, 255, 0.85);
 }
@@ -814,7 +752,7 @@
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.82);
-  box-shadow: 
+  box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.03),
     inset 0 1px 0 rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
@@ -837,13 +775,11 @@
 .sidebar-summary-box {
   padding: 13px 15px;
   border-radius: 18px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.7) 0%,
-    rgba(241, 245, 249, 0.54) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.7) 0%,
+      rgba(241, 245, 249, 0.54) 100%);
   border: 1px solid rgba(255, 255, 255, 0.86);
-  box-shadow: 
+  box-shadow:
     0 6px 20px rgba(0, 0, 0, 0.03),
     inset 0 1px 1px rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
@@ -923,7 +859,7 @@
   justify-content: space-between;
   gap: 4px;
   z-index: var(--z-nav);
-  box-shadow: 
+  box-shadow:
     0 10px 30px rgba(15, 23, 42, 0.12),
     0 2px 8px rgba(0, 0, 0, 0.04),
     inset 0 1.5px 2px rgba(255, 255, 255, 1),
@@ -982,14 +918,12 @@
 }
 
 .bottom-nav__tab--active {
-  background: linear-gradient(
-    135deg,
-    rgba(234, 88, 12, 0.12) 0%,
-    rgba(217, 74, 5, 0.08) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(216, 88, 34, 0.14) 0%,
+      rgba(194, 75, 25, 0.08) 100%);
   color: var(--color-primary);
-  border: 1px solid rgba(234, 88, 12, 0.18);
-  box-shadow: 0 2px 8px rgba(232, 98, 26, 0.08);
+  border: 1px solid rgba(216, 88, 34, 0.25);
+  box-shadow: 0 2px 8px rgba(216, 88, 34, 0.12);
 }
 
 .bottom-nav__tab--active .bottom-nav__label {

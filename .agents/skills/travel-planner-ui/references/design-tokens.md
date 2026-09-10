@@ -6,43 +6,51 @@ All design tokens are defined as CSS custom properties on `:root` in [`src/style
 :root {
   /* ──────────────── Colors ──────────────── */
 
-  /* Primary (Burnt Orange / Amber CTA) */
-  --color-primary:          #E8621A;
-  --color-primary-hover:    #D4580F;
-  --color-primary-light:    #FFF0E6;   /* tinted background for badges */
+  /* ──────────────── 60-30-10 Color Role Distribution ──────────────── */
+
+  /* 10% Primary Brand Accent (Terracotta) */
+  --color-primary:          #D85822;
+  --color-primary-hover:    #C24B19;
+  --color-primary-light:    #FDF1EB;   /* tinted background for badges */
   --color-primary-text:     #FFFFFF;   /* text on primary bg */
 
-  /* Secondary (Forest Green & Accents) */
-  --color-secondary:        #2D6A2E;
-  --color-secondary-light:  #E8F5E9;
+  /* Supporting Functional Accents */
+  --color-accent-honey:     #E9A33B;   /* Honey Gold: secondary status ("Proposed"), star ratings */
+  --color-status-proposed:  #E9A33B;
+  --color-accent-ochre:     #B57738;   /* Warm Ochre: secondary category chips ("Sightseeing") */
+  --color-category-sightseeing: #B57738;
 
-  /* Neutral Surfaces & Backgrounds — Apple iOS 26 Liquid Glass */
-  --color-background:       #F5F0E8;   /* warm cream page background with cat wallpaper */
-  --color-surface:          rgba(255, 255, 255, 0.74);   /* translucent frosted glass */
-  --color-surface-alt:      rgba(255, 255, 255, 0.58);   /* layered frosted glass */
-  --color-border:           rgba(255, 255, 255, 0.88);   /* light-refractive edge */
-  --color-border-strong:    rgba(15, 23, 42, 0.25);
-  --color-divider:          rgba(255, 255, 255, 0.70);
+  /* 60% Base / Background (Soft Cream) & Surfaces */
+  --color-background:       #F5EFEB;   /* Soft cream backdrop & empty state fills */
+  --color-surface:          rgba(245, 239, 235, 0.76);   /* translucent frosted glass */
+  --color-surface-alt:      rgba(245, 239, 235, 0.58);   /* layered frosted glass */
+
+  /* 30% Structure & Neutrals (Warm Taupe) */
+  --color-border:           #C8B39B;   /* Warm Taupe card borders & unselected chips */
+  --color-border-subtle:    rgba(200, 179, 155, 0.55);
+  --color-border-strong:    rgba(200, 179, 155, 0.85);
+  --color-divider:          rgba(200, 179, 155, 0.45);
 
   /* Liquid Glass System Tokens */
   --glass-blur-sm:          blur(12px) saturate(180%);
   --glass-blur-md:          blur(22px) saturate(190%);
   --glass-blur-lg:          blur(32px) saturate(200%);
-  --glass-bg-card:          linear-gradient(180deg, rgba(255, 255, 255, 0.76) 0%, rgba(255, 255, 255, 0.56) 100%);
-  --glass-bg-card-hover:    linear-gradient(180deg, rgba(255, 255, 255, 0.90) 0%, rgba(255, 255, 255, 0.72) 100%);
-  --glass-border-refractive:1px solid rgba(255, 255, 255, 0.90);
+  --glass-bg-card:          linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(245, 239, 235, 0.65) 100%);
+  --glass-bg-card-hover:    linear-gradient(180deg, rgba(255, 255, 255, 0.90) 0%, rgba(245, 239, 235, 0.80) 100%);
+  --glass-border-refractive:1px solid rgba(200, 179, 155, 0.45);
   --glass-specular-top:     inset 0 1px 1.5px rgba(255, 255, 255, 0.98);
-  --glass-shadow:           0 8px 24px rgba(15, 23, 42, 0.06);
-  --glass-shadow-floating:  0 14px 38px rgba(15, 23, 42, 0.12);
+  --glass-shadow:           0 8px 24px rgba(200, 179, 155, 0.20);
+  --glass-shadow-floating:  0 14px 38px rgba(38, 41, 46, 0.10);
 
-  /* Typography Colors */
-  --color-text-primary:     #0F172A;   /* deep slate / rich dark */
-  --color-text-secondary:   #475569;   /* refined slate gray */
-  --color-text-tertiary:    #64748B;   /* muted slate */
+  /* 30% Typography & Inactive Neutrals */
+  --color-text-primary:     #26292E;   /* Charcoal: primary text, activity names, time headers */
+  --color-text-secondary:   #6D7C8A;   /* Slate / Blue-Grey: subtitles, "TBD", buffer duration */
+  --color-text-tertiary:    #6D7C8A;   /* Slate / Blue-Grey: inactive icons, muted labels */
   --color-text-inverse:     #FFFFFF;
+  --color-timeline-spine:   #6D7C8A;   /* Slate / Blue-Grey: vertical timeline connector line */
 
   /* Semantic */
-  --color-star:             #E8621A;   /* rating star */
+  --color-star:             #E9A33B;   /* Honey Gold rating star */
   --color-heart:            #E8621A;   /* favorite heart */
   --color-success:          #10B981;
   --color-error:            #EF4444;
@@ -145,13 +153,15 @@ All design tokens are defined as CSS custom properties on `:root` in [`src/style
 
 | Context                     | Token / Value                                                 | Visual Effect                                     |
 | :-------------------------- | :------------------------------------------------------------ | :------------------------------------------------ |
-| App Shell Background        | `--color-background` (`#F5F0E8`) + Page Cat Pattern Wallpaper  | Warm cream with repeating illustrated cats        |
-| Standard Card Background    | `--glass-bg-card`                                             | Frosted semi-transparent glass panel              |
-| Hover Card Background       | `--glass-bg-card-hover`                                       | Luminously brightened frosted glass               |
-| Card Refractive Border      | `--color-border` (`rgba(255, 255, 255, 0.88)`)                | 1px thin light-refractive edge                    |
+| App Shell Background        | `--color-background` (`#F5EFEB`) + `cat-bg.jpg`               | Soft cream backdrop with cat crowd pattern        |
+| Standard Card Background    | `--glass-bg-card`                                             | Frosted soft cream translucent glass panel        |
+| Hover Card Background       | `--glass-bg-card-hover`                                       | Luminously brightened frosted glass panel         |
+| Card Refractive Border      | `--color-border` (`#C8B39B` / `rgba(200, 179, 155, 0.45)`)    | 1px Warm Taupe border                             |
 | Top Specular Highlight      | `--glass-specular-top`                                        | Curved glass reflection along top edge            |
-| Primary Button / Active CTA | `--color-primary` (`#E8621A`) + specular glow                 | Radiant orange with white specular shine          |
-| Secondary Button / Chips    | Translucent glass pill (`rgba(255,255,255,0.7)`)              | Frosted glass capsule                             |
-| Floating Dock Bar           | Multi-stop glass gradient + `blur(28px)`                      | Floating pill at `bottom: 12px`                   |
-| Sticky Cat Photo Header     | Vertical cat asset banner + glass scrim + `blur(14px)` badge  | Floating rounded banner at `top: 12px`            |
-| Top/Bottom Occlusion Guards | Fixed matching tab wallpaper at `top: 0` & `bottom: 0`        | Completely occludes bleeding scrolled content     |
+| Selected Day Chip (Day 1)   | `--color-primary` (`#D85822`) + white text                    | Warm Terracotta active chip                       |
+| Unselected Day Chips        | Warm Taupe (`#C8B39B`) border + soft cream glass fill         | Subtly grounded secondary chips                   |
+| Primary Center FAB (+)      | `--color-primary` (`#D85822`) + specular highlight            | Solid Warm Terracotta floating action button      |
+| Timeline Vertical Spine     | `--color-timeline-spine` (`#6D7C8A`)                          | Slate / Blue-Grey continuous connector line       |
+| Active Timeline Dots        | White node + `--color-primary` (`#D85822`) border             | Terracotta focused timeline node                  |
+| Proposed Status Tag         | `--color-status-proposed` (`#E9A33B`)                         | Honey Gold secondary status pill                  |
+| Sightseeing Category Chip   | `--color-category-sightseeing` (`#B57738`)                    | Warm Ochre secondary category chip                |

@@ -135,7 +135,7 @@ export function createSidebar(options = {}) {
             <label class=\"sidebar-appearance-drawer__label\">Header Cover Image</label>
             <div class=\"sidebar-cover-pills\">
               ${PRESET_COVERS.map(
-                (cover) => `
+      (cover) => `
                 <button 
                   type=\"button\" 
                   class=\"sidebar-cover-pill ${activeCover === cover.url ? 'sidebar-cover-pill--active' : ''}\" 
@@ -151,7 +151,7 @@ export function createSidebar(options = {}) {
                   ` : ''}
                 </button>
               `
-              ).join('')}
+    ).join('')}
             </div>
           </div>
 
