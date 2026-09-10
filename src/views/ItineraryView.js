@@ -1,15 +1,19 @@
 /**
  * Interactive Drag-and-Drop Itinerary View
- * Conforms to .agents/skills/travel-planner-ui specifications:
+ * Conforms to .agents/skills/travel-planner-ui specifications & Penang Edition Demo Flow:
  * 1. Vertical timeline spine connecting chronological time blocks.
  * 2. High-performance auto-scroll engine when dragging cards near screen edges.
  * 3. Automatic schedule time recalculation preserving activity durations and transit buffers.
  * 4. Deduplicated requirements and non-repeating tags.
  * 5. In-place card details expansion preserving scroll position.
- * 6. Slot status lifecycle (Proposed, Confirmed, Weather Permitting, and Day-of Cancellation).
- * 7. Dynamic days with "+ Add Day" and empty day canvases.
- * 8. Social Reels spotlight and interactive preview modal.
- * 9. Planning delete vs Day-of cancellation (Free-time pocket vs Chronological reflow).
+ * 6. Slot status lifecycle (Proposed Draft, Confirmed, Weather Permitting, and Day-of Cancellation).
+ * 7. Active Dotted Timeline Gap Indicator (>2h free pockets, e.g. Chew Jetty ➔ Penang Hill).
+ * 8. Frosted Glass Dashed Ghost Cards for Proposed draft status with [✓ Confirm] & [🗳 Vote].
+ * 9. Apple iOS 26-Style Anti-Slop Schedule Advisories (Monday closure warnings, spring exit to Day 3).
+ * 10. Ambient Day 2 tab activity indicator dot (●).
+ * 11. Live Tropical Monsoon Weather Alert banner & 3-Way Contingency Resolution Sheet.
+ * 12. Dynamic days with "+ Add Day" and empty day canvases.
+ * 13. Social Reels spotlight and interactive preview modal.
  */
 
 import {
@@ -31,6 +35,7 @@ import {
   formatDisplayTime,
   formatDuration,
   timeToMinutes,
+  minutesTo24,
 } from '../utils/bufferEngine.js';
 import { getTripSettings, formatDateRange } from '../models/tripSettings.js';
 import { createStatusModal } from '../components/itinerary/StatusModal.js';
@@ -45,8 +50,12 @@ export function createItineraryView() {
 
   let itineraryList = getItineraryData();
   let currentDay = 1;
-  let expandedCardIds = new Set(['d1-2']); // Card 1 (Hotel) collapsed, Card 2 (Senso-ji) expanded by default
+  let expandedCardIds = new Set(['d1-2']); // Default expanded
   const checkedRequirements = new Set();
+
+  // Ambient & Simulation State
+  let day2HasActivity = false;
+  let weatherAlertActive = false;
 
   // Modals
   let statusModal;
@@ -123,7 +132,7 @@ export function createItineraryView() {
     clearTimeout(toast._timer);
     toast._timer = setTimeout(() => {
       toast.classList.remove('is-visible');
-    }, 2400);
+    }, 2500);
   }
 
   function initModals() {
@@ -153,6 +162,9 @@ export function createItineraryView() {
           showScheduleToast(`Status updated to ${newStatus}`);
         }
         render();
+      },
+      onResolveContingency: (blockId, optionType) => {
+        resolveContingencyOption(blockId, optionType);
       },
     });
 
@@ -192,6 +204,269 @@ export function createItineraryView() {
     saveItineraryData(itineraryList);
   }
 
+  // ──────────────── Direct Action Helpers ────────────────
+
+  function confirmProposedBlock(blockId) {
+    itineraryList = getItineraryData();
+    const block = itineraryList.find((b) => b.id === blockId);
+    if (!block) return;
+
+    itineraryList = itineraryList.map((b) => {
+      if (b.id === blockId) {
+        return {
+          ...b,
+          status: 'confirmed',
+          transitToNextMinutes: 25,
+          transitMode: 'GrabCar / Transit to Penang Hill',
+        };
+      }
+      // If predecessor is Chew Jetty, ensure 12 min GrabCar transit buffer
+      if (b.day === block.day && (b.id === 'd1-chew-jetty' || (b.title && b.title.includes('Chew Jetty')))) {
+        return {
+          ...b,
+          transitToNextMinutes: 12,
+          transitMode: 'GrabCar (12 min)',
+        };
+      }
+      return b;
+    });
+
+    saveItineraryData(itineraryList);
+    render();
+    showScheduleToast('✓ Confirmed! Transit buffers calculated (GrabCar 12 min, Penang Hill 25 min)');
+
+    try {
+      const channel = new BroadcastChannel('wandersync_simulation');
+      channel.postMessage({ type: 'BLOCK_CONFIRMED', blockId });
+    } catch (e) {}
+  }
+
+  function triggerConsensusVote(blockId, cardEl) {
+    if (!cardEl) return;
+    const actionsContainer = cardEl.querySelector(`[data-proposed-actions="${blockId}"]`);
+    if (!actionsContainer) return;
+
+    actionsContainer.innerHTML = `
+      <div class="card-vote-progress-panel">
+        <div class="card-vote-progress-header">
+          <span>🗳 Group Consensus Polling</span>
+          <span class="vote-ratio" id="vote-ratio-${blockId}">1/3 Votes (33%)</span>
+        </div>
+        <div class="card-vote-progress-bar">
+          <div class="card-vote-progress-fill" id="vote-fill-${blockId}" style="width: 33%;"></div>
+        </div>
+        <div id="vote-status-text-${blockId}" style="font-size: 11px; color: #78350F; font-weight: 500;">
+          Tony voted YES • Waiting for Wei Gang & Presenter...
+        </div>
+      </div>
+    `;
+
+    // Step 1: Wei Gang votes YES after 650ms
+    setTimeout(() => {
+      const ratioEl = cardEl.querySelector(`#vote-ratio-${blockId}`);
+      const fillEl = cardEl.querySelector(`#vote-fill-${blockId}`);
+      const textEl = cardEl.querySelector(`#vote-status-text-${blockId}`);
+      if (ratioEl) ratioEl.textContent = '2/3 Votes (66%)';
+      if (fillEl) fillEl.style.width = '66%';
+      if (textEl) textEl.textContent = 'Wei Gang voted YES • Final presenter consensus approved...';
+    }, 650);
+
+    // Step 2: 100% consensus reached after 1350ms
+    setTimeout(() => {
+      const ratioEl = cardEl.querySelector(`#vote-ratio-${blockId}`);
+      const fillEl = cardEl.querySelector(`#vote-fill-${blockId}`);
+      const textEl = cardEl.querySelector(`#vote-status-text-${blockId}`);
+      if (ratioEl) ratioEl.textContent = '3/3 Votes • 100% Consensus!';
+      if (fillEl) {
+        fillEl.style.width = '100%';
+        fillEl.style.background = '#16A34A';
+      }
+      if (textEl) textEl.innerHTML = '<strong style="color: #15803D;">✓ Consensus Reached! Auto-confirming slot...</strong>';
+    }, 1350);
+
+    // Step 3: Morphs to solid confirmed after 1800ms
+    setTimeout(() => {
+      confirmProposedBlock(blockId);
+    }, 1800);
+  }
+
+  function shiftBlockToDay3(blockId) {
+    const cardWrapper = container.querySelector(`.timeline-item-wrapper[data-block-id="${blockId}"]`);
+    if (cardWrapper) {
+      cardWrapper.classList.add('card-ios-spring-exit');
+    }
+
+    setTimeout(() => {
+      let list = getItineraryData();
+      const target = list.find((b) => b.id === blockId);
+      if (!target) return;
+
+      target.day = 3;
+      target.advisoryDismissed = true;
+      target.startTime = '18:30';
+      target.endTime = '19:45';
+
+      const day1Blocks = list.filter((b) => b.day === 1 && b.id !== blockId);
+      const day3Blocks = list.filter((b) => b.day === 3 || b.id === blockId);
+      const otherBlocks = list.filter((b) => b.day !== 1 && b.day !== 3);
+
+      const recomputedDay1 = recalculateDaySchedule(day1Blocks);
+      const recomputedDay3 = recalculateDaySchedule(day3Blocks);
+
+      list = [...otherBlocks, ...recomputedDay1, ...recomputedDay3];
+      saveItineraryData(list);
+      render();
+      showScheduleToast('Shifted Siam Road Char Koay Teow to Day 3 · Wed');
+
+      try {
+        const channel = new BroadcastChannel('wandersync_simulation');
+        channel.postMessage({ type: 'BLOCK_SHIFTED_DAY3', blockId });
+      } catch (e) {}
+    }, 350);
+  }
+
+  function resolveContingencyOption(blockId, optionType) {
+    let list = getItineraryData();
+    const block = list.find((b) => b.id === blockId);
+    if (!block) return;
+
+    if (optionType === 'fallback') {
+      // 1. [🌧️ Switch to Indoor Fallback]: The Top Komtar Indoor Theme Park & Glass Rainbow Skywalk
+      list = list.map((b) => {
+        if (b.id === blockId) {
+          return {
+            ...b,
+            title: 'The Top Komtar Indoor Theme Park & Glass Rainbow Skywalk',
+            location: 'Komtar Tower, 1 Jalan Penang, George Town',
+            category: 'activity',
+            status: 'confirmed',
+            transitToNextMinutes: 15,
+            transitMode: 'GrabCar (15 min to George Town)',
+            notes: 'Swapped from Penang Hill due to afternoon tropical monsoon downpour. Fully indoor climate-controlled Rainbow Skywalk & heritage gallery.',
+            requirements: ['E-Tickets Ready', 'Indoor Footwear'],
+            fallback: 'Penang Hill Outdoor Station',
+            fallbackReason: 'weather',
+          };
+        }
+        return b;
+      });
+      weatherAlertActive = false;
+      saveItineraryData(list);
+      render();
+      showScheduleToast('Swapped to Indoor Fallback: The Top Komtar & Rainbow Skywalk');
+    } else if (optionType === 'freetime') {
+      // 2. [☕ Hold Free-Time Pocket]: ChinaHouse Heritage Cafe (Beach Street) rest pocket
+      list = list.map((b) => {
+        if (b.id === blockId) {
+          return {
+            ...b,
+            title: 'ChinaHouse Heritage Cafe (Beach Street) Rest Pocket',
+            location: '153 Beach Street, George Town',
+            category: 'rest',
+            status: 'cancelled',
+            notes: 'Slot converted into relaxing cafe shelter during tropical downpour without shifting dinner reservations.',
+            requirements: [],
+            fallback: null,
+          };
+        }
+        return b;
+      });
+      weatherAlertActive = false;
+      saveItineraryData(list);
+      render();
+      showScheduleToast('Held free-time pocket: ChinaHouse Heritage Cafe');
+    } else if (optionType === 'reflow') {
+      // 3. [⏩ Chronological Reflow]: Pulls schedule forward by 90 minutes
+      const day = block.day;
+      const blockEndMins = timeToMinutes(block.endTime);
+      list = list.filter((b) => b.id !== blockId);
+      list = list.map((b) => {
+        if (b.day === day && timeToMinutes(b.startTime) >= blockEndMins) {
+          const newStart = Math.max(0, timeToMinutes(b.startTime) - 90);
+          const duration = timeToMinutes(b.endTime) - timeToMinutes(b.startTime);
+          return {
+            ...b,
+            startTime: minutesTo24(newStart),
+            endTime: minutesTo24(newStart + duration),
+          };
+        }
+        return b;
+      });
+      const dayBlocks = list.filter((b) => b.day === day);
+      const otherDays = list.filter((b) => b.day !== day);
+      const recomputed = recalculateDaySchedule(dayBlocks);
+      list = [...otherDays, ...recomputed];
+
+      weatherAlertActive = false;
+      saveItineraryData(list);
+      render();
+      showScheduleToast('Chronological reflow applied: Schedule pulled forward by 90 minutes');
+    }
+
+    try {
+      const channel = new BroadcastChannel('wandersync_simulation');
+      channel.postMessage({ type: 'CONTINGENCY_RESOLVED', option: optionType, blockId });
+    } catch (e) {}
+  }
+
+  function insertChendulSlot() {
+    let list = getItineraryData();
+    if (list.some((b) => b.id === 'd1-chendul' || (b.title && b.title.includes('Chendul')))) {
+      showScheduleToast('Lebuh Keng Kwee Chendul is already proposed on Day 1');
+      return;
+    }
+    const chendul = {
+      id: 'd1-chendul',
+      day: 1,
+      startTime: '12:30',
+      endTime: '13:45',
+      category: 'meal',
+      status: 'proposed',
+      title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+      location: '27 & 29 Lebuh Keng Kwee, George Town',
+      transitToNextMinutes: 25,
+      transitMode: 'GrabCar to Penang Hill',
+      requirements: ['Cash Ready (RM 5-10)', 'Napkins / Wet Wipes'],
+      fallback: 'Joo Hooi Cafe Indoor Seating',
+      fallbackReason: 'weather',
+      notes: 'Iconic shaved ice with pandan green jelly noodles, red beans, and gula melaka. High turnover stall.',
+      rating: 4.8,
+    };
+    list.push(chendul);
+    saveItineraryData(list);
+    expandedCardIds.add('d1-chendul');
+    render();
+    showScheduleToast('Inserted Lebuh Keng Kwee Chendul as Proposed Draft');
+  }
+
+  function insertSiamRoadSlot() {
+    let list = getItineraryData();
+    if (list.some((b) => b.id === 'd1-siam-ckt' || (b.title && b.title.includes('Siam Road')))) {
+      return;
+    }
+    const ckt = {
+      id: 'd1-siam-ckt',
+      day: 1,
+      startTime: '19:00',
+      endTime: '20:15',
+      category: 'meal',
+      status: 'proposed',
+      title: 'Siam Road Char Koay Teow',
+      location: '82 Siam Road, George Town',
+      transitToNextMinutes: 15,
+      transitMode: 'GrabCar (15 min)',
+      requirements: ['Cash Only', 'Expect 30-45m Queue'],
+      advisory: 'Siam Road Char Koay Teow is closed on Mondays. Consider swapping with Day 3.',
+      notes: 'Michelin Bib Gourmand charcoal-fried char koay teow with duck egg and cockles.',
+      rating: 4.9,
+    };
+    list.push(ckt);
+    saveItineraryData(list);
+    render();
+  }
+
+  // ──────────────── Render Cycle ────────────────
+
   function render() {
     const rawBlocks = getDayBlocks();
     const blocksWithBuffers = calculateItineraryBuffers(rawBlocks);
@@ -204,7 +479,7 @@ export function createItineraryView() {
     );
 
     const bannerImg = settings.coverImage || './src/assets/bg-itinerary.png';
-    const cityTitle = (settings.destination || settings.title || 'Tokyo').split(',')[0].trim();
+    const cityTitle = (settings.destination || settings.title || 'Penang').split(',')[0].trim();
 
     container.innerHTML = `
       <!-- Atmospheric Vertical Asset Banner -->
@@ -232,7 +507,7 @@ export function createItineraryView() {
             .map(
               (d) => `
             <button type="button" class="day-chip ${currentDay === d ? 'day-chip--active' : ''}" data-day="${d}">
-              Day ${d}
+              Day ${d}${d === 2 && day2HasActivity && currentDay !== 2 ? '<span class="day-chip__dot">●</span>' : ''}
             </button>
           `
             )
@@ -242,8 +517,6 @@ export function createItineraryView() {
           </button>
         </div>
       </div>
-
-
 
       <!-- Transit Buffer Warning Banner (if any buffer deficit exists) -->
       ${
@@ -271,7 +544,6 @@ export function createItineraryView() {
           ? `
         <div class="timeline-feed" id="timeline-feed-target">
           <div class="timeline-item-wrapper timeline-item-wrapper--empty" id="btn-empty-propose-slot" role="button" tabindex="0" title="Click to propose an event">
-            <!-- Retain original blue timeline node pin with SVG icon of time -->
             <div class="timeline-node-pin timeline-node-pin--time">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-label="Time">
                 <circle cx="12" cy="12" r="10"></circle>
@@ -279,7 +551,6 @@ export function createItineraryView() {
               </svg>
             </div>
 
-            <!-- Single greyed out dashed event card -->
             <article class="timeline-card timeline-card--empty-dashed">
               <div class="timeline-card__empty-dashed-content">
                 <div class="timeline-card__empty-icon-wrap">
@@ -310,7 +581,7 @@ export function createItineraryView() {
         </div>
       `
           : `
-<!-- Draggable Timeline Blocks Container with Vertical Spine -->
+        <!-- Draggable Timeline Blocks Container with Vertical Spine -->
         <div class="timeline-feed" id="timeline-feed-target">
           ${renderTimelineItems(blocksWithBuffers)}
         </div>
@@ -321,119 +592,173 @@ export function createItineraryView() {
     attachEvents(rawBlocks);
   }
 
+  // ──────────────── Venue Illustration Icons ────────────────
+
   function getVenueThumbnail(block) {
     const idSuffix = block.id || Math.random().toString(36).slice(2, 6);
+    const title = (block.title || '').toLowerCase();
 
-    // 1. Senso-ji Temple Gate (Iconic Kaminarimon with curved eaves, red pillars, giant red lantern)
-    if (block.id === 'd1-2' || (block.title && (block.title.includes('Senso-ji') || block.title.includes('Shrine')))) {
+    // 1. Clan Jetties / Chew Jetty (Stilt houses over sea water)
+    if (title.includes('chew jetty') || title.includes('clan jetties') || block.id === 'd1-chew-jetty') {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Traditional Shrine">
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Chew Jetty">
           <defs>
-            <linearGradient id="skyGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#3B82F6"/>
-              <stop offset="55%" stop-color="#93C5FD"/>
-              <stop offset="100%" stop-color="#EFF6FF"/>
+            <linearGradient id="jettySky-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0284C7"/>
+              <stop offset="60%" stop-color="#7DD3FC"/>
+              <stop offset="100%" stop-color="#E0F2FE"/>
             </linearGradient>
-            <linearGradient id="lanternGrad-${idSuffix}" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#EF4444"/>
-              <stop offset="45%" stop-color="#DC2626"/>
-              <stop offset="100%" stop-color="#991B1B"/>
-            </linearGradient>
-            <linearGradient id="roofGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#374151"/>
-              <stop offset="100%" stop-color="#111827"/>
+            <linearGradient id="jettySea-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#0284C7"/>
+              <stop offset="100%" stop-color="#0369A1"/>
             </linearGradient>
           </defs>
-          <rect width="64" height="64" fill="url(#skyGrad-${idSuffix})"/>
-          <ellipse cx="48" cy="18" rx="10" ry="4" fill="#FFFFFF" opacity="0.6"/>
-          <ellipse cx="16" cy="16" rx="8" ry="3" fill="#FFFFFF" opacity="0.5"/>
-          <path d="M4 22 C18 16 46 16 60 22 L57 26 L7 26 Z" fill="url(#roofGrad-${idSuffix})"/>
-          <path d="M8 23 C20 18 44 18 56 23" stroke="#F59E0B" stroke-width="1.5" fill="none"/>
-          <rect x="10" y="26" width="44" height="5" fill="#991B1B"/>
-          <rect x="12" y="30" width="5" height="34" fill="#DC2626"/>
-          <rect x="47" y="30" width="5" height="34" fill="#DC2626"/>
-          <ellipse cx="32" cy="39" rx="11" ry="13" fill="url(#lanternGrad-${idSuffix})"/>
-          <line x1="32" y1="26" x2="32" y2="30" stroke="#111827" stroke-width="2.5"/>
-          <rect x="25" y="29" width="14" height="3" fill="#111827" rx="1"/>
-          <rect x="25" y="48" width="14" height="3" fill="#111827" rx="1"/>
-          <circle cx="32" cy="39" r="5.5" fill="#FBBF24" opacity="0.9"/>
-          <text x="32" y="42" font-size="6.5" font-family="'Inter', sans-serif" font-weight="900" fill="#111827" text-anchor="middle">雷</text>
-          <rect x="0" y="56" width="64" height="8" fill="#E2E8F0"/>
+          <rect width="64" height="64" fill="url(#jettySky-${idSuffix})"/>
+          <rect x="0" y="42" width="64" height="22" fill="url(#jettySea-${idSuffix})"/>
+          <!-- Wooden Stilt House -->
+          <polygon points="12,24 32,10 52,24" fill="#92400E"/>
+          <rect x="16" y="24" width="32" height="18" fill="#B45309"/>
+          <rect x="22" y="28" width="6" height="8" fill="#FEF3C7"/>
+          <rect x="36" y="28" width="6" height="8" fill="#FEF3C7"/>
+          <!-- Wooden Stilts & Boardwalk Planks -->
+          <line x1="20" y1="42" x2="20" y2="56" stroke="#78350F" stroke-width="2.5"/>
+          <line x1="32" y1="42" x2="32" y2="58" stroke="#78350F" stroke-width="2.5"/>
+          <line x1="44" y1="42" x2="44" y2="56" stroke="#78350F" stroke-width="2.5"/>
+          <rect x="6" y="40" width="52" height="3" fill="#D97706" rx="1"/>
         </svg>
       `;
     }
 
-    // 2. Hotel Check-in / Rest
-    if (block.category === 'rest') {
+    // 2. Penang Hill & Funicular Railway (Lush mountain canopy & tram)
+    if (title.includes('penang hill') || title.includes('the habitat') || title.includes('funicular') || block.id === 'd1-penang-hill') {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Hotel Lobby">
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Penang Hill">
           <defs>
-            <linearGradient id="hotelGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#EEF2FF"/>
-              <stop offset="100%" stop-color="#C7D2FE"/>
+            <linearGradient id="hillSky-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#38BDF8"/>
+              <stop offset="70%" stop-color="#BAE6FD"/>
+            </linearGradient>
+            <linearGradient id="hillGrad-${idSuffix}" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#16A34A"/>
+              <stop offset="100%" stop-color="#15803D"/>
             </linearGradient>
           </defs>
-          <rect width="64" height="64" fill="url(#hotelGrad-${idSuffix})"/>
-          <rect x="18" y="16" width="28" height="48" fill="#4338CA" rx="3"/>
-          <rect x="23" y="21" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="36" y="21" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="23" y="30" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="36" y="30" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="23" y="39" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <rect x="36" y="39" width="5" height="5" fill="#FEF08A" rx="1"/>
-          <polygon points="16,50 48,50 44,55 20,55" fill="#E8621A"/>
+          <rect width="64" height="64" fill="url(#hillSky-${idSuffix})"/>
+          <!-- Tropical Mountain Slope -->
+          <path d="M0,64 L0,30 Q30,16 64,42 L64,64 Z" fill="url(#hillGrad-${idSuffix})"/>
+          <!-- Cable Line -->
+          <line x1="4" y1="36" x2="60" y2="48" stroke="#F1F5F9" stroke-width="1.5" stroke-dasharray="2,2"/>
+          <!-- Red Funicular Railway Tram -->
+          <g transform="translate(24, 32) rotate(12)">
+            <rect x="0" y="0" width="18" height="10" rx="2" fill="#DC2626"/>
+            <rect x="2" y="2" width="4" height="4" fill="#FEF08A" rx="0.5"/>
+            <rect x="7" y="2" width="4" height="4" fill="#FEF08A" rx="0.5"/>
+            <rect x="12" y="2" width="4" height="4" fill="#FEF08A" rx="0.5"/>
+          </g>
+          <circle cx="50" cy="18" r="7" fill="#FDE047" opacity="0.9"/>
         </svg>
       `;
     }
 
-    // 3. Meals & Street Food
-    if (block.category === 'meal') {
+    // 3. Teochew Chendul & Street Food / Hawker Fare
+    if (title.includes('chendul') || title.includes('laksa') || title.includes('char koay teow') || title.includes('hawker') || title.includes('street food')) {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Street Food & Matcha">
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Penang Hawker Food">
           <defs>
-            <linearGradient id="mealBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id="chendulBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="#FEF3C7"/>
               <stop offset="100%" stop-color="#FDE68A"/>
             </linearGradient>
           </defs>
-          <rect width="64" height="64" fill="url(#mealBg-${idSuffix})"/>
-          <ellipse cx="32" cy="42" rx="18" ry="11" fill="#065F46"/>
-          <ellipse cx="32" cy="40" rx="15" ry="8" fill="#10B981"/>
-          <line x1="16" y1="20" x2="48" y2="20" stroke="#78350F" stroke-width="2.5"/>
-          <circle cx="24" cy="20" r="4.5" fill="#F472B6"/>
-          <circle cx="33" cy="20" r="4.5" fill="#FFFFFF"/>
-          <circle cx="42" cy="20" r="4.5" fill="#34D399"/>
+          <rect width="64" height="64" fill="url(#chendulBg-${idSuffix})"/>
+          <!-- Hawker Shaved Ice Bowl -->
+          <ellipse cx="32" cy="46" rx="20" ry="11" fill="#D97706"/>
+          <ellipse cx="32" cy="43" rx="17" ry="8" fill="#FFFBEB"/>
+          <!-- Green Pandan Jelly & Red Beans -->
+          <path d="M22,38 Q26,34 30,39" stroke="#16A34A" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <path d="M32,36 Q36,32 40,37" stroke="#16A34A" stroke-width="3" stroke-linecap="round" fill="none"/>
+          <circle cx="25" cy="42" r="3.5" fill="#991B1B"/>
+          <circle cx="38" cy="42" r="3" fill="#991B1B"/>
+          <!-- Gula Melaka Coconut Drizzle -->
+          <path d="M28,26 Q32,32 30,38" stroke="#78350F" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+          <circle cx="44" cy="22" r="3" fill="#EA580C"/>
         </svg>
       `;
     }
 
-    // 4. Transit / Shinkansen Bullet Train
-    if (block.category === 'transit' || (block.title && block.title.includes('Shinkansen'))) {
+    // 4. The Top Komtar & Rainbow Skywalk (Modern Skyscraper)
+    if (title.includes('komtar') || title.includes('skywalk') || title.includes('the top')) {
       return `
-        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Bullet Train">
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Komtar Tower">
           <defs>
-            <linearGradient id="trainBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#E0F2FE"/>
-              <stop offset="100%" stop-color="#BAE6FD"/>
-            </linearGradient>
-            <linearGradient id="trainNose-${idSuffix}" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stop-color="#FFFFFF"/>
-              <stop offset="100%" stop-color="#F1F5F9"/>
+            <linearGradient id="komtarBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1E293B"/>
+              <stop offset="100%" stop-color="#0F172A"/>
             </linearGradient>
           </defs>
-          <rect width="64" height="64" fill="url(#trainBg-${idSuffix})"/>
-          <path d="M12 40 C16 26 32 24 54 24 L54 44 L12 44 Z" fill="url(#trainNose-${idSuffix})"/>
-          <path d="M14 36 C24 33 36 32 54 32 L54 35 C36 35 24 36 14 39 Z" fill="#0284C7"/>
-          <path d="M22 28 C28 26 34 26 38 28 L36 31 C32 30 28 30 24 31 Z" fill="#1E293B"/>
-          <line x1="8" y1="46" x2="56" y2="46" stroke="#64748B" stroke-width="2"/>
-          <line x1="12" y1="49" x2="52" y2="49" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="3,2"/>
+          <rect width="64" height="64" fill="url(#komtarBg-${idSuffix})"/>
+          <!-- Cylindrical Tower -->
+          <rect x="22" y="10" width="20" height="54" fill="#38BDF8" opacity="0.85" rx="2"/>
+          <rect x="26" y="14" width="12" height="50" fill="#0284C7" rx="1"/>
+          <!-- Cantilever Rainbow Skywalk Curve -->
+          <path d="M20,18 Q32,8 44,18" stroke="#F59E0B" stroke-width="3" fill="none"/>
+          <path d="M22,19 Q32,11 42,19" stroke="#10B981" stroke-width="1.5" fill="none"/>
+          <circle cx="32" cy="12" r="2.5" fill="#FFFFFF"/>
         </svg>
       `;
     }
 
-    // 5. Digital Art Museum & Sightseeing
+    // 5. ChinaHouse Cafe / Heritage Rest Pocket
+    if (title.includes('chinahouse') || block.category === 'rest' || title.includes('cafe')) {
+      return `
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Heritage Cafe">
+          <defs>
+            <linearGradient id="cafeBg-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FEF3C7"/>
+              <stop offset="100%" stop-color="#FED7AA"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" fill="url(#cafeBg-${idSuffix})"/>
+          <!-- Heritage George Town Shophouse Facade -->
+          <rect x="14" y="16" width="36" height="48" fill="#78350F" rx="2"/>
+          <path d="M12,18 L32,6 L52,18 Z" fill="#991B1B"/>
+          <!-- Timber Windows & Arched Doorway -->
+          <rect x="20" y="24" width="8" height="10" fill="#FEF3C7" rx="4"/>
+          <rect x="36" y="24" width="8" height="10" fill="#FEF3C7" rx="4"/>
+          <path d="M26,44 A6,6 0 0 1 38,44 L38,64 L26,64 Z" fill="#FEF3C7"/>
+          <!-- Steaming Coffee Cup -->
+          <path d="M46,38 Q48,34 46,30" stroke="#EA580C" stroke-width="1.5" fill="none"/>
+        </svg>
+      `;
+    }
+
+    // 6. Nature / Entopia / Batu Ferringhi Beach
+    if (title.includes('entopia') || title.includes('batu ferringhi') || title.includes('beach')) {
+      return `
+        <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Penang Nature">
+          <defs>
+            <linearGradient id="beachGrad-${idSuffix}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#F97316"/>
+              <stop offset="50%" stop-color="#FDE047"/>
+              <stop offset="100%" stop-color="#0284C7"/>
+            </linearGradient>
+          </defs>
+          <rect width="64" height="64" fill="url(#beachGrad-${idSuffix})"/>
+          <!-- Palm Tree Silhouette -->
+          <path d="M14,64 Q24,42 28,32" stroke="#78350F" stroke-width="3" fill="none"/>
+          <path d="M28,32 Q20,26 12,30" stroke="#15803D" stroke-width="2.5" fill="none"/>
+          <path d="M28,32 Q36,24 44,28" stroke="#15803D" stroke-width="2.5" fill="none"/>
+          <path d="M28,32 Q30,20 28,16" stroke="#15803D" stroke-width="2.5" fill="none"/>
+          <!-- Sun & Wave -->
+          <circle cx="48" cy="22" r="8" fill="#FEF08A"/>
+          <path d="M0,54 Q16,50 32,54 T64,54" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+        </svg>
+      `;
+    }
+
+    // Default Fallback
     return `
-      <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Sightseeing Landmark">
+      <svg class="venue-circle-svg" viewBox="0 0 64 64" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-label="Landmark">
         <defs>
           <linearGradient id="artBg-${idSuffix}" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="#3B82F6"/>
@@ -446,6 +771,8 @@ export function createItineraryView() {
       </svg>
     `;
   }
+
+  // ──────────────── Timeline Item & Ghost Card Rendering ────────────────
 
   function renderTimelineItems(blocks) {
     const categoryMap = {
@@ -476,6 +803,7 @@ export function createItineraryView() {
         const isExpanded = expandedCardIds.has(block.id);
         const buffer = block.transitBuffer;
         const isCancelled = block.status === 'cancelled';
+        const isProposed = block.status === 'proposed';
         const isReel = block.source === 'reel' || block.reelUrl;
 
         // Formatted times
@@ -484,7 +812,7 @@ export function createItineraryView() {
 
         // Status styling and label
         let statusClass = 'status-pill-btn--proposed';
-        let statusLabel = 'Proposed';
+        let statusLabel = 'Proposed Draft';
         if (block.status === 'confirmed') {
           statusClass = 'status-pill-btn--confirmed';
           statusLabel = 'Confirmed';
@@ -516,7 +844,7 @@ export function createItineraryView() {
         } else if (isCancelled) {
           statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
         } else {
-          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+          statusIconSvg = '<span class="status-dot-pulse">●</span>';
         }
 
         const collapsedStatusLabel = isCancelled
@@ -525,14 +853,94 @@ export function createItineraryView() {
           ? 'Weather'
           : block.status === 'confirmed'
           ? 'Confirmed'
-          : 'Proposed';
+          : 'PROPOSED DRAFT';
+
+        // 1. Proposed Draft Actions Row
+        const proposedActionsHtml = isProposed
+          ? `
+          <div class="timeline-card__proposed-actions" data-proposed-actions="${block.id}">
+            <button type="button" class="btn-card-confirm" data-confirm-proposed="${block.id}" title="Confirm this slot">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>✓ Confirm</span>
+            </button>
+            <button type="button" class="btn-card-vote" data-vote-proposed="${block.id}" title="Put to group consensus vote">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m9 12 2 2 4-4"/>
+                <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z"/>
+                <path d="M22 19H2"/>
+              </svg>
+              <span>🗳 Vote</span>
+            </button>
+          </div>
+        `
+          : '';
+
+        // 2. Anti-Slop Schedule Advisory
+        const hasAdvisory =
+          !block.advisoryDismissed &&
+          (block.advisory ||
+            (block.title && (block.title.includes('Siam Road') || block.title.includes('Char Koay Teow'))) ||
+            block.id === 'd1-siam-ckt');
+
+        const advisoryHtml = hasAdvisory
+          ? `
+          <div class="timeline-card__advisory" id="advisory-${block.id}">
+            <div class="timeline-card__advisory-top">
+              <div class="timeline-card__advisory-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#D97706" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <line x1="10" y1="14" x2="14" y2="18"></line>
+                  <line x1="14" y1="14" x2="10" y2="18"></line>
+                </svg>
+              </div>
+              <div class="timeline-card__advisory-text">
+                <strong>Schedule Advisory:</strong> ${block.advisory || 'Siam Road Char Koay Teow is closed on Mondays. Consider swapping with Day 3.'}
+              </div>
+            </div>
+            <div class="timeline-card__advisory-actions">
+              <button type="button" class="btn-shift-day3" data-shift-day3="${block.id}">
+                Shift to Day 3 · Wed
+              </button>
+              <button type="button" class="btn-keep-advisory" data-keep-advisory="${block.id}">
+                Keep Anyway
+              </button>
+            </div>
+          </div>
+        `
+          : '';
+
+        // 3. Weather Alert Banner on Penang Hill
+        const isPenangHill =
+          block.id === 'd1-penang-hill' ||
+          (block.title && block.title.includes('Penang Hill')) ||
+          (block.id === 'd1-2' && block.title && block.title.includes('Penang'));
+
+        const weatherAlertBannerHtml =
+          weatherAlertActive && isPenangHill && block.status !== 'cancelled'
+            ? `
+            <div class="weather-alert-banner">
+              <div class="weather-alert-banner__content">
+                <span style="font-size: 15px;">🌧️</span>
+                <div>
+                  <strong>Weather Alert:</strong> Heavy Monsoon Downpour at Penang Hill Outdoor Station
+                </div>
+              </div>
+              <button type="button" class="btn-resolve-contingency" data-resolve-contingency="${block.id}">
+                Resolve Contingency ▾
+              </button>
+            </div>
+          `
+            : '';
 
         let cardContent = '';
 
         if (!isExpanded) {
           // Collapsed State
           cardContent = `
-            <article class="timeline-card timeline-card--collapsed timeline-card--${block.category} ${isCancelled ? 'timeline-card--cancelled' : ''} ${isReel ? 'timeline-card--has-reel' : ''}">
+            <article class="timeline-card timeline-card--collapsed timeline-card--${block.category} ${isProposed ? 'timeline-card--proposed' : ''} ${isCancelled ? 'timeline-card--cancelled' : ''} ${isReel ? 'timeline-card--has-reel' : ''}">
               <div class="timeline-card__collapsed-split" data-toggle-details="${block.id}" role="button" tabindex="0" aria-expanded="false">
                 <!-- Left Column: Times with Status & Category Badges -->
                 <div class="timeline-card__time-col">
@@ -542,7 +950,7 @@ export function createItineraryView() {
                     <span class="time-col__end">${displayEnd}</span>
                   </div>
                   <div class="time-col__badges">
-                    <span class="timeline-card__status-pill timeline-card__status-pill--${block.status}" title="Status: ${statusLabel}">
+                    <span class="timeline-card__status-pill ${isProposed ? 'timeline-card__status-pill--proposed-glow' : `timeline-card__status-pill--${block.status}`}" title="Status: ${statusLabel}">
                       ${statusIconSvg}
                       <span>${collapsedStatusLabel}</span>
                     </span>
@@ -581,9 +989,13 @@ export function createItineraryView() {
                   `
                       : ''
                   }
+
+                  ${weatherAlertBannerHtml}
+                  ${advisoryHtml}
+                  ${proposedActionsHtml}
                 </div>
 
-                <!-- Right Edge Controls (inside 3-column split layout) -->
+                <!-- Right Edge Controls -->
                 <div class="timeline-card__right-actions">
                   <button type="button" class="timeline-card__chevron-btn" data-toggle-details="${block.id}" aria-label="Expand details">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -603,13 +1015,13 @@ export function createItineraryView() {
         } else {
           // Expanded State
           cardContent = `
-            <article class="timeline-card timeline-card--expanded timeline-card--${block.category} ${isCancelled ? 'timeline-card--cancelled' : ''} ${isReel ? 'timeline-card--has-reel' : ''}">
+            <article class="timeline-card timeline-card--expanded timeline-card--${block.category} ${isProposed ? 'timeline-card--proposed' : ''} ${isCancelled ? 'timeline-card--cancelled' : ''} ${isReel ? 'timeline-card--has-reel' : ''}">
               <div class="timeline-card__expanded-inner">
                 <!-- Header: Badges & Shift / Collapse Controls -->
                 <div class="timeline-card__expanded-header">
                   <div class="timeline-card__expanded-header-left">
                     <div class="timeline-card__expanded-badges">
-                      <button type="button" class="status-pill-btn ${statusClass}" data-status-btn="${block.id}" title="Tap to change status lifecycle">
+                      <button type="button" class="status-pill-btn ${isProposed ? 'timeline-card__status-pill--proposed-glow' : statusClass}" data-status-btn="${block.id}" title="Tap to change status lifecycle">
                         ${statusIconSvg}
                         <span>${statusLabel}</span>
                       </button>
@@ -676,6 +1088,10 @@ export function createItineraryView() {
 
                 <!-- Details Content Strip -->
                 <div class="timeline-card__details-content">
+                  ${weatherAlertBannerHtml}
+                  ${advisoryHtml}
+                  ${proposedActionsHtml}
+
                   ${
                     block.transitToNextMinutes > 0
                       ? `
@@ -776,7 +1192,7 @@ export function createItineraryView() {
                       : ''
                   }
 
-                  <!-- Bottom Action Row: Thread, Cancel Event, Delete, and Drag Handle -->
+                  <!-- Bottom Action Row: Thread, Edit, Delete, and Drag Handle -->
                   <div class="detail-panel__bottom-row">
                     <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
                       <button type="button" class="btn-thread-badge btn-thread-badge--inline" data-thread-btn="${block.id}" title="Open Activity Chat Thread">
@@ -786,7 +1202,6 @@ export function createItineraryView() {
                         <span>Thread ${threadMsgCount > 0 ? `(${threadMsgCount})` : ''}</span>
                       </button>
 
-                      <!-- Edit Block Action -->
                       <button type="button" class="btn-card-action btn-card-action--edit" data-edit-block="${block.id}" title="Edit activity details" aria-label="Edit activity">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -795,7 +1210,6 @@ export function createItineraryView() {
                         <span>Edit</span>
                       </button>
 
-                      <!-- Delete Block (Planning Phase) -->
                       <button type="button" class="btn-card-action btn-card-action--delete btn-card-action--icon-only" data-delete-block="${block.id}" title="Delete block from schedule" aria-label="Delete block">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                       </button>
@@ -816,6 +1230,54 @@ export function createItineraryView() {
         }
 
         const isLastItem = index === blocks.length - 1;
+
+        // 4. Timeline Gap Indicator Card Detection (> 2 hours between consecutive blocks)
+        let gapCardHtml = '';
+        const nextBlock = blocks[index + 1];
+        if (nextBlock) {
+          const gapMinutes = timeToMinutes(nextBlock.startTime) - timeToMinutes(block.endTime);
+          if (gapMinutes >= 120) {
+            const gapHours = Math.max(1, Math.round(gapMinutes / 60));
+            const fromShort = block.title.split('(')[0].split('&')[0].trim();
+            const toShort = nextBlock.title.split('(')[0].split('&')[0].trim();
+            const isChewToPenang =
+              (block.title.includes('Chew Jetty') || block.id === 'd1-chew-jetty') &&
+              (nextBlock.title.includes('Penang Hill') || nextBlock.id === 'd1-penang-hill');
+
+            const gapText = isChewToPenang
+              ? '⚡ 4h Free Pocket: Chew Jetty ➔ Penang Hill. Need a lunch recommendation or Grab transit link?'
+              : `⚡ ${gapHours}h Free Pocket: ${fromShort} ➔ ${toShort}. Need a lunch recommendation or Grab transit link?`;
+
+            gapCardHtml = `
+              <div class="timeline-gap-card" data-gap-from="${block.id}" data-gap-to="${nextBlock.id}">
+                <div class="timeline-gap-card__spine-dot">
+                  <span class="timeline-gap-card__lightning">⚡</span>
+                </div>
+                <div class="timeline-gap-card__content">
+                  <div class="timeline-gap-card__info">
+                    <span class="timeline-gap-card__badge">
+                      <span class="timeline-gap-card__lightning">⚡</span>
+                      <span>${gapHours}h Free Pocket: ${fromShort} ➔ ${toShort}</span>
+                    </span>
+                    <p class="timeline-gap-card__text">${gapText}</p>
+                  </div>
+                  <div class="timeline-gap-card__actions">
+                    <button type="button" class="timeline-gap-card__btn" id="btn-gap-ask-wanderbot" data-gap-from="${block.id}" data-gap-to="${nextBlock.id}">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+                        <rect x="4" y="8" width="16" height="12" rx="4"/>
+                        <circle cx="9" cy="13" r="1"/>
+                        <circle cx="15" cy="13" r="1"/>
+                        <line x1="9" y1="17" x2="15" y2="17"/>
+                      </svg>
+                      <span>+ Ask WanderBot / Suggest Lunch</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        }
 
         return `
           <div 
@@ -851,10 +1313,13 @@ export function createItineraryView() {
                 : ''
             }
           </div>
+          ${gapCardHtml}
         `;
       })
       .join('');
   }
+
+  // ──────────────── Event Binding & Handlers ────────────────
 
   function attachEvents(rawBlocks) {
     // 1. Open Sidebar
@@ -876,6 +1341,9 @@ export function createItineraryView() {
         const day = parseInt(btn.getAttribute('data-day'), 10);
         if (day && day !== currentDay) {
           currentDay = day;
+          if (currentDay === 2) {
+            day2HasActivity = false; // Clear activity dot when visiting Day 2
+          }
           render();
         }
       });
@@ -891,9 +1359,6 @@ export function createItineraryView() {
         showScheduleToast(`Added Day ${newDay} to itinerary!`);
       });
     }
-
-    // 2B. Propose Event Button in header
-
 
     // 2C. Empty Day Actions
     const emptyProposeSlot = container.querySelector('#btn-empty-propose-slot');
@@ -920,22 +1385,7 @@ export function createItineraryView() {
       });
     }
 
-
-
-    // Reset Itinerary Button
-    const resetBtn = container.querySelector('#reset-itinerary-btn');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => {
-        if (confirm('Reset entire itinerary back to initial 3-day defaults?')) {
-          itineraryList = resetItineraryData();
-          currentDay = 1;
-          render();
-          showScheduleToast('Itinerary reset to defaults');
-        }
-      });
-    }
-
-    // 4. Status Lifecycle Modal Trigger
+    // 3. Status Lifecycle Modal Trigger
     container.querySelectorAll('[data-status-btn]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -947,19 +1397,89 @@ export function createItineraryView() {
       });
     });
 
-    // 4B. Card Cancel Button (Day-of execution)
-    container.querySelectorAll('[data-cancel-block]').forEach((btn) => {
+    // 4. Proposed Card Actions: [✓ Confirm]
+    container.querySelectorAll('[data-confirm-proposed]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const blockId = btn.getAttribute('data-cancel-block');
-        const block = itineraryList.find((b) => b.id === blockId);
-        if (block && statusModal) {
-          statusModal.open(block);
+        const blockId = btn.getAttribute('data-confirm-proposed');
+        if (blockId) confirmProposedBlock(blockId);
+      });
+    });
+
+    // 4B. Proposed Card Actions: [🗳 Vote] (Consensus polling flow)
+    container.querySelectorAll('[data-vote-proposed]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-vote-proposed');
+        const cardEl = btn.closest('.timeline-card');
+        if (blockId && cardEl) triggerConsensusVote(blockId, cardEl);
+      });
+    });
+
+    // 5. Anti-Slop Schedule Advisory: [Shift to Day 3 · Wed]
+    container.querySelectorAll('[data-shift-day3]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-shift-day3');
+        if (blockId) shiftBlockToDay3(blockId);
+      });
+    });
+
+    // 5B. Anti-Slop Schedule Advisory: [Keep Anyway]
+    container.querySelectorAll('[data-keep-advisory]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-keep-advisory');
+        if (blockId) {
+          itineraryList = itineraryList.map((b) =>
+            b.id === blockId ? { ...b, advisoryDismissed: true } : b
+          );
+          saveItineraryData(itineraryList);
+          render();
+          showScheduleToast('Schedule advisory dismissed');
         }
       });
     });
 
-    // 4B2. Card Edit Button
+    // 6. Timeline Gap Card Button: [+ Ask WanderBot / Suggest Lunch]
+    container.querySelectorAll('#btn-gap-ask-wanderbot, .timeline-gap-card__btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const gapFrom = btn.getAttribute('data-gap-from') || 'd1-chew-jetty';
+        const gapTo = btn.getAttribute('data-gap-to') || 'd1-penang-hill';
+
+        try {
+          setActiveTab('chat');
+        } catch (err) {}
+
+        window.dispatchEvent(
+          new CustomEvent('wandersync:ask_lunch', {
+            detail: { gapFrom, gapTo },
+          })
+        );
+
+        try {
+          const channel = new BroadcastChannel('wandersync_simulation');
+          channel.postMessage({ type: 'ASK_LUNCH_GAP', from: gapFrom, to: gapTo });
+        } catch (err) {}
+
+        showScheduleToast('Navigating to Chat for WanderBot lunch recommendations...');
+      });
+    });
+
+    // 7. Weather Alert: [Resolve Contingency ▾]
+    container.querySelectorAll('[data-resolve-contingency]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const blockId = btn.getAttribute('data-resolve-contingency');
+        const block = itineraryList.find((b) => b.id === blockId);
+        if (block && statusModal) {
+          statusModal.openContingency(block);
+        }
+      });
+    });
+
+    // 8. Card Edit Button
     container.querySelectorAll('[data-edit-block]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -971,7 +1491,7 @@ export function createItineraryView() {
       });
     });
 
-    // 4C. Card Delete Button (Planning phase)
+    // 9. Card Delete Button (Planning phase)
     container.querySelectorAll('[data-delete-block]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -984,7 +1504,7 @@ export function createItineraryView() {
       });
     });
 
-    // 4D. Reel Preview Modal Trigger
+    // 10. Reel Preview Modal Trigger
     container.querySelectorAll('[data-preview-reel-id]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -994,7 +1514,7 @@ export function createItineraryView() {
       });
     });
 
-    // Contingency Swap Button
+    // Contingency Swap Button (legacy block fallback)
     container.querySelectorAll('[data-swap-fallback]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1040,6 +1560,10 @@ export function createItineraryView() {
     // Expand / Collapse Card
     container.querySelectorAll('[data-toggle-details]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
+        // Prevent toggle if clicking buttons inside actions
+        if (e.target.closest('button') || e.target.closest('.timeline-card__proposed-actions') || e.target.closest('.timeline-card__advisory')) {
+          return;
+        }
         e.stopPropagation();
         const blockId = btn.getAttribute('data-toggle-details');
         if (!blockId) return;
@@ -1049,20 +1573,6 @@ export function createItineraryView() {
           expandedCardIds.add(blockId);
         }
         render();
-      });
-      btn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          e.stopPropagation();
-          const blockId = btn.getAttribute('data-toggle-details');
-          if (!blockId) return;
-          if (expandedCardIds.has(blockId)) {
-            expandedCardIds.delete(blockId);
-          } else {
-            expandedCardIds.add(blockId);
-          }
-          render();
-        }
       });
     });
 
@@ -1296,8 +1806,8 @@ export function createItineraryView() {
       document.body.appendChild(modal);
     }
 
-    const creator = block.reelCreator || '@tokyofoodie';
-    const spotTitle = block.title || 'Shibuya Sky Observatory';
+    const creator = block.reelCreator || '@penangfoodie';
+    const spotTitle = block.title || 'Penang Hill Canopy Walk';
 
     modal.innerHTML = `
       <div class="itinerary-modal-sheet reel-preview-sheet">
@@ -1321,9 +1831,9 @@ export function createItineraryView() {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
               </div>
               <div class="reel-mockup-caption">
-                <span class="reel-sound-tag">♫ Tokyo Beat • Trending Sound</span>
-                <h4 style="margin: 4px 0 2px; font-size: 13px; color: #FFFFFF;">Top 5 Secret Alley Spots & Rooftop Views</h4>
-                <p style="margin: 0; font-size: 11px; opacity: 0.85;">Viral Reel • 4.2M Views • AI extracted 3 locations</p>
+                <span class="reel-sound-tag">♬ Penang Vibes • Trending Heritage Audio</span>
+                <h4 style="margin: 4px 0 2px; font-size: 13px; color: #FFFFFF;">Top 5 Secret Heritage Spots & Sunset Lookouts</h4>
+                <p style="margin: 0; font-size: 11px; opacity: 0.85;">Viral Reel • 3.8M Views • AI extracted 2 anchor locations</p>
               </div>
             </div>
           </div>
@@ -1337,11 +1847,11 @@ export function createItineraryView() {
               </div>
               <div class="reel-spot-tag">
                 <span class="reel-spot-bullet">+</span>
-                <span>Uobei Conveyor Belt Sushi (Saved to Wishlist)</span>
+                <span>Penang Road Famous Teochew Chendul (Suggested Gap Fill)</span>
               </div>
               <div class="reel-spot-tag">
                 <span class="reel-spot-bullet">+</span>
-                <span>Nonbei Yokocho Micro-Izakayas (Saved to Wishlist)</span>
+                <span>ChinaHouse Heritage Cafe (Saved to Wishlist)</span>
               </div>
             </div>
           </div>
@@ -1384,7 +1894,7 @@ export function createItineraryView() {
         title: block.title || 'Activity Discussion',
         eventTitle: block.title || 'Itinerary Stop',
         category: block.category || 'general',
-        location: block.location || 'Tokyo & Kyoto',
+        location: block.location || 'George Town, Penang',
         day: block.day || currentDay,
         messages: [],
       };
@@ -1491,28 +2001,116 @@ export function createItineraryView() {
     });
   }
 
+  // ──────────────── Listeners & Inter-Subagent Simulation ────────────────
+
   // Subscribe to itinerary changes
   const unsubscribe = onItineraryChange(() => {
     render();
   });
 
-  // Global listener for opening propose activity modal
+  // Global methods for TravelApp
   if (!window.TravelApp) window.TravelApp = {};
   window.TravelApp.openProposeActivity = (day) => {
     if (addBlockModal) addBlockModal.open(day || currentDay);
   };
+  window.TravelApp.insertChendulSlot = insertChendulSlot;
+  window.TravelApp.insertSiamRoadSlot = insertSiamRoadSlot;
+  window.TravelApp.confirmProposedBlock = confirmProposedBlock;
+  window.TravelApp.shiftBlockToDay3 = shiftBlockToDay3;
+  window.TravelApp.triggerWeatherAlert = () => {
+    weatherAlertActive = true;
+    render();
+    showScheduleToast('🌧️ Monsoon Weather Alert triggered on Penang Hill');
+  };
 
+  // Custom Window Event Listeners
   const handleOpenPropose = (e) => {
     const targetDay = (e && e.detail && e.detail.day) || currentDay;
     if (addBlockModal) addBlockModal.open(targetDay);
   };
   window.addEventListener('open-propose-activity', handleOpenPropose);
 
-  // Update header and timeline whenever trip settings update
   const handleSettingsUpdate = () => {
     render();
   };
   window.addEventListener('trip-settings-updated', handleSettingsUpdate);
+
+  const handleDay2Activity = () => {
+    day2HasActivity = true;
+    render();
+  };
+  window.addEventListener('wandersync:day2_activity', handleDay2Activity);
+
+  const handleWeatherAlert = () => {
+    weatherAlertActive = true;
+    render();
+    showScheduleToast('🌧️ Monsoon Weather Alert triggered on Penang Hill');
+  };
+  window.addEventListener('wandersync:weather_alert', handleWeatherAlert);
+
+  const handleClearWeather = () => {
+    weatherAlertActive = false;
+    render();
+  };
+  window.addEventListener('wandersync:clear_weather', handleClearWeather);
+
+  const handleInsertChendul = () => {
+    insertChendulSlot();
+  };
+  window.addEventListener('wandersync:insert_chendul', handleInsertChendul);
+
+  const handleInsertSiamRoad = () => {
+    insertSiamRoadSlot();
+  };
+  window.addEventListener('wandersync:insert_siam_road', handleInsertSiamRoad);
+
+  // Secret Hotkey Ctrl+Alt+R for Weather Contingency
+  const handleKeydown = (e) => {
+    if (e.ctrlKey && e.altKey && (e.key === 'r' || e.key === 'R')) {
+      e.preventDefault();
+      weatherAlertActive = !weatherAlertActive;
+      render();
+      showScheduleToast(
+        weatherAlertActive
+          ? '🌧️ Monsoon Weather Alert triggered on Penang Hill'
+          : 'Monsoon Weather Alert cleared'
+      );
+    }
+  };
+  window.addEventListener('keydown', handleKeydown);
+
+  // Cross-Tab & Remote Synchronization Channel
+  let channel = null;
+  try {
+    channel = new BroadcastChannel('wandersync_simulation');
+    channel.onmessage = (e) => {
+      const data = e.data;
+      if (!data) return;
+      if (
+        data.type === 'WEATHER_ALERT' ||
+        data.type === 'TRIGGER_CONTINGENCY' ||
+        data.type === 'RAIN_DISRUPTION'
+      ) {
+        weatherAlertActive = true;
+        render();
+        showScheduleToast('⚠️ Remote: Monsoon Weather Alert triggered on Penang Hill');
+      } else if (data.type === 'CLEAR_WEATHER') {
+        weatherAlertActive = false;
+        render();
+      } else if (data.type === 'DAY2_ACTIVITY' || data.type === 'AUTONOMOUS_ADD') {
+        day2HasActivity = true;
+        render();
+      } else if (data.type === 'INSERT_CHENDUL' || data.type === 'PROPOSE_CHENDUL') {
+        insertChendulSlot();
+      } else if (data.type === 'VOTE_CONFIRMED' && data.blockId) {
+        confirmProposedBlock(data.blockId);
+      } else if (data.type === 'SHIFT_TO_DAY3' && data.blockId) {
+        shiftBlockToDay3(data.blockId);
+      }
+    };
+  } catch (err) {
+    console.warn('[Itinerary] BroadcastChannel not supported:', err);
+  }
 
   // Initialize and return
   initModals();
@@ -1523,12 +2121,24 @@ export function createItineraryView() {
     render,
     setDay: (day) => {
       currentDay = day;
+      if (currentDay === 2) day2HasActivity = false;
       render();
     },
     destroy: () => {
       unsubscribe();
       window.removeEventListener('open-propose-activity', handleOpenPropose);
       window.removeEventListener('trip-settings-updated', handleSettingsUpdate);
+      window.removeEventListener('wandersync:day2_activity', handleDay2Activity);
+      window.removeEventListener('wandersync:weather_alert', handleWeatherAlert);
+      window.removeEventListener('wandersync:clear_weather', handleClearWeather);
+      window.removeEventListener('wandersync:insert_chendul', handleInsertChendul);
+      window.removeEventListener('wandersync:insert_siam_road', handleInsertSiamRoad);
+      window.removeEventListener('keydown', handleKeydown);
+      if (channel) {
+        try {
+          channel.close();
+        } catch (e) {}
+      }
     },
   };
 }

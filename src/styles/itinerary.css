@@ -1766,3 +1766,590 @@
 .quick-thread-backdrop.is-open .quick-thread-sheet {
   transform: translateY(0);
 }
+
+/* ──────────────── Proposed Ghost Card & Amber Glow ──────────────── */
+
+.timeline-card--proposed {
+  background: rgba(255, 255, 255, 0.45) !important;
+  border: 1.5px dashed rgba(217, 119, 6, 0.65) !important;
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.12), inset 0 1px 1px rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timeline-card--proposed:hover {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(217, 119, 6, 0.9) !important;
+  box-shadow: 0 8px 24px rgba(217, 119, 6, 0.18) !important;
+}
+
+.timeline-card__status-pill--proposed-glow {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.9) 0%, rgba(253, 230, 138, 0.8) 100%) !important;
+  border: 1px solid rgba(217, 119, 6, 0.4) !important;
+  color: #92400E !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+}
+
+.status-dot-pulse {
+  display: inline-block;
+  color: #D97706;
+  margin-right: 4px;
+  animation: pulseAmberDot 1.5s infinite ease-in-out;
+}
+
+.timeline-card__proposed-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(217, 119, 6, 0.25);
+}
+
+.btn-card-confirm {
+  background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+  color: #FFFFFF;
+  border: none;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(22, 163, 74, 0.25);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.btn-card-confirm:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.btn-card-vote {
+  background: rgba(255, 255, 255, 0.85);
+  color: #B45309;
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-card-vote:hover {
+  background: #FEF3C7;
+  border-color: #D97706;
+}
+
+.card-vote-progress-panel {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: rgba(254, 243, 199, 0.85);
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-vote-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #92400E;
+}
+
+.card-vote-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(217, 119, 6, 0.18);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.card-vote-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #F59E0B, #16A34A);
+  border-radius: 9999px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ──────────────── Timeline Gap Card ──────────────── */
+
+.timeline-gap-card {
+  position: relative;
+  margin: 10px 0 16px 0;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.55) 0%, rgba(255, 251, 235, 0.45) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px dotted rgba(217, 119, 6, 0.6);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.timeline-gap-card:hover {
+  border-color: rgba(217, 119, 6, 0.85);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.75) 0%, rgba(255, 251, 235, 0.6) 100%);
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.14);
+}
+
+.timeline-gap-card__spine-dot {
+  position: absolute;
+  left: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #FFFBEB;
+  border: 2px dotted #D97706;
+  box-shadow: 0 0 8px rgba(217, 119, 6, 0.3);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-gap-card__content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.timeline-gap-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timeline-gap-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #B45309;
+  letter-spacing: -0.01em;
+}
+
+.timeline-gap-card__lightning {
+  font-size: 13px;
+  filter: drop-shadow(0 0 3px #F59E0B);
+  animation: pulseAmberDot 2s infinite ease-in-out;
+}
+
+.timeline-gap-card__text {
+  margin: 0;
+  font-size: 12px;
+  color: #78350F;
+  line-height: 1.4;
+}
+
+.timeline-gap-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.timeline-gap-card__btn {
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+  color: #FFFFFF;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.25);
+  transition: all 0.15s ease;
+}
+
+.timeline-gap-card__btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+/* ──────────────── Anti-Slop Schedule Advisory Card ──────────────── */
+
+.timeline-card__advisory {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.85) 0%, rgba(255, 251, 235, 0.75) 100%);
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  border-radius: 14px;
+  padding: 10px 12px;
+  margin: 8px 0 6px;
+  font-size: 12px;
+  color: #78350F;
+  box-shadow: 0 2px 10px rgba(217, 119, 6, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.timeline-card__advisory-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.timeline-card__advisory-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.timeline-card__advisory-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: #78350F;
+}
+
+.timeline-card__advisory-text strong {
+  color: #92400E;
+  font-weight: 800;
+}
+
+.timeline-card__advisory-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 23px;
+}
+
+.btn-shift-day3 {
+  background: #FFFFFF;
+  border: 1px solid #D97706;
+  color: #B45309;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-shift-day3:hover {
+  background: #D97706;
+  color: #FFFFFF;
+}
+
+.btn-keep-advisory {
+  background: transparent;
+  border: none;
+  color: #92400E;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.15s ease;
+}
+
+.btn-keep-advisory:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* Apple iOS Spring Exit Animation for Shift to Day 3 */
+@keyframes iosSpringExit {
+  0% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    max-height: 400px;
+  }
+  30% {
+    transform: scale(1.02) translateY(-4px);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(0.92) translateY(-24px);
+    opacity: 0;
+    max-height: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    filter: blur(6px);
+  }
+}
+
+.card-ios-spring-exit {
+  animation: iosSpringExit 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ──────────────── Day 2 Tab Activity Indicator Dot ──────────────── */
+
+.day-chip__dot {
+  display: inline-block;
+  color: #D97706;
+  font-size: 10px;
+  margin-left: 4px;
+  animation: pulseAmberDot 1.6s infinite ease-in-out;
+}
+
+@keyframes pulseAmberDot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+    filter: drop-shadow(0 0 5px #F59E0B);
+  }
+}
+
+/* ──────────────── Weather Alert Banner & Contingency Sheet ──────────────── */
+
+.weather-alert-banner {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.95) 0%, rgba(255, 237, 213, 0.9) 100%);
+  border: 1px solid rgba(217, 119, 6, 0.5);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+  animation: alertPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes alertPulse {
+  0%, 100% {
+    border-color: rgba(217, 119, 6, 0.5);
+    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.12);
+  }
+  50% {
+    border-color: rgba(217, 119, 6, 0.9);
+    box-shadow: 0 4px 20px rgba(217, 119, 6, 0.28);
+  }
+}
+
+.weather-alert-banner__content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #78350F;
+}
+
+.btn-resolve-contingency {
+  background: linear-gradient(135deg, #D97706 0%, #B45309 100%);
+  color: #FFFFFF;
+  border: none;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+  transition: transform 0.15s ease;
+}
+
+.btn-resolve-contingency:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.contingency-sheet {
+  max-width: 500px !important;
+  padding: 24px 20px 28px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%) !important;
+  backdrop-filter: blur(36px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  border-radius: 28px 28px 0 0 !important;
+}
+
+.contingency-sheet__header {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.contingency-sheet__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #B45309;
+  background: rgba(254, 243, 199, 0.7);
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+
+.contingency-pulse-icon {
+  font-size: 13px;
+  animation: pulseAmberDot 1.8s infinite ease-in-out;
+}
+
+.contingency-sheet__title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.contingency-sheet__desc {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.contingency-sheet__options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.contingency-option-card {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1.5px solid rgba(226, 232, 240, 0.9);
+  border-radius: 16px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.contingency-option-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+
+.contingency-option-card--fallback {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.8) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.contingency-option-card--fallback:hover {
+  border-color: #2563EB;
+}
+
+.contingency-option-card--freetime {
+  border-color: rgba(217, 119, 6, 0.4);
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.6) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.contingency-option-card--freetime:hover {
+  border-color: #D97706;
+}
+
+.contingency-option-card--reflow {
+  border-color: rgba(148, 163, 184, 0.5);
+  background: linear-gradient(135deg, rgba(241, 245, 249, 0.6) 0%, rgba(255, 255, 255, 0.9) 100%);
+}
+
+.contingency-option-card--reflow:hover {
+  border-color: #64748B;
+}
+
+.contingency-option-card__badge-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contingency-pill {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.contingency-pill--recommended {
+  background: #DCFCE7;
+  color: #15803D;
+  border: 1px solid rgba(22, 163, 74, 0.25);
+}
+
+.contingency-pill--chill {
+  background: #FEF3C7;
+  color: #B45309;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+}
+
+.contingency-pill--reflow {
+  background: #E2E8F0;
+  color: #334155;
+  border: 1px solid rgba(100, 116, 139, 0.25);
+}
+
+.contingency-transit-tag {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.contingency-option-card__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.contingency-option-card__icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.contingency-option-card__content {
+  flex: 1;
+}
+
+.contingency-option-card__heading {
+  font-size: 13.5px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0 0 2px;
+}
+
+.contingency-option-card__target {
+  font-size: 12px;
+  color: #1E293B;
+  margin: 0 0 4px;
+}
+
+.contingency-option-card__subtext {
+  font-size: 11px;
+  color: #64748B;
+  line-height: 1.4;
+  margin: 0;
+}
