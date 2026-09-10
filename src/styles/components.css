@@ -5743,3 +5743,398 @@
 #btn-build-itinerary:active {
   transform: translateY(0);
 }
+
+/* ==========================================================================
+   WanderBot Chat In-Thread Proposal Card & Chat Banter UI
+   ========================================================================== */
+
+.chat-typing-bubble {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 18px 18px 18px 4px;
+  margin: 6px 0 10px;
+  width: fit-content;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  animation: fadeInBubble 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chat-typing-dot {
+  width: 7px;
+  height: 7px;
+  background: #94A3B8;
+  border-radius: 50%;
+  animation: typingBounce 1.3s infinite ease-in-out;
+}
+
+.chat-typing-dot:nth-child(1) { animation-delay: 0s; }
+.chat-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.chat-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: scale(0.65); opacity: 0.45; }
+  40% { transform: scale(1.15); opacity: 1; background: var(--color-primary, #E8621A); }
+}
+
+@keyframes fadeInBubble {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* WanderBot In-Thread Extraction Card */
+.wanderbot-proposal-wrapper {
+  margin: 14px 0 16px;
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.wanderbot-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.92) 0%, rgba(255, 255, 255, 0.95) 100%);
+  border: 1.5px solid rgba(245, 158, 11, 0.45);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.16), 0 2px 6px rgba(0, 0, 0, 0.04), inset 0 1px 1px #FFFFFF;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.wanderbot-card::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.wanderbot-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.wanderbot-header__left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wanderbot-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.35);
+  flex-shrink: 0;
+}
+
+.wanderbot-tag {
+  font-family: var(--font-sans, -apple-system, sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: #92400E;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wanderbot-time-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(245, 158, 11, 0.2);
+  color: #B45309;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.wanderbot-body {
+  margin-bottom: 14px;
+}
+
+.wanderbot-venue-title {
+  font-family: var(--font-sans, -apple-system, sans-serif);
+  font-size: 15px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 6px 0;
+  line-height: 1.35;
+}
+
+.wanderbot-meta-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #64748B;
+  margin-bottom: 8px;
+}
+
+.wanderbot-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wanderbot-description {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.wanderbot-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-insert-proposal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 3px 10px rgba(232, 98, 26, 0.25);
+  cursor: pointer;
+}
+
+.btn-insert-proposal:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(232, 98, 26, 0.32);
+}
+
+.btn-insert-proposal--inserted {
+  background: linear-gradient(135deg, #10B981, #059669) !important;
+  border-color: #059669 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.28) !important;
+}
+
+.btn-jump-itinerary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4338CA;
+  background: rgba(238, 242, 255, 0.85);
+  border: 1px solid rgba(199, 210, 254, 0.8);
+  padding: 7px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-jump-itinerary:hover {
+  background: #E0E7FF;
+  transform: translateY(-1px);
+}
+
+/* Replay Banter Button */
+.btn-replay-banter {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-replay-banter:hover {
+  background: #FFFFFF;
+  color: var(--color-primary, #E8621A);
+  border-color: var(--color-primary, #E8621A);
+}
+
+/* ==========================================================================
+   2-Step Group Voting & Card Morphing Animation
+   ========================================================================== */
+
+.consensus-morph-card {
+  position: relative;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 12px 0;
+  transition: all 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.consensus-morph-card--proposed {
+  background: rgba(254, 243, 199, 0.45);
+  border: 2px dashed #F59E0B;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.1);
+}
+
+.consensus-morph-card--morphing {
+  transform: scale(1.02);
+  box-shadow: 0 12px 36px rgba(16, 185, 129, 0.25);
+}
+
+.consensus-morph-card--confirmed {
+  background: linear-gradient(135deg, rgba(236, 253, 245, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%);
+  border: 2px solid #10B981;
+  box-shadow: 0 8px 30px rgba(16, 185, 129, 0.18), inset 0 1px 1px #FFFFFF;
+}
+
+/* Glass shine sweep effect */
+.consensus-morph-card--morphing::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
+  transform: skewX(-25deg);
+  animation: shineSweep 0.8s ease-out;
+  pointer-events: none;
+}
+
+@keyframes shineSweep {
+  0% { left: -150%; }
+  100% { left: 200%; }
+}
+
+/* Voting Progress Bar */
+.vote-progress-wrapper {
+  margin: 12px 0 8px;
+}
+
+.vote-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.vote-progress-track {
+  width: 100%;
+  height: 8px;
+  background: rgba(203, 213, 225, 0.5);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.vote-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #F59E0B, #10B981);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.voter-avatars-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.voter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.voter-chip__avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #3B82F6;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.voter-chip__avatar--wg { background: #10B981; }
+.voter-chip__avatar--tn { background: #F59E0B; }
+
+@keyframes popIn {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* Buffer Recalculation Notice */
+.buffer-recalculation-notice {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: rgba(240, 253, 244, 0.85);
+  border: 1px solid rgba(187, 247, 208, 0.9);
+  border-radius: 12px;
+  animation: slideDownFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.buffer-notice-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #166534;
+  margin-bottom: 4px;
+}
+
+.buffer-notice-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  color: #15803D;
+}
+
+.buffer-notice-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

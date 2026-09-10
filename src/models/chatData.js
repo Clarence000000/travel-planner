@@ -134,16 +134,72 @@ const INITIAL_THREADS = [
     title: 'General Discussion',
     eventTitle: 'General Trip Discussion',
     category: 'general',
-    location: 'Trip Wide',
-    participantCount: 4,
+    location: 'Penang Island',
+    participantCount: 3,
     poll: null,
     messages: [
       {
         id: 'msg-gen-1',
         sender: 'Wei Gang',
         avatar: 'WG',
-        text: 'Welcome to the trip! Use this general thread to chat, coordinate schedule ideas, and discuss bookings.',
+        text: 'Welcome to Penang! Use this general thread to chat, coordinate schedule ideas, and discuss bookings.',
         time: '09:00 AM',
+        isCurrentUser: false,
+      },
+    ],
+  },
+  {
+    blockId: 'day-1-penang',
+    day: 1,
+    title: 'Day 1: Chew Jetty & Penang Hill',
+    eventTitle: 'Day 1: Chew Jetty & Penang Hill',
+    category: 'food',
+    location: 'Chew Jetty, George Town',
+    participantCount: 3,
+    poll: null,
+    messages: [
+      {
+        id: 'msg-d1-intro',
+        sender: 'Clarence (You)',
+        avatar: 'CL',
+        text: 'Starting our morning at Chew Jetty! Plan is to explore the clan jetties before heading up to Penang Hill later in the afternoon.',
+        time: '09:15 AM',
+        isCurrentUser: true,
+      },
+      {
+        id: 'msg-d1-tony',
+        sender: 'Tony',
+        avatar: 'TN',
+        text: 'Guys, what are we eating after Chew Jetty? Anyone craving Char Koay Teow or Chendul?',
+        time: '12:15 PM',
+        isCurrentUser: false,
+      },
+      {
+        id: 'msg-d1-weigang',
+        sender: 'Wei Gang',
+        avatar: 'WG',
+        text: 'Lebuh Keng Kwee Famous Teochew Chendul is a must-try.',
+        time: '12:18 PM',
+        isCurrentUser: false,
+      },
+    ],
+  },
+  {
+    blockId: 'day-2-penang',
+    day: 2,
+    title: 'Day 2: Entopia & Batu Ferringhi',
+    eventTitle: 'Day 2: Entopia & Batu Ferringhi',
+    category: 'location',
+    location: 'Teluk Bahang & Batu Ferringhi',
+    participantCount: 3,
+    poll: null,
+    messages: [
+      {
+        id: 'msg-d2-intro',
+        sender: 'Tony',
+        avatar: 'TN',
+        text: 'Morning nature day out at Entopia Butterfly Sanctuary and Escape Park, then sunset drinks along Batu Ferringhi beach!',
+        time: '10:00 AM',
         isCurrentUser: false,
       },
     ],
@@ -161,9 +217,13 @@ export function getChatThreads() {
           category: normalizeCategory(t.category),
         }));
 
+        // Ensure starter 'day-1-penang' thread is always present
+        if (!normalized.some((t) => t.blockId === 'day-1-penang')) {
+          normalized.unshift(INITIAL_THREADS[1]);
+        }
         // Ensure starter 'general' thread is always present
         if (!normalized.some((t) => t.blockId === 'general')) {
-          normalized.unshift(INITIAL_THREADS[0]);
+          normalized.push(INITIAL_THREADS[0]);
         }
 
         return normalized;

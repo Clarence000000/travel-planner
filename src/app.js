@@ -1,3 +1,6 @@
+import { remoteSync } from './utils/remoteSync.js';
+import { showDashToast } from './views/ChatView.js';
+import { getItineraryData, addItineraryBlock, updateItineraryBlock } from './models/itineraryData.js';
 /**
  * Mobile Travel Planner App
  * Features atmospheric sticky cat photo banner, clean slide-out sidebar,
@@ -214,6 +217,117 @@ export function initApp() {
 
   // Initial render
   syncHash();
+
+
+  // ── Remote Simulation BroadcastChannel Integrations ──
+  remoteSync.subscribe('SWITCH_TAB', (payload) => {
+    if (payload && payload.tab) {
+      setActiveTab(payload.tab);
+    }
+  });
+
+  remoteSync.subscribe('START_REEL_GENESIS', () => {
+    setActiveTab('ideas');
+    showDashToast('Act 1: Dynamic Genesis initiated', 'info');
+  });
+
+  remoteSync.subscribe('POPULATE_DAY1_ANCHORS', () => {
+    setActiveTab('itinerary');
+    const items = getItineraryData();
+    if (!items.some(i => i.id === 'd1-chew-jetty')) {
+      addItineraryBlock({
+        id: 'd1-chew-jetty',
+        day: 1,
+        startTime: '09:00',
+        endTime: '11:30',
+        title: 'Chew Jetty Clan Waterfront Walk',
+        location: 'Weld Quay, George Town',
+        category: 'location',
+        cost: 'Free',
+        status: 'confirmed',
+        notes: 'Historic stilt village founded by Chinese immigrants in the 19th century.',
+      });
+    }
+    if (!items.some(i => i.id === 'd1-penang-hill')) {
+      addItineraryBlock({
+        id: 'd1-penang-hill',
+        day: 1,
+        startTime: '15:00',
+        endTime: '18:00',
+        title: 'Penang Hill Funicular & The Habitat',
+        location: 'Bukit Bendera, Air Itam',
+        category: 'location',
+        cost: 'RM 30 / pax',
+        status: 'confirmed',
+        notes: 'Panoramic views across Penang island and canopy rainforest walk.',
+      });
+    }
+    showDashToast('Day 1 Anchors populated: Chew Jetty & Penang Hill', 'success');
+  });
+
+  remoteSync.subscribe('TRIGGER_DAY2_WORKER', () => {
+    showDashToast('Act 2: Ambient Background Worker active on Day 2', 'info');
+    window.dispatchEvent(new CustomEvent('wandersync:day2_worker', { detail: { active: true } }));
+  });
+
+  remoteSync.subscribe('ADD_ENTOPIA_DAY2', () => {
+    const items = getItineraryData();
+    if (!items.some(i => i.id === 'd2-entopia')) {
+      addItineraryBlock({
+        id: 'd2-entopia',
+        day: 2,
+        startTime: '10:00',
+        endTime: '12:30',
+        title: 'Entopia by Penang Butterfly Farm',
+        location: 'Jalan Teluk Bahang',
+        category: 'location',
+        cost: 'RM 65 / pax',
+        status: 'confirmed',
+        notes: 'Living sanctuary with over 15,000 free-flying butterflies.',
+      });
+    }
+    showDashToast('Day 2: Entopia Butterfly Sanctuary added in background', 'success');
+  });
+
+  remoteSync.subscribe('TRIGGER_CHAT_BANTER', () => {
+    setActiveTab('chat');
+    showDashToast('Act 3: Incoming banter from Tony & Wei Gang...', 'info');
+  });
+
+  remoteSync.subscribe('START_MINI_POLL', () => {
+    setActiveTab('chat');
+    showDashToast('Act 4: Group Consensus Poll launched', 'info');
+  });
+
+  remoteSync.subscribe('TRIGGER_SIAM_ROAD_ADVISORY', () => {
+    showDashToast('⚠️ Schedule Conflict Advisory: Siam Road CKT is closed on Mondays!', 'warning');
+    window.dispatchEvent(new CustomEvent('wandersync:siam_road_advisory'));
+  });
+
+  remoteSync.subscribe('TRIGGER_MONSOON', () => {
+    showDashToast('⛈️ Tropical Monsoon Alert: Heavy rain over Penang Island!', 'warning');
+    window.dispatchEvent(new CustomEvent('wandersync:monsoon_alert', { detail: { alert: true } }));
+  });
+
+  remoteSync.subscribe('CONTINGENCY_1', () => {
+    showDashToast('Contingency 1: Switched to Indoor Fallback (The Top Komtar)', 'success');
+    window.dispatchEvent(new CustomEvent('wandersync:contingency_1'));
+  });
+
+  remoteSync.subscribe('CONTINGENCY_2', () => {
+    showDashToast('Contingency 2: Free-Time Pocket inserted at ChinaHouse Cafe', 'success');
+    window.dispatchEvent(new CustomEvent('wandersync:contingency_2'));
+  });
+
+  remoteSync.subscribe('CONTINGENCY_3', () => {
+    showDashToast('Contingency 3: Chronological Reflow applied across Day 1 & Day 2', 'success');
+    window.dispatchEvent(new CustomEvent('wandersync:contingency_3'));
+  });
+
+  remoteSync.subscribe('RESET_ALL', () => {
+    showDashToast('Demo Reset: Slate restored', 'info');
+    window.dispatchEvent(new CustomEvent('wandersync:reset_all'));
+  });
 
   // Expose clean helper API for testing and remote simulation
   window.TravelApp = {

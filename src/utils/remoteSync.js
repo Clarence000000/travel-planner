@@ -1,10 +1,12 @@
 /**
- * Remote Synchronization Layer
+ * WanderSync Remote Synchronization Layer
  * Zero-lag inter-tab & intra-tab communication layer powered by
  * the browser's BroadcastChannel API ('wandersync_simulation').
  *
  * Facilitates real-time control from headless / remote surfaces (e.g. /remote.html)
  * to the main presentation view, as well as background simulation events.
+ * Provides both functional exports (sendRemoteEvent, onRemoteEvent) and
+ * object/class exports (remoteSync.broadcast, remoteSync.subscribe).
  */
 
 export const SIMULATION_CHANNEL_NAME = 'wandersync_simulation';
@@ -20,151 +22,185 @@ export const REMOTE_EVENT_TYPES = {
   CONTINGENCY_RAIN: 'CONTINGENCY_RAIN',
   RESOLVE_CONTINGENCY: 'RESOLVE_CONTINGENCY',
   RESET_DEMO: 'RESET_DEMO',
+  PING: 'PING',
+  PONG: 'PONG',
 };
 
-let broadcastChannelInstance = null;
-const registeredListeners = new Set();
-const processedMessageIds = new Set();
-const MAX_PROCESSED_HISTORY = 200;
-
-function rememberMessageId(id) {
-  if (!id) return;
-  processedMessageIds.add(id);
-  if (processedMessageIds.size > MAX_PROCESSED_HISTORY) {
-    const first = processedMessageIds.values().next().value;
-    processedMessageIds.delete(first);
-  }
-}
-
-/**
- * Get or create the BroadcastChannel instance for simulation
- */
-export function getSimulationChannel() {
-  if (typeof BroadcastChannel === 'undefined') {
-    return null;
-  }
-  if (!broadcastChannelInstance) {
-    try {
-      broadcastChannelInstance = new BroadcastChannel(SIMULATION_CHANNEL_NAME);
-      broadcastChannelInstance.onmessage = (event) => {
-        handleIncomingMessage(event.data, 'broadcast');
-      };
-    } catch (e) {
-      console.warn('[RemoteSync] Failed to initialize BroadcastChannel:', e);
-      broadcastChannelInstance = null;
-    }
-  }
-  return broadcastChannelInstance;
-}
-
-/**
- * Internal handler for incoming messages from either BroadcastChannel or DOM CustomEvent
- */
-function handleIncomingMessage(data, origin = 'unknown') {
-  if (!data || typeof data !== 'object') return;
-  const { id, type, payload } = data;
-
-  if (id && processedMessageIds.has(id)) {
-    return; // Prevent duplicate invocation
-  }
-  if (id) {
-    rememberMessageId(id);
+class RemoteSyncEngine {
+  constructor() {
+    this.channel = null;
+    this.subscribers = new Map(); // eventType -> Set of callbacks
+    this.processedMessageIds = new Set();
+    this.MAX_PROCESSED_HISTORY = 200;
+    this.init();
   }
 
-  registeredListeners.forEach((listenerObj) => {
-    if (listenerObj.type === '*' || listenerObj.type === type) {
+  init() {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
       try {
-        listenerObj.callback(payload, data);
+        this.channel = new BroadcastChannel(SIMULATION_CHANNEL_NAME);
+        this.channel.onmessage = (event) => {
+          this.handleIncomingMessage(event.data, 'broadcast');
+        };
       } catch (err) {
-        console.error(`[RemoteSync] Error executing listener for event '${type}':`, err);
+        console.warn('[RemoteSync] BroadcastChannel init error:', err);
       }
     }
-  });
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('message', (e) => {
+        if (e.data && e.data.__wandersync_sim) {
+          this.handleIncomingMessage(e.data, 'window_message');
+        }
+      });
+
+      window.addEventListener('wandersync:remote', (e) => {
+        if (e.detail && e.detail.__wandersync_sim) {
+          this.handleIncomingMessage(e.detail, 'custom_event');
+        }
+      });
+    }
+  }
+
+  rememberMessageId(id) {
+    if (!id) return;
+    this.processedMessageIds.add(id);
+    if (this.processedMessageIds.size > this.MAX_PROCESSED_HISTORY) {
+      const first = this.processedMessageIds.values().next().value;
+      this.processedMessageIds.delete(first);
+    }
+  }
+
+  handleIncomingMessage(data, origin = 'unknown') {
+    if (!data || typeof data !== 'object') return;
+    const { id, type, payload } = data;
+
+    if (id && this.processedMessageIds.has(id)) {
+      return; // Deduplicate
+    }
+    if (id) {
+      this.rememberMessageId(id);
+    }
+
+    // Auto-respond to PING with PONG
+    if (type === 'PING') {
+      this.broadcast('PONG', {
+        activeHash: typeof window !== 'undefined' ? window.location.hash : '',
+        timestamp: Date.now(),
+        origin: 'main_app',
+      });
+    }
+
+    // Type-specific subscribers
+    const callbacks = this.subscribers.get(type);
+    if (callbacks) {
+      callbacks.forEach((cb) => {
+        try {
+          cb(payload, data);
+        } catch (e) {
+          console.error(`[RemoteSync] Error executing subscriber for ${type}:`, e);
+        }
+      });
+    }
+
+    // Wildcard subscribers
+    const wildcardCallbacks = this.subscribers.get('*');
+    if (wildcardCallbacks) {
+      wildcardCallbacks.forEach((cb) => {
+        try {
+          cb(payload, data);
+        } catch (e) {
+          console.error('[RemoteSync] Error executing wildcard subscriber:', e);
+        }
+      });
+    }
+
+    // Also dispatch to local window for decoupled UI triggers
+    if (typeof window !== 'undefined' && type) {
+      try {
+        const semanticType = `wandersync:${String(type).toLowerCase().replace(/_/g, '_')}`;
+        window.dispatchEvent(new CustomEvent(semanticType, { detail: payload || data }));
+      } catch (e) {}
+    }
+  }
+
+  /**
+   * Broadcast an event to all open tabs/windows and controller
+   */
+  broadcast(type, payload = {}) {
+    const eventId = `ws-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+    const msg = {
+      __wandersync_sim: true,
+      id: eventId,
+      type,
+      payload,
+      timestamp: Date.now(),
+      sender:
+        typeof window !== 'undefined' && window.location.pathname.includes('remote')
+          ? 'remote'
+          : 'app',
+    };
+
+    if (this.channel) {
+      try {
+        this.channel.postMessage(msg);
+      } catch (e) {
+        console.warn('[RemoteSync] Broadcast failed:', e);
+      }
+    }
+
+    // Local notification for same-window execution
+    this.handleIncomingMessage(msg, 'local_broadcast');
+
+    return msg;
+  }
+
+  /**
+   * Subscribe to simulation events
+   * @param {string} eventType - Event name or '*' for all events
+   * @param {Function} callback - (payload, fullData) => void
+   * @returns {Function} unsubscribe function
+   */
+  subscribe(eventType, callback) {
+    if (typeof callback !== 'function') return () => {};
+    if (!this.subscribers.has(eventType)) {
+      this.subscribers.set(eventType, new Set());
+    }
+    this.subscribers.get(eventType).add(callback);
+
+    return () => {
+      const set = this.subscribers.get(eventType);
+      if (set) {
+        set.delete(callback);
+        if (set.size === 0) this.subscribers.delete(eventType);
+      }
+    };
+  }
+
+  clearAll() {
+    this.subscribers.clear();
+  }
 }
 
-// Setup window listener for intra-tab custom events
-if (typeof window !== 'undefined') {
-  window.addEventListener('wandersync:remote', (event) => {
-    if (event.detail) {
-      handleIncomingMessage(event.detail, 'custom-event');
-    }
-  });
-}
+export const remoteSync = new RemoteSyncEngine();
 
 /**
- * Send a remote simulation event over BroadcastChannel and local window dispatch.
- *
- * @param {string} type One of REMOTE_EVENT_TYPES or custom event name
- * @param {Object} payload Event data payload
- * @returns {Object} Complete event envelope with id and timestamp
+ * Functional API compatibility exports
  */
+export function getSimulationChannel() {
+  return remoteSync.channel;
+}
+
 export function sendRemoteEvent(type, payload = {}) {
-  const eventId = `ws-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
-  const envelope = {
-    id: eventId,
-    type,
-    payload,
-    timestamp: Date.now(),
-    sender: typeof window !== 'undefined' ? window.name || 'client' : 'backend',
-  };
-
-  // Broadcast to other tabs / windows
-  const channel = getSimulationChannel();
-  if (channel) {
-    try {
-      channel.postMessage(envelope);
-    } catch (err) {
-      console.warn('[RemoteSync] BroadcastChannel postMessage failed:', err);
-    }
-  }
-
-  // Dispatch within the same window / tab
-  if (typeof window !== 'undefined') {
-    try {
-      // Record this message ID so local window listener handles it once
-      window.dispatchEvent(
-        new CustomEvent('wandersync:remote', { detail: envelope })
-      );
-
-      // Also trigger a direct semantic custom event e.g. wandersync:day2_activity
-      const semanticType = `wandersync:${String(type).toLowerCase().replace(/_/g, '_')}`;
-      window.dispatchEvent(
-        new CustomEvent(semanticType, { detail: payload })
-      );
-    } catch (err) {
-      console.warn('[RemoteSync] Local window dispatch failed:', err);
-    }
-  }
-
-  return envelope;
+  return remoteSync.broadcast(type, payload);
 }
 
-/**
- * Subscribe to remote simulation events.
- *
- * @param {string} type Target event type (or '*' for all events)
- * @param {Function} callback Function receiving (payload, envelope)
- * @returns {Function} Unsubscribe function
- */
 export function onRemoteEvent(type, callback) {
-  if (typeof callback !== 'function') {
-    return () => {};
-  }
-
-  // Ensure channel is initialized
-  getSimulationChannel();
-
-  const listenerObj = { type, callback };
-  registeredListeners.add(listenerObj);
-
-  return () => {
-    registeredListeners.delete(listenerObj);
-  };
+  return remoteSync.subscribe(type, callback);
 }
 
-/**
- * Reset all registered listeners (for testing / cleanup)
- */
 export function clearRemoteListeners() {
-  registeredListeners.clear();
+  remoteSync.clearAll();
 }
+
+export default remoteSync;
