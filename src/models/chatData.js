@@ -5,8 +5,14 @@
  */
 
 import { getItineraryData } from './itineraryData.js';
+import { getActiveTrip, getActiveTripId } from './tripsModel.js';
 
-const STORAGE_KEY = 'travel_planner_chat_v6';
+const DEFAULT_GLOBAL_KEY = 'travel_planner_chat_v6';
+
+export function getStorageKey() {
+  const tripId = getActiveTripId();
+  return tripId ? `travel_planner_chat_${tripId}` : DEFAULT_GLOBAL_KEY;
+}
 
 export const THREAD_CATEGORIES = [
   {
@@ -126,104 +132,242 @@ export function getThreadDay(thread) {
   return null;
 }
 
-// Initial threads on clean slate: General discussion only
-const INITIAL_THREADS = [
-  {
-    blockId: 'general',
-    day: null,
-    title: 'General Discussion',
-    eventTitle: 'General Trip Discussion',
-    category: 'general',
-    location: 'Penang Island',
-    participantCount: 3,
-    poll: null,
-    messages: [
+/**
+ * Generate trip-specific initial starter threads based on the active trip destination and days
+ */
+export function getInitialThreadsForTrip(activeTrip) {
+  const dest = (activeTrip?.destination || 'Penang, Malaysia').trim();
+  const tripCity = dest.split(',')[0].trim() || 'Trip';
+  const isPenang = tripCity.toLowerCase().includes('penang');
+
+  if (isPenang) {
+    return [
       {
-        id: 'msg-gen-1',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'Welcome to Penang! Use this general thread to chat, coordinate schedule ideas, and discuss bookings.',
-        time: '09:00 AM',
-        isCurrentUser: false,
-      },
-    ],
-  },
-  {
-    blockId: 'day-1-penang',
-    day: 1,
-    title: 'Day 1: Chew Jetty & Penang Hill',
-    eventTitle: 'Day 1: Chew Jetty & Penang Hill',
-    category: 'food',
-    location: 'Chew Jetty, George Town',
-    participantCount: 3,
-    poll: null,
-    messages: [
-      {
-        id: 'msg-d1-intro',
-        sender: 'Clarence (You)',
-        avatar: 'CL',
-        text: 'Starting our morning at Chew Jetty! Plan is to explore the clan jetties before heading up to Penang Hill later in the afternoon.',
-        time: '09:15 AM',
-        isCurrentUser: true,
+        blockId: 'general',
+        day: null,
+        title: 'General Discussion',
+        eventTitle: 'General Trip Discussion',
+        category: 'general',
+        location: 'Penang Island',
+        participantCount: 3,
+        poll: null,
+        messages: [
+          {
+            id: 'msg-gen-1',
+            sender: 'Wei Gang',
+            avatar: 'WG',
+            text: 'Welcome to Penang! Use this general thread to chat, coordinate schedule ideas, and discuss bookings.',
+            date: 'Yesterday',
+            time: 'Yesterday, 09:00 AM',
+            isCurrentUser: false,
+          },
+        ],
       },
       {
-        id: 'msg-d1-tony',
-        sender: 'Tony',
-        avatar: 'TN',
-        text: 'Guys, what are we eating after Chew Jetty? Anyone craving Char Koay Teow or Chendul?',
-        time: '12:15 PM',
-        isCurrentUser: false,
+        blockId: 'day-1-penang',
+        day: 1,
+        title: 'Day 1: Chew Jetty & Penang Hill',
+        eventTitle: 'Day 1: Chew Jetty & Penang Hill',
+        category: 'food',
+        location: 'Chew Jetty, George Town',
+        participantCount: 3,
+        poll: null,
+        messages: [
+          {
+            id: 'msg-d1-intro',
+            sender: 'Clarence (You)',
+            avatar: 'CL',
+            text: 'Starting our morning at Chew Jetty! Plan is to explore the clan jetties before heading up to Penang Hill later in the afternoon.',
+            date: 'Yesterday',
+            time: 'Yesterday, 09:15 AM',
+            isCurrentUser: true,
+          },
+          {
+            id: 'msg-d1-tony',
+            sender: 'Tony',
+            avatar: 'TN',
+            text: 'Guys, what are we eating after Chew Jetty? Anyone craving Char Koay Teow or Chendul?',
+            date: 'Yesterday',
+            time: 'Yesterday, 12:15 PM',
+            isCurrentUser: false,
+          },
+          {
+            id: 'msg-d1-weigang',
+            sender: 'Wei Gang',
+            avatar: 'WG',
+            text: 'Lebuh Keng Kwee Famous Teochew Chendul is a must-try.',
+            date: 'Yesterday',
+            time: 'Yesterday, 12:18 PM',
+            isCurrentUser: false,
+          },
+          {
+            id: 'msg-d1-wanderbot-proposal',
+            sender: 'WanderBot',
+            avatar: 'WB',
+            isAi: true,
+            type: 'ai_proposal',
+            text: "I noticed a 4-hour open window between Chew Jetty and Penang Hill at 12:30 PM. Here's a top-rated lunch suggestion:",
+            proposal: {
+              title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+              tag: 'Michelin Bib Gourmand',
+              distance: '8 min Grab / walk from Chew Jetty',
+              price: 'RM 12 / pax',
+              slotId: 'd1-chendul',
+            },
+            date: 'Yesterday',
+            time: 'Yesterday, 12:30 PM • AI Suggestion',
+            isCurrentUser: false,
+          },
+        ],
       },
       {
-        id: 'msg-d1-weigang',
-        sender: 'Wei Gang',
-        avatar: 'WG',
-        text: 'Lebuh Keng Kwee Famous Teochew Chendul is a must-try.',
-        time: '12:18 PM',
-        isCurrentUser: false,
+        blockId: 'day-2-penang',
+        day: 2,
+        title: 'Day 2: Entopia & Batu Ferringhi',
+        eventTitle: 'Day 2: Entopia & Batu Ferringhi',
+        category: 'location',
+        location: 'Teluk Bahang & Batu Ferringhi',
+        participantCount: 3,
+        poll: null,
+        messages: [
+          {
+            id: 'msg-d2-intro',
+            sender: 'Tony',
+            avatar: 'TN',
+            text: 'Morning nature day out at Entopia Butterfly Sanctuary and Escape Park, then sunset drinks along Batu Ferringhi beach!',
+            date: 'Yesterday',
+            time: 'Yesterday, 10:00 AM',
+            isCurrentUser: false,
+          },
+        ],
       },
-    ],
-  },
-  {
-    blockId: 'day-2-penang',
-    day: 2,
-    title: 'Day 2: Entopia & Batu Ferringhi',
-    eventTitle: 'Day 2: Entopia & Batu Ferringhi',
-    category: 'location',
-    location: 'Teluk Bahang & Batu Ferringhi',
-    participantCount: 3,
-    poll: null,
-    messages: [
-      {
-        id: 'msg-d2-intro',
-        sender: 'Tony',
-        avatar: 'TN',
-        text: 'Morning nature day out at Entopia Butterfly Sanctuary and Escape Park, then sunset drinks along Batu Ferringhi beach!',
-        time: '10:00 AM',
-        isCurrentUser: false,
-      },
-    ],
-  },
-];
+    ];
+  }
+
+  // Non-Penang trip (e.g. Tokyo, Kyoto, Seoul, Singapore, etc.)
+  const isTokyo = tripCity.toLowerCase().includes('tokyo');
+  const slug = tripCity.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'trip';
+
+  const day1Title = isTokyo ? 'Day 1: Senso-ji & Asakusa' : `Day 1: ${tripCity} Highlights`;
+  const day1Location = isTokyo ? 'Asakusa, Taito City' : tripCity;
+  const day2Title = isTokyo ? 'Day 2: Shinjuku & Shibuya' : `Day 2: ${tripCity} Culture & Food`;
+  const day2Location = isTokyo ? 'Shinjuku, Tokyo' : tripCity;
+
+  return [
+    {
+      blockId: 'general',
+      day: null,
+      title: 'General Discussion',
+      eventTitle: 'General Trip Discussion',
+      category: 'general',
+      location: tripCity,
+      participantCount: (activeTrip?.members || ['You']).length,
+      poll: null,
+      messages: [
+        {
+          id: 'msg-gen-1',
+          sender: 'WanderBot',
+          avatar: 'WB',
+          text: `Welcome to ${tripCity}! Use this general thread to chat, coordinate schedule ideas, and discuss bookings.`,
+          date: 'Yesterday',
+          time: 'Yesterday, 09:00 AM',
+          isCurrentUser: false,
+        },
+      ],
+    },
+    {
+      blockId: `day-1-${slug}`,
+      day: 1,
+      title: day1Title,
+      eventTitle: day1Title,
+      category: 'location',
+      location: day1Location,
+      participantCount: (activeTrip?.members || ['You']).length,
+      poll: null,
+      messages: [
+        {
+          id: 'msg-d1-intro',
+          sender: 'You',
+          avatar: 'YO',
+          text: `Excited for Day 1 exploring ${tripCity}!`,
+          date: 'Yesterday',
+          time: 'Yesterday, 09:30 AM',
+          isCurrentUser: true,
+        },
+      ],
+    },
+    {
+      blockId: `day-2-${slug}`,
+      day: 2,
+      title: day2Title,
+      eventTitle: day2Title,
+      category: 'food',
+      location: day2Location,
+      participantCount: (activeTrip?.members || ['You']).length,
+      poll: null,
+      messages: [],
+    },
+  ];
+}
 
 export function getChatThreads() {
+  const activeTrip = getActiveTrip();
+  const storageKey = getStorageKey();
+
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        const normalized = parsed.map((t) => ({
-          ...t,
-          category: normalizeCategory(t.category),
-        }));
+        const initial = getInitialThreadsForTrip(activeTrip);
+        const normalized = parsed.map((t) => {
+          // Normalize messages for dates
+          if (Array.isArray(t.messages)) {
+            t.messages = t.messages.map((m) => {
+              let date = m.date;
+              let time = m.time;
+              if (!date) {
+                if (time && time.startsWith('Yesterday')) {
+                  date = 'Yesterday';
+                } else if (time && time.startsWith('Today')) {
+                  date = 'Today';
+                } else {
+                  date = 'Yesterday';
+                  if (time && !time.includes(',')) {
+                    time = `Yesterday, ${time}`;
+                  }
+                }
+              }
+              return { ...m, date, time: time || 'Yesterday, 12:00 PM' };
+            });
+          }
 
-        // Ensure starter 'day-1-penang' thread is always present
-        if (!normalized.some((t) => t.blockId === 'day-1-penang')) {
-          normalized.unshift(INITIAL_THREADS[1]);
-        }
-        // Ensure starter 'general' thread is always present
+          // If this is day-1-penang and missing AI proposal message, add it
+          if (t.blockId === 'day-1-penang' && !t.messages.some((m) => m.isAi || m.type === 'ai_proposal')) {
+            const penangInit = initial.find((x) => x.blockId === 'day-1-penang');
+            const aiMsg = penangInit?.messages.find((m) => m.isAi);
+            if (aiMsg) {
+              const msgs = [...t.messages];
+              const wgIdx = msgs.findIndex((m) => m.id === 'msg-d1-weigang');
+              if (wgIdx !== -1) {
+                msgs.splice(wgIdx + 1, 0, aiMsg);
+              } else {
+                msgs.push(aiMsg);
+              }
+              t.messages = msgs;
+            }
+          }
+
+          return {
+            ...t,
+            category: normalizeCategory(t.category),
+          };
+        });
+
+        // Ensure general thread is present
         if (!normalized.some((t) => t.blockId === 'general')) {
-          normalized.push(INITIAL_THREADS[0]);
+          const gen = initial.find((x) => x.blockId === 'general');
+          if (gen) normalized.unshift(gen);
         }
 
         return normalized;
@@ -232,12 +376,16 @@ export function getChatThreads() {
   } catch (e) {
     console.warn('[Chat] Failed to load chat data:', e);
   }
-  return JSON.parse(JSON.stringify(INITIAL_THREADS));
+
+  const initial = getInitialThreadsForTrip(activeTrip);
+  saveChatThreads(initial);
+  return JSON.parse(JSON.stringify(initial));
 }
 
 export function saveChatThreads(threads) {
+  const storageKey = getStorageKey();
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(threads));
+    localStorage.setItem(storageKey, JSON.stringify(threads));
   } catch (e) {
     console.error('[Chat] Failed to save chat threads:', e);
   }
@@ -253,14 +401,16 @@ export function getThreadById(blockId) {
     const allBlocks = getItineraryData();
     const itineraryBlock = allBlocks.find((b) => b.id === blockId);
     if (itineraryBlock) {
+      const activeTrip = getActiveTrip();
+      const tripCity = activeTrip?.destination?.split(',')[0]?.trim() || 'Trip Wide';
       return {
         blockId,
         day: itineraryBlock.day || null,
         title: itineraryBlock.title,
         eventTitle: itineraryBlock.title,
         category: normalizeCategory(itineraryBlock.category),
-        location: itineraryBlock.location || 'Tokyo & Kyoto',
-        participantCount: 4,
+        location: itineraryBlock.location || tripCity,
+        participantCount: (activeTrip?.members || ['You']).length,
         poll: null,
         messages: [],
       };
@@ -280,6 +430,9 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
   let senderName = 'Clarence (You)';
   let avatar = 'CL';
   let isCurrentUser = true;
+  let isAi = false;
+  let type = 'text';
+  let proposal = null;
 
   if (typeof textOrMsg === 'string') {
     rawText = textOrMsg;
@@ -288,11 +441,13 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
     if (textOrMsg.sender) senderName = textOrMsg.sender;
     if (textOrMsg.avatar) avatar = textOrMsg.avatar;
     if (textOrMsg.isCurrentUser !== undefined) isCurrentUser = textOrMsg.isCurrentUser;
+    if (textOrMsg.isAi !== undefined) isAi = textOrMsg.isAi;
+    if (textOrMsg.type !== undefined) type = textOrMsg.type;
+    if (textOrMsg.proposal) proposal = textOrMsg.proposal;
     metadata = { ...metadata, ...textOrMsg };
   }
 
   if (!thread) {
-    // Dynamically populate metadata from itinerary block or passed metadata
     let itineraryBlock = null;
     try {
       const allBlocks = getItineraryData();
@@ -311,7 +466,7 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
       eventTitle: title,
       category: normalizeCategory(rawCategory),
       location,
-      participantCount: metadata.participantCount || 4,
+      participantCount: metadata.participantCount || 3,
       poll: metadata.poll || null,
       messages: [],
     };
@@ -319,15 +474,21 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
   }
 
   const now = new Date();
-  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const timeOnly = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const timeStr = metadata.time || `Today, ${timeOnly}`;
+  const dateStr = metadata.date || 'Today';
 
   const newMessage = {
     id: 'msg-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
     sender: senderName,
     avatar,
     text: String(rawText).trim(),
+    date: dateStr,
     time: timeStr,
     isCurrentUser,
+    isAi,
+    type,
+    ...(proposal ? { proposal } : {}),
   };
 
   thread.messages.push(newMessage);
@@ -344,7 +505,8 @@ export function createChatThread({ blockId, title, category, day = null, locatio
 
   const normalizedCategory = normalizeCategory(category || 'general');
   const now = new Date();
-  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const timeOnly = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const timeStr = `Today, ${timeOnly}`;
 
   const messages = [];
   if (initialMessage && String(initialMessage).trim()) {
@@ -353,6 +515,7 @@ export function createChatThread({ blockId, title, category, day = null, locatio
       sender: 'Clarence (You)',
       avatar: 'CL',
       text: String(initialMessage).trim(),
+      date: 'Today',
       time: timeStr,
       isCurrentUser: true,
     });
@@ -371,7 +534,7 @@ export function createChatThread({ blockId, title, category, day = null, locatio
     eventTitle: (title || 'New Discussion').trim(),
     category: normalizedCategory,
     location: location?.trim() || 'Trip Wide',
-    participantCount: 4,
+    participantCount: 3,
     poll,
     messages,
   };

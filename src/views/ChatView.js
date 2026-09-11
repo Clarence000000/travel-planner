@@ -28,7 +28,7 @@ import {
 } from '../models/chatData.js';
 import { enableDragScroll } from '../utils/dragScroll.js';
 import { getTripSettings } from '../models/tripSettings.js';
-import { getActiveTrip } from '../models/tripsModel.js';
+import { getActiveTrip, subscribeTrips } from '../models/tripsModel.js';
 import {
   getItineraryData,
   addItineraryBlock,
@@ -89,8 +89,10 @@ export function createChatView(initialBlockId = null) {
     container.innerHTML = '';
 
     if (activeThreadId) {
+      container.classList.add('chat-view--in-conversation');
       renderThreadConversation(activeThreadId);
     } else {
+      container.classList.remove('chat-view--in-conversation');
       renderThreadsHub();
     }
   }
@@ -443,6 +445,113 @@ export function createChatView(initialBlockId = null) {
     `;
   }
 
+  function renderFeedMessages(messages, isInserted) {
+    let lastDate = null;
+    let html = '';
+
+    messages.forEach((m) => {
+      let msgDate = m.date;
+      if (!msgDate) {
+        if (m.time && m.time.startsWith('Yesterday')) {
+          msgDate = 'Yesterday';
+        } else if (m.time && m.time.startsWith('Today')) {
+          msgDate = 'Today';
+        } else {
+          msgDate = 'Yesterday';
+        }
+      }
+
+      if (msgDate !== lastDate) {
+        lastDate = msgDate;
+        html += `
+          <div class="chat-date-separator">
+            <span>${escapeHtml(msgDate)}</span>
+          </div>
+        `;
+      }
+
+      if (m.isAi || m.type === 'ai_proposal') {
+        const proposal = m.proposal || {
+          title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+          tag: 'Michelin Bib Gourmand',
+          distance: '8 min Grab / walk from Chew Jetty',
+          price: 'RM 12 / pax',
+          slotId: 'd1-chendul',
+        };
+
+        html += `
+          <div class="chat-message chat-message--incoming chat-message--ai" id="wanderbot-proposal-wrapper">
+            <div class="user-avatar-initials user-avatar--ai" title="WanderBot AI">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+                <rect x="4" y="8" width="16" height="12" rx="4"/>
+                <circle cx="9" cy="13" r="1"/>
+                <circle cx="15" cy="13" r="1"/>
+                <line x1="9" y1="17" x2="15" y2="17"/>
+              </svg>
+            </div>
+            <div class="chat-message__bubble chat-message__bubble--ai">
+              <div class="chat-message__sender">
+                <span class="chat-message__sender-name">${escapeHtml(m.sender || 'WanderBot')}</span>
+                <span class="chat-message__sender-role">AI Assistant</span>
+              </div>
+              <div class="chat-message__text">
+                <p style="margin: 0 0 8px 0;">
+                  ${escapeHtml(m.text || "I noticed a 4-hour open window between Chew Jetty and Penang Hill at 12:30 PM. Here's a top-rated lunch suggestion:")}
+                </p>
+                <div class="ai-venue-card">
+                  <div class="ai-venue-card__header">
+                    <strong class="ai-venue-card__title">${escapeHtml(proposal.title)}</strong>
+                    <span class="ai-venue-card__tag">${escapeHtml(proposal.tag)}</span>
+                  </div>
+                  <div class="ai-venue-card__meta">
+                    <span class="ai-venue-card__meta-item">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                      <span>${escapeHtml(proposal.distance)}</span>
+                    </span>
+                    <span class="ai-venue-card__meta-item">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                      <span>${escapeHtml(proposal.price)}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div class="chat-message__actions">
+                <button id="btn-insert-proposal" class="btn btn--sm btn--primary ${isInserted ? 'btn-insert-proposal--inserted' : ''}" type="button">
+                  ${isInserted ? '✓ Inserted as Proposed Slot' : '+ Insert as Proposed Slot'}
+                </button>
+                ${
+                  isInserted
+                    ? `
+                  <button id="btn-jump-itinerary" class="btn-jump-itinerary" type="button">
+                    <span>View in Day 1 Itinerary</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  </button>
+                `
+                    : ''
+                }
+              </div>
+              <span class="chat-message__time">${escapeHtml(m.time || `${msgDate}, 12:30 PM • AI Suggestion`)}</span>
+            </div>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="chat-message ${m.isCurrentUser ? 'chat-message--outgoing' : 'chat-message--incoming'}">
+            ${!m.isCurrentUser ? `<div class="user-avatar-initials">${escapeHtml(m.avatar || m.sender.slice(0, 2).toUpperCase())}</div>` : ''}
+            <div class="chat-message__bubble">
+              ${!m.isCurrentUser ? `<div class="chat-message__sender">${escapeHtml(m.sender)}</div>` : ''}
+              <p class="chat-message__text">${escapeHtml(m.text)}</p>
+              <span class="chat-message__time">${escapeHtml(m.time)}</span>
+            </div>
+          </div>
+        `;
+      }
+    });
+
+    return html;
+  }
+
   // ──────────────── 2. Focused Thread Conversation View ────────────────
 
   function renderThreadConversation(blockId) {
@@ -491,8 +600,6 @@ export function createChatView(initialBlockId = null) {
           <span class="thread-conv-header__meta">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
             <span>${escapeHtml(thread.location || 'George Town, Penang')}</span>
-            <span style="opacity: 0.5;">•</span>
-            <span>${totalTripTravelers} travelers</span>
           </span>
         </div>
       </div>
@@ -508,80 +615,7 @@ export function createChatView(initialBlockId = null) {
                 <p style="font-size: var(--text-sm);">No messages yet in this discussion.</p>
                 <p style="font-size: var(--text-xs); margin-top: 4px;">Share questions, recommendations, or logistics with the group below!</p>
                </div>`
-            : thread.messages
-                .map(
-                  (m) => `
-          <div class="chat-message ${m.isCurrentUser ? 'chat-message--outgoing' : 'chat-message--incoming'}">
-            ${!m.isCurrentUser ? `<div class="user-avatar-initials">${escapeHtml(m.avatar || m.sender.slice(0, 2).toUpperCase())}</div>` : ''}
-            <div class="chat-message__bubble">
-              ${!m.isCurrentUser ? `<div class="chat-message__sender">${escapeHtml(m.sender)}</div>` : ''}
-              <p class="chat-message__text">${escapeHtml(m.text)}</p>
-              <span class="chat-message__time">${m.time}</span>
-            </div>
-          </div>
-        `
-                )
-                .join('')
-        }
-
-        <!-- WanderBot AI Recommendation Message -->
-        ${
-          isDay1Penang
-            ? `
-        <div class="chat-message chat-message--incoming chat-message--ai" id="wanderbot-proposal-wrapper">
-          <div class="user-avatar-initials user-avatar--ai" title="WanderBot AI">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
-              <rect x="4" y="8" width="16" height="12" rx="4"/>
-              <circle cx="9" cy="13" r="1"/>
-              <circle cx="15" cy="13" r="1"/>
-              <line x1="9" y1="17" x2="15" y2="17"/>
-            </svg>
-          </div>
-          <div class="chat-message__bubble chat-message__bubble--ai">
-            <div class="chat-message__sender">
-              <span class="chat-message__sender-name">WanderBot</span>
-              <span class="chat-message__sender-role">AI Assistant</span>
-            </div>
-            <div class="chat-message__text">
-              <p style="margin: 0 0 8px 0;">
-                I noticed a 4-hour open window between Chew Jetty and Penang Hill at 12:30 PM. Here's a top-rated lunch suggestion:
-              </p>
-              <div class="ai-venue-card">
-                <div class="ai-venue-card__header">
-                  <strong class="ai-venue-card__title">Penang Road Famous Teochew Chendul &amp; Asam Laksa</strong>
-                  <span class="ai-venue-card__tag">Michelin Bib Gourmand</span>
-                </div>
-                <div class="ai-venue-card__meta">
-                  <span>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                    <span>8 min Grab / walk from Chew Jetty</span>
-                  </span>
-                  <span>•</span>
-                  <span>RM 12 / pax</span>
-                </div>
-              </div>
-            </div>
-            <div class="chat-message__actions">
-              <button id="btn-insert-proposal" class="btn btn--sm btn--primary ${isInserted ? 'btn-insert-proposal--inserted' : ''}" type="button">
-                ${isInserted ? '✓ Inserted as Proposed Slot' : '+ Insert as Proposed Slot'}
-              </button>
-              ${
-                isInserted
-                  ? `
-                <button id="btn-jump-itinerary" class="btn-jump-itinerary" type="button">
-                  <span>View in Day 1 Itinerary</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                </button>
-              `
-                  : ''
-              }
-            </div>
-            <span class="chat-message__time">12:30 PM • AI Suggestion</span>
-          </div>
-        </div>
-        `
-            : ''
+            : renderFeedMessages(thread.messages, isInserted)
         }
       </div>
 
@@ -599,10 +633,18 @@ export function createChatView(initialBlockId = null) {
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
           <span>Need reservations?</span>
         </button>
+        <button type="button" class="btn-quick-reply" data-reply="How are we getting there? Grab or walking?">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="10" r="3"></circle><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z"></path></svg>
+          <span>How to get there?</span>
+        </button>
+        <button type="button" class="btn-quick-reply" data-reply="Let's take a group vote on this.">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          <span>Vote on this</span>
+        </button>
       </div>
 
       <!-- Message Compose Input Bar -->
-      <form class="chat-input-bar" id="form-thread-compose" style="margin-top: auto;">
+      <form class="chat-input-bar" id="form-thread-compose">
         <input 
           type="text" 
           id="input-thread-message" 
@@ -611,8 +653,8 @@ export function createChatView(initialBlockId = null) {
           autocomplete="off"
           required
         />
-        <button type="submit" class="btn-chat-send" aria-label="Send Message">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        <button type="submit" class="chat-send-btn btn-chat-send" aria-label="Send Message">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
         </button>
       </form>
     `;
@@ -624,6 +666,12 @@ export function createChatView(initialBlockId = null) {
     });
 
     // (Replay Banter removed from webapp; managed via /remote)
+
+    // Enable horizontal drag & wheel scrolling on Quick Reply pills
+    const quickActions = convElem.querySelector('.chat-quick-actions');
+    if (quickActions) {
+      enableDragScroll(quickActions);
+    }
 
     // Quick Reply buttons
     convElem.querySelectorAll('.btn-quick-reply').forEach((btn) => {
@@ -848,6 +896,12 @@ export function createChatView(initialBlockId = null) {
   }
 
   function scrollToBottom() {
+    requestAnimationFrame(() => {
+      const feed = container.querySelector('#thread-chat-feed');
+      if (feed) {
+        feed.scrollTop = feed.scrollHeight;
+      }
+    });
     setTimeout(() => {
       const feed = container.querySelector('#thread-chat-feed');
       if (feed) {
@@ -1102,6 +1156,10 @@ export function createChatView(initialBlockId = null) {
   // ──────────────── BroadcastChannel Subscriptions ────────────────
 
   const unsubs = [
+    subscribeTrips(() => {
+      activeThreadId = null;
+      render();
+    }),
     remoteSync.subscribe('TRIGGER_CHAT_BANTER', () => {
       activeThreadId = 'day-1-penang';
       render();
@@ -1124,6 +1182,7 @@ export function createChatView(initialBlockId = null) {
   return {
     element: container,
     destroy: () => {
+      container.classList.remove('chat-view--in-conversation');
       unsubs.forEach((u) => u && u());
     },
   };

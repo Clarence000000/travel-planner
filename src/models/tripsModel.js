@@ -138,6 +138,12 @@ export function deleteTrip(tripId) {
   trips = trips.filter((t) => t.id !== tripId);
   saveTrips(trips);
 
+  try {
+    localStorage.removeItem(`travel_planner_chat_${tripId}`);
+    localStorage.removeItem(`travel_planner_itinerary_${tripId}`);
+    localStorage.removeItem(`travel_planner_settings_${tripId}`);
+  } catch (e) {}
+
   if (getActiveTripId() === tripId) {
     setActiveTripId(trips.length > 0 ? trips[0].id : null);
   }
@@ -148,6 +154,13 @@ export function deleteTrip(tripId) {
  */
 export function clearAllTrips() {
   try {
+    const trips = getTrips();
+    trips.forEach((t) => {
+      localStorage.removeItem(`travel_planner_chat_${t.id}`);
+      localStorage.removeItem(`travel_planner_itinerary_${t.id}`);
+      localStorage.removeItem(`travel_planner_settings_${t.id}`);
+    });
+    localStorage.removeItem("travel_planner_chat_v6");
     localStorage.removeItem(STORAGE_KEY_TRIPS);
     localStorage.removeItem(STORAGE_KEY_ACTIVE_TRIP);
     notifyListeners();
