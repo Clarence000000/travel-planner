@@ -30,6 +30,16 @@ import {
   getActiveTripId,
 } from '../models/tripsModel.js';
 
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export function createOnboardingModal(options = {}) {
   const { onComplete } = options;
 
@@ -182,8 +192,8 @@ export function createOnboardingModal(options = {}) {
     const rangeLabel = formatDateRange(survey.startDate, survey.endDate, survey.duration);
 
     return `
-      <div class="onboarding-header">
-        <button type="button" class="onboarding-back-btn" id="btn-back-menu">
+      <div class="onboarding-header onboarding-header--with-back">
+        <button type="button" class="onboarding-back-btn" id="btn-back-menu" aria-label="Go back">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Back</span>
         </button>
@@ -264,11 +274,17 @@ export function createOnboardingModal(options = {}) {
 
   // ── Step 2A: Quick AI Travel Preferences ─────────────────────
   function renderQuestionsView() {
-    const topWishlist = getTopVotedWishlistItems(3);
+    const isPenang = !survey.destination || survey.destination.toLowerCase().includes('penang');
+    const isTokyo = survey.destination && survey.destination.toLowerCase().includes('tokyo');
+    const spots = isPenang
+      ? ['Penang Road Famous Teochew Chendul', 'Chew Jetty Heritage Walk', 'Penang Hill Funicular']
+      : isTokyo
+      ? ['Fushimi Inari 10,000 Torii Shrine', 'Ghibli Museum Mitaka', 'Tsukiji Outer Market Food Tour']
+      : ['Top Group Wishlist Pick 1', 'Top Group Wishlist Pick 2', 'Top Group Wishlist Pick 3'];
 
     return `
-      <div class="onboarding-header">
-        <button type="button" class="onboarding-back-btn" id="btn-back-destination">
+      <div class="onboarding-header onboarding-header--with-back">
+        <button type="button" class="onboarding-back-btn" id="btn-back-destination" aria-label="Go back">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Back</span>
         </button>
@@ -278,6 +294,12 @@ export function createOnboardingModal(options = {}) {
       </div>
 
       <div class="onboarding-form">
+        <!-- Location & Trip Dates Context Badge -->
+        <div class="onboarding-location-badge">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          <span>${escapeHtml(survey.destination || 'Penang, Malaysia')} • ${survey.duration} Days</span>
+        </div>
+
         <!-- Vibe Selector -->
         <div class="onboarding-field">
           <label class="onboarding-field__label">Primary Focus / Vibe</label>
@@ -313,18 +335,37 @@ export function createOnboardingModal(options = {}) {
           </div>
         </div>
 
-        <!-- Wishlist Integration Toggle -->
+        <!-- Wishlist Integration Glass Card -->
         <div class="onboarding-field">
-          <div class="onboarding-field__split-header">
-            <label class="onboarding-field__label" style="margin-bottom:0;">Incorporate Group Wishlist</label>
-            <label class="toggle-switch">
-              <input type="checkbox" id="toggle-anchor-wishlist" ${survey.anchorWishlist ? 'checked' : ''} />
-              <span class="toggle-slider"></span>
-            </label>
+          <div class="onboarding-wishlist-card">
+            <div class="onboarding-wishlist-header">
+              <div class="onboarding-wishlist-info">
+                <label class="onboarding-wishlist-title" for="toggle-anchor-wishlist">Incorporate Group Wishlist</label>
+                <div class="onboarding-wishlist-subtitle">Lock top-voted spots into open schedule slots</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle-anchor-wishlist" ${survey.anchorWishlist ? 'checked' : ''} />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            ${survey.anchorWishlist ? `
+              <div class="onboarding-wishlist-content">
+                <div class="onboarding-wishlist-lock-note">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                  <span>Auto-locked into Day 1 &amp; Day 2</span>
+                </div>
+                <div class="onboarding-wishlist-spots">
+                  ${spots.map(s => `
+                    <div class="onboarding-wishlist-spot-tag">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                      <span>${escapeHtml(s)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
           </div>
-          <p class="onboarding-field__hint">
-            Automatically lock top-voted spots (${topWishlist.map((i) => i.title).join(', ')}) into Day 1 &amp; Day 2.
-          </p>
         </div>
 
         <button type="button" class="btn btn--primary onboarding-submit-btn" id="btn-submit-questions">
@@ -334,16 +375,15 @@ export function createOnboardingModal(options = {}) {
       </div>
     `;
   }
-
   // ── Step 2B: IG Reels / Social Import Form ───────────────────
   function renderReelsView() {
     return `
-      <div class="onboarding-header">
-        <button type="button" class="onboarding-back-btn" id="btn-back-menu">
+      <div class="onboarding-header onboarding-header--with-back">
+        <button type="button" class="onboarding-back-btn" id="btn-back-menu" aria-label="Go back">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Back</span>
         </button>
-        <h2 class="onboarding-title" style="margin-top: 8px;">Import from Social Reels</h2>
+        <h2 class="onboarding-title">Import from Social Reels</h2>
         <p class="onboarding-subtitle">Paste an Instagram Reel, TikTok, or YouTube Short link:</p>
       </div>
 
@@ -389,19 +429,14 @@ export function createOnboardingModal(options = {}) {
   // ── Step 2C: Customize Extracted Schedule (Liquid Glass) ─────
   function renderCustomizeView() {
     const rangeLabel = formatDateRange(survey.startDate, survey.endDate, survey.duration);
-    const shortRange = rangeLabel.split('•')[0].trim();
 
     return `
-      <div class="onboarding-header">
-        <button type="button" class="onboarding-back-btn" id="btn-back-reels">
+      <div class="onboarding-header onboarding-header--with-back">
+        <button type="button" class="onboarding-back-btn" id="btn-back-reels" aria-label="Go back">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
           <span>Back</span>
         </button>
-        <div class="onboarding-badge customize-badge">
-          <span class="customize-badge__dot"></span>
-          <span>Reel Extracted • 2 Penang Anchors</span>
-        </div>
-        <h2 class="onboarding-title" style="margin-top: 6px;">Customize Extracted Schedule</h2>
+        <h2 class="onboarding-title">Customize Extracted Schedule</h2>
         <p class="onboarding-subtitle">Review detected venues, configure trip dates, and drag to prioritize.</p>
       </div>
 
@@ -422,78 +457,42 @@ export function createOnboardingModal(options = {}) {
           <span class="customize-source-card__tag">Verified Scan</span>
         </div>
 
-        <!-- Section 1: Date & Duration Customizer -->
-        <div class="onboarding-field customize-dates-section">
-          <div class="customize-section-header">
-            <label class="onboarding-field__label" style="margin-bottom: 0;">Trip Dates &amp; Duration</label>
-            <span class="customize-duration-summary" id="customize-duration-summary">
-              ${survey.duration} Days (${shortRange})
-            </span>
+        <!-- Date Range Configuration (Identical to Quick Survey Flow) -->
+        <div class="onboarding-field">
+          <div class="onboarding-field__split-header">
+            <label class="onboarding-field__label">Trip Dates</label>
+            <span class="onboarding-duration-badge" id="customize-range-display-label">${rangeLabel}</span>
           </div>
 
-          <!-- Quick Duration Selector Pills -->
-          <div class="duration-pills-row" role="radiogroup" aria-label="Trip duration quick selector">
-            <button 
-              type="button" 
-              class="duration-pill ${survey.duration === 3 ? 'duration-pill--active' : ''}" 
-              data-duration="3"
-              id="pill-duration-3"
-            >
-              <span class="duration-pill__indicator"></span>
-              <span class="duration-pill__label">Weekend (3D)</span>
-            </button>
-
-            <button 
-              type="button" 
-              class="duration-pill ${survey.duration === 4 ? 'duration-pill--active' : ''}" 
-              data-duration="4"
-              id="pill-duration-4"
-            >
-              <span class="duration-pill__indicator"></span>
-              <span class="duration-pill__label">4 Days</span>
-            </button>
-
-            <button 
-              type="button" 
-              class="duration-pill ${survey.duration === 5 ? 'duration-pill--active' : ''}" 
-              data-duration="5"
-              id="pill-duration-5"
-            >
-              <span class="duration-pill__indicator"></span>
-              <span class="duration-pill__label">5 Days</span>
-            </button>
-          </div>
-
-          <!-- Direct Calendar Pickers -->
-          <div class="customize-date-inputs-row">
-            <div class="customize-date-field">
-              <label class="customize-date-label" for="customize-start-date">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span>Start Date</span>
-              </label>
+          <div class="onboarding-dates-row">
+            <div class="onboarding-date-box">
+              <label class="onboarding-date-label">Start Date</label>
               <input 
                 type="date" 
-                class="customize-date-input" 
+                class="onboarding-date-input" 
                 id="customize-start-date" 
-                value="${survey.startDate}"
-                aria-label="Trip Start Date"
+                value="${survey.startDate}" 
               />
             </div>
-
-            <div class="customize-date-arrow" aria-hidden="true">→</div>
-
-            <div class="customize-date-field">
-              <label class="customize-date-label" for="customize-end-date">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span>End Date</span>
-              </label>
+            <div class="onboarding-date-arrow">→</div>
+            <div class="onboarding-date-box">
+              <label class="onboarding-date-label">End Date</label>
               <input 
                 type="date" 
-                class="customize-date-input" 
+                class="onboarding-date-input" 
                 id="customize-end-date" 
-                value="${survey.endDate}"
-                aria-label="Trip End Date"
+                value="${survey.endDate}" 
               />
+            </div>
+          </div>
+
+          <!-- Quick Duration Stepper -->
+          <div class="onboarding-stepper-row">
+            <span class="onboarding-stepper-label">Duration Quick Stepper:</span>
+            <div class="onboarding-stepper">
+              <button type="button" class="onboarding-stepper-btn" id="btn-cust-duration-minus" aria-label="Decrease days">−</button>
+              <span class="onboarding-stepper-val" id="cust-stepper-duration-val">${survey.duration} Days</span>
+              <button type="button" class="onboarding-stepper-btn" id="btn-cust-duration-plus" aria-label="Increase days">+</button>
             </div>
           </div>
         </div>
@@ -501,10 +500,10 @@ export function createOnboardingModal(options = {}) {
         <!-- Section 2: Draggable Extracted Anchors -->
         <div class="onboarding-field customize-anchors-section">
           <div class="customize-section-header">
-            <label class="onboarding-field__label" style="margin-bottom: 0;">Extracted Day 1 Anchors</label>
+            <label class="onboarding-field__label" style="margin-bottom: 0;">Extracted Anchors</label>
             <span class="customize-drag-hint">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="7 8 12 3 17 8"></polyline><polyline points="7 16 12 21 17 16"></polyline><line x1="12" y1="3" x2="12" y2="21"></line></svg>
-              <span>Drag or click handle to reorder</span>
+              <span>Drag or tap handle to reorder</span>
             </span>
           </div>
 
@@ -521,7 +520,6 @@ export function createOnboardingModal(options = {}) {
       </div>
     `;
   }
-
   function renderAnchorCard(anchor, index) {
     const defaultTime = index === 0 ? '09:30 – 11:00' : '16:30 – 19:00';
     return `
@@ -533,28 +531,37 @@ export function createOnboardingModal(options = {}) {
         tabindex="0"
         role="listitem"
       >
-        <!-- Vertical Drag Handle -->
-        <button 
-          type="button" 
-          class="customize-drag-handle" 
-          aria-label="Drag or click to reorder ${anchor.title}" 
-          title="Drag or click to reorder"
+        <!-- Itinerary Reusable Drag Handle -->
+        <div 
+          class="drag-grip drag-grip--inline customize-drag-handle" 
           data-action="reorder"
           data-index="${index}"
+          title="Hold and drag to reorder schedule" 
+          aria-label="Drag handle"
         >
-          <span class="drag-handle-dots" aria-hidden="true">⋮⋮</span>
-        </button>
+          <svg width="12" height="14" viewBox="0 0 16 20" fill="currentColor" opacity="0.65">
+            <circle cx="5" cy="4" r="1.5"/><circle cx="11" cy="4" r="1.5"/>
+            <circle cx="5" cy="10" r="1.5"/><circle cx="11" cy="10" r="1.5"/>
+            <circle cx="5" cy="16" r="1.5"/><circle cx="11" cy="16" r="1.5"/>
+          </svg>
+        </div>
 
-        <!-- Pin Icon & Content -->
+        <!-- Content: Title, Location (with location icon above time, not truncated), Time -->
         <div class="customize-anchor-content">
-          <div class="customize-anchor-top-row">
-            <span class="customize-anchor-pin">${anchor.icon || '📍'}</span>
-            <h4 class="customize-anchor-title">${anchor.title}</h4>
+          <h4 class="customize-anchor-title">${escapeHtml(anchor.title)}</h4>
+          <div class="customize-anchor-loc-row">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="customize-anchor-loc-icon">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+            <span class="customize-anchor-loc-text">${escapeHtml(anchor.location)}</span>
           </div>
-          <div class="customize-anchor-meta">
-            <span class="customize-anchor-time">${anchor.timeSlot || defaultTime}</span>
-            <span class="customize-anchor-dot">•</span>
-            <span class="customize-anchor-loc">${anchor.location}</span>
+          <div class="customize-anchor-time-row">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="customize-anchor-time-icon">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            <span class="customize-anchor-time-text">${escapeHtml(anchor.timeSlot || defaultTime)}</span>
           </div>
         </div>
 
@@ -573,7 +580,6 @@ export function createOnboardingModal(options = {}) {
       </div>
     `;
   }
-
   // ── Step 3: Processing Animation Screen ──────────────────────
   function renderProcessingView() {
     const steps = [
@@ -908,47 +914,67 @@ export function createOnboardingModal(options = {}) {
       });
     }
 
-    // Duration Quick Pills
-    overlay.querySelectorAll('.duration-pill').forEach((pill) => {
-      pill.addEventListener('click', () => {
-        const days = Number(pill.getAttribute('data-duration'));
-        if (days) {
-          survey.duration = days;
-          survey.endDate = addDaysToDate(survey.startDate, days - 1);
-          const endDateInput = overlay.querySelector('#customize-end-date');
-          if (endDateInput) endDateInput.value = survey.endDate;
-          updateCustomizeDateSummary();
+    // Date Range Configuration (Identical to Quick Survey Flow)
+    const startDateInput = overlay.querySelector('#customize-start-date');
+    const endDateInput = overlay.querySelector('#customize-end-date');
+    const rangeDisplay = overlay.querySelector('#customize-range-display-label');
+    const stepperVal = overlay.querySelector('#cust-stepper-duration-val');
+
+    function syncCustomizeDates() {
+      if (startDateInput && endDateInput) {
+        if (startDateInput.value) survey.startDate = startDateInput.value;
+        if (endDateInput.value) {
+          if (endDateInput.value < survey.startDate) {
+            survey.endDate = survey.startDate;
+            endDateInput.value = survey.startDate;
+          } else {
+            survey.endDate = endDateInput.value;
+          }
         }
-      });
-    });
+        survey.duration = calculateDaysBetween(survey.startDate, survey.endDate);
+        if (stepperVal) stepperVal.textContent = `${survey.duration} Days`;
+        if (rangeDisplay) rangeDisplay.textContent = formatDateRange(survey.startDate, survey.endDate, survey.duration);
+      }
+    }
 
-    // Date Inputs
-    const startInput = overlay.querySelector('#customize-start-date');
-    const endInput = overlay.querySelector('#customize-end-date');
-
-    if (startInput) {
-      startInput.addEventListener('change', () => {
-        if (startInput.value) {
-          survey.startDate = startInput.value;
+    if (startDateInput) {
+      startDateInput.addEventListener('change', () => {
+        if (startDateInput.value) {
+          survey.startDate = startDateInput.value;
           survey.endDate = addDaysToDate(survey.startDate, survey.duration - 1);
-          if (endInput) endInput.value = survey.endDate;
-          updateCustomizeDateSummary();
+          if (endDateInput) endDateInput.value = survey.endDate;
+          syncCustomizeDates();
         }
       });
     }
 
-    if (endInput) {
-      endInput.addEventListener('change', () => {
-        if (endInput.value) {
-          if (endInput.value < survey.startDate) {
-            survey.endDate = survey.startDate;
-            endInput.value = survey.startDate;
-          } else {
-            survey.endDate = endInput.value;
-          }
-          survey.duration = calculateDaysBetween(survey.startDate, survey.endDate);
-          updateCustomizeDateSummary();
+    if (endDateInput) {
+      endDateInput.addEventListener('change', syncCustomizeDates);
+    }
+
+    // Duration Stepper Buttons
+    const btnCustMinus = overlay.querySelector('#btn-cust-duration-minus');
+    const btnCustPlus = overlay.querySelector('#btn-cust-duration-plus');
+
+    if (btnCustMinus) {
+      btnCustMinus.addEventListener('click', () => {
+        if (survey.duration > 1) {
+          survey.duration--;
+          survey.endDate = addDaysToDate(survey.startDate, survey.duration - 1);
+          if (endDateInput) endDateInput.value = survey.endDate;
+          if (stepperVal) stepperVal.textContent = `${survey.duration} Days`;
+          if (rangeDisplay) rangeDisplay.textContent = formatDateRange(survey.startDate, survey.endDate, survey.duration);
         }
+      });
+    }
+
+    if (btnCustPlus) {
+      btnCustPlus.addEventListener('click', () => {
+        survey.duration++;
+        survey.endDate = addDaysToDate(survey.startDate, survey.duration - 1);
+        if (endDateInput) endDateInput.value = survey.endDate;
+        if (stepperVal) stepperVal.textContent = `${survey.duration} Days`;
+        if (rangeDisplay) rangeDisplay.textContent = formatDateRange(survey.startDate, survey.endDate, survey.duration);
       });
     }
 
@@ -963,19 +989,6 @@ export function createOnboardingModal(options = {}) {
       });
     }
   }
-
-  function updateCustomizeDateSummary() {
-    const summaryEl = overlay.querySelector('#customize-duration-summary');
-    if (summaryEl) {
-      const range = formatDateRange(survey.startDate, survey.endDate, survey.duration).split('•')[0].trim();
-      summaryEl.textContent = `${survey.duration} Days (${range})`;
-    }
-    overlay.querySelectorAll('.duration-pill').forEach((p) => {
-      const d = Number(p.getAttribute('data-duration'));
-      p.classList.toggle('duration-pill--active', d === survey.duration);
-    });
-  }
-
   // ── Drag & Drop / Handle Reorder for Anchors ──────────────────
   function bindDragAndReorderEvents() {
     const listEl = overlay.querySelector('#customize-anchors-list');

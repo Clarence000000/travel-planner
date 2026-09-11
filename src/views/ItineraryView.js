@@ -852,22 +852,30 @@ export function createItineraryView() {
           ? 'Confirmed'
           : 'PROPOSED DRAFT';
 
-        // 1. Proposed Draft Actions Row
+        // 1. Proposed Draft Actions Row (Liquid Glass, no duplicate icons)
         const proposedActionsHtml = isProposed
           ? `
-          <div class="timeline-card__proposed-actions" data-proposed-actions="${block.id}">
-            <button type="button" class="btn-card-confirm" data-confirm-proposed="${block.id}" title="Confirm this slot">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-              <span>✓ Confirm</span>
-            </button>
-            <button type="button" class="btn-card-vote" data-vote-proposed="${block.id}" title="Put to group consensus vote">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m9 12 2 2 4-4"/>
-                <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z"/>
-                <path d="M22 19H2"/>
-              </svg>
-              <span>🗳 Vote</span>
-            </button>
+          <div class="timeline-card__proposed-bar" data-proposed-actions="${block.id}">
+            <div class="proposed-bar__info">
+              <span class="proposed-bar__badge">Proposed Slot</span>
+              <span class="proposed-bar__hint">Awaiting team consensus</span>
+            </div>
+            <div class="proposed-bar__actions">
+              <button type="button" class="btn-card-vote" data-vote-proposed="${block.id}" title="Put to group consensus vote">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m9 12 2 2 4-4"/>
+                  <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z"/>
+                  <path d="M22 19H2"/>
+                </svg>
+                <span>Vote</span>
+              </button>
+              <button type="button" class="btn-card-confirm" data-confirm-proposed="${block.id}" title="Confirm this slot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Confirm</span>
+              </button>
+            </div>
           </div>
         `
           : '';
@@ -957,6 +965,15 @@ export function createItineraryView() {
                       ${catInfo.icon}
                       <span>${catInfo.badgeLabel || catInfo.label}</span>
                     </span>
+                    ${isReel
+              ? `
+                      <button type="button" class="card-origin-badge card-origin-badge--reel card-origin-badge--time-col" data-preview-reel-id="${block.id}" title="Watch Reel Preview">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+                        <span>Reel Pick</span>
+                      </button>
+                    `
+              : ''
+            }
                   </div>
                 </div>
 
@@ -964,15 +981,6 @@ export function createItineraryView() {
                 <div class="timeline-card__body-col">
                   <div class="timeline-card__title-row">
                     <h3 class="timeline-card__title">${block.title}</h3>
-                    ${isReel
-              ? `
-                      <button type="button" class="card-origin-badge card-origin-badge--reel" data-preview-reel-id="${block.id}" title="Watch Reel Preview">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-                        <span>Reel Pick</span>
-                      </button>
-                    `
-              : ''
-            }
                   </div>
                   ${block.location
               ? `
@@ -1085,7 +1093,6 @@ export function createItineraryView() {
                 <div class="timeline-card__details-content">
                   ${weatherAlertBannerHtml}
                   ${advisoryHtml}
-                  ${proposedActionsHtml}
 
                   ${
                     block.transitToNextMinutes > 0
@@ -1217,6 +1224,7 @@ export function createItineraryView() {
                   </div>
                 </div>
               </div>
+              ${proposedActionsHtml}
             </article>
           `;
         }
@@ -1237,33 +1245,48 @@ export function createItineraryView() {
               (nextBlock.title.includes('Penang Hill') || nextBlock.id === 'd1-penang-hill');
 
             const gapText = isChewToPenang
-              ? '⚡ 4h Free Pocket: Chew Jetty ➔ Penang Hill. Need a lunch recommendation or Grab transit link?'
-              : `⚡ ${gapHours}h Free Pocket: ${fromShort} ➔ ${toShort}. Need a lunch recommendation or Grab transit link?`;
+              ? '4-hour pocket between Chew Jetty and Penang Hill. Need a lunch recommendation or Grab transit link?'
+              : `${gapHours}-hour pocket between ${fromShort} and ${toShort}. Need a lunch recommendation or transit link?`;
 
             gapCardHtml = `
-              <div class="timeline-gap-card" data-gap-from="${block.id}" data-gap-to="${nextBlock.id}">
-                <div class="timeline-gap-card__spine-dot">
-                  <span class="timeline-gap-card__lightning">⚡</span>
-                </div>
-                <div class="timeline-gap-card__content">
-                  <div class="timeline-gap-card__info">
-                    <span class="timeline-gap-card__badge">
-                      <span class="timeline-gap-card__lightning">⚡</span>
-                      <span>${gapHours}h Free Pocket: ${fromShort} ➔ ${toShort}</span>
-                    </span>
-                    <p class="timeline-gap-card__text">${gapText}</p>
+              <div class="timeline-item-wrapper timeline-item-wrapper--gap" aria-label="Schedule advisory gap">
+                <!-- Precisely Aligned Spine Pin -->
+                <div class="timeline-node-pin timeline-node-pin--gap" aria-hidden="true">
+                  <div class="gap-pin-circle">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
                   </div>
-                  <div class="timeline-gap-card__actions">
-                    <button type="button" class="timeline-gap-card__btn" id="btn-gap-ask-wanderbot" data-gap-from="${block.id}" data-gap-to="${nextBlock.id}">
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
-                        <rect x="4" y="8" width="16" height="12" rx="4"/>
-                        <circle cx="9" cy="13" r="1"/>
-                        <circle cx="15" cy="13" r="1"/>
-                        <line x1="9" y1="17" x2="15" y2="17"/>
-                      </svg>
-                      <span>+ Ask WanderBot / Suggest Lunch</span>
-                    </button>
+                </div>
+                <!-- Continuous Spine Line to Next Node -->
+                <div class="timeline-spine-connector" aria-hidden="true"></div>
+                <!-- Liquid Glass Gap Card -->
+                <div class="timeline-gap-card" data-gap-from="${block.id}" data-gap-to="${nextBlock.id}">
+                  <div class="timeline-gap-card__content">
+                    <div class="timeline-gap-card__info">
+                      <span class="timeline-gap-card__badge">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        <span>${gapHours}h Open Window</span>
+                      </span>
+                      <h4 class="timeline-gap-card__route">${fromShort} &rarr; ${toShort}</h4>
+                      <p class="timeline-gap-card__text">${gapText}</p>
+                    </div>
+                    <div class="timeline-gap-card__actions">
+                      <button type="button" class="timeline-gap-card__btn" id="btn-gap-ask-wanderbot" data-gap-from="${block.id}" data-gap-to="${nextBlock.id}">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+                          <rect x="4" y="8" width="16" height="12" rx="4"/>
+                          <circle cx="9" cy="13" r="1"/>
+                          <circle cx="15" cy="13" r="1"/>
+                          <line x1="9" y1="17" x2="15" y2="17"/>
+                        </svg>
+                        <span>Ask WanderBot / Suggest Lunch</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1549,14 +1572,25 @@ export function createItineraryView() {
     });
 
     // Expand / Collapse Card
-    container.querySelectorAll('[data-toggle-details]').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        // Prevent toggle if clicking buttons inside actions
-        if (e.target.closest('button') || e.target.closest('.timeline-card__proposed-actions') || e.target.closest('.timeline-card__advisory')) {
+    container.querySelectorAll('[data-toggle-details]').forEach((elem) => {
+      elem.addEventListener('click', (e) => {
+        const clickedBtn = e.target.closest('button');
+        const isChevronBtn = e.target.closest('.timeline-card__chevron-btn');
+        // Prevent toggle if clicking other inner buttons (thread, shifts, etc.)
+        if (clickedBtn && !isChevronBtn) {
+          return;
+        }
+        if (
+          e.target.closest('.timeline-card__proposed-bar') ||
+          e.target.closest('.timeline-card__proposed-actions') ||
+          e.target.closest('.timeline-card__advisory') ||
+          e.target.closest('.timeline-card__thread-pill-btn') ||
+          e.target.closest('a')
+        ) {
           return;
         }
         e.stopPropagation();
-        const blockId = btn.getAttribute('data-toggle-details');
+        const blockId = elem.getAttribute('data-toggle-details') || isChevronBtn?.getAttribute('data-toggle-details');
         if (!blockId) return;
         if (expandedCardIds.has(blockId)) {
           expandedCardIds.delete(blockId);

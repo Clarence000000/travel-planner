@@ -460,6 +460,9 @@ export function createChatView(initialBlockId = null) {
     const normCat = normalizeCategory(thread.category);
     const day = getThreadDay(thread);
     const dayLabel = day ? `Day ${day}` : 'Trip-Wide';
+    const rawTitle = thread.eventTitle || thread.title || '';
+    const hasDayInTitle = /^Day\s*\d+/i.test(rawTitle);
+    const showDayPill = !hasDayInTitle && !!day;
 
     const activeTrip = getActiveTrip();
     const tripMembers = (activeTrip && activeTrip.members && activeTrip.members.length > 0)
@@ -482,23 +485,16 @@ export function createChatView(initialBlockId = null) {
         </button>
         <div class="thread-conv-header__info">
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
-            <h2 class="thread-conv-header__title" style="margin: 0; font-size: var(--text-base);">${escapeHtml(thread.eventTitle || thread.title)}</h2>
-            <span class="thread-day-pill">${getDayCalendarIconSvg(10)} <span>${dayLabel}</span></span>
+            <h2 class="thread-conv-header__title" style="margin: 0; font-size: var(--text-base);">${escapeHtml(rawTitle)}</h2>
+            ${showDayPill ? `<span class="thread-day-pill">${getDayCalendarIconSvg(10)} <span>${dayLabel}</span></span>` : ''}
           </div>
           <span class="thread-conv-header__meta">
-            <span>${escapeHtml(thread.location || 'George Town')}</span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            <span>${escapeHtml(thread.location || 'George Town, Penang')}</span>
             <span style="opacity: 0.5;">•</span>
             <span>${totalTripTravelers} travelers</span>
           </span>
         </div>
-        ${
-          isDay1Penang
-            ? `<button type="button" class="btn-replay-banter" id="btn-trigger-banter" title="Re-simulate Tony & Wei Gang banter">
-                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                 <span>Replay Banter</span>
-               </button>`
-            : ''
-        }
       </div>
 
       <!-- Attached Consensus Mini-Poll (if thread has an active poll) -->
@@ -528,42 +524,47 @@ export function createChatView(initialBlockId = null) {
                 .join('')
         }
 
-        <!-- WanderBot In-Thread Extraction Card for Day 1 Penang -->
+        <!-- WanderBot AI Recommendation Message -->
         ${
           isDay1Penang
             ? `
-        <div class="wanderbot-proposal-wrapper" id="wanderbot-proposal-wrapper">
-          <div class="wanderbot-card">
-            <div class="wanderbot-header">
-              <div class="wanderbot-header__left">
-                <div class="wanderbot-avatar" aria-hidden="true">🤖</div>
-                <span class="wanderbot-tag">Meal Gap Detected (12:30 PM)</span>
-              </div>
-              <span class="wanderbot-time-badge">12:30 – 13:30</span>
+        <div class="chat-message chat-message--incoming chat-message--ai" id="wanderbot-proposal-wrapper">
+          <div class="user-avatar-initials user-avatar--ai" title="WanderBot AI">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2 2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+              <rect x="4" y="8" width="16" height="12" rx="4"/>
+              <circle cx="9" cy="13" r="1"/>
+              <circle cx="15" cy="13" r="1"/>
+              <line x1="9" y1="17" x2="15" y2="17"/>
+            </svg>
+          </div>
+          <div class="chat-message__bubble chat-message__bubble--ai">
+            <div class="chat-message__sender">
+              <span class="chat-message__sender-name">WanderBot</span>
+              <span class="chat-message__sender-role">AI Assistant</span>
             </div>
-            <div class="wanderbot-body">
-              <h3 class="wanderbot-venue-title">Penang Road Famous Teochew Chendul & Asam Laksa</h3>
-              <div class="wanderbot-meta-strip">
-                <span class="wanderbot-meta-item">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                  <span>8 min Grab / walk from Chew Jetty</span>
-                </span>
-                <span class="wanderbot-meta-item">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-                  <span>RM 12 / pax</span>
-                </span>
-                <span class="wanderbot-meta-item">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                  <span>Michelin Bib Gourmand</span>
-                </span>
-              </div>
-              <p class="wanderbot-description">
-                Penang Road Famous Teochew Chendul & Asam Laksa · 8 min Grab / walk from Chew Jetty
+            <div class="chat-message__text">
+              <p style="margin: 0 0 8px 0;">
+                I noticed a 4-hour open window between Chew Jetty and Penang Hill at 12:30 PM. Here's a top-rated lunch suggestion:
               </p>
+              <div class="ai-venue-card">
+                <div class="ai-venue-card__header">
+                  <strong class="ai-venue-card__title">Penang Road Famous Teochew Chendul &amp; Asam Laksa</strong>
+                  <span class="ai-venue-card__tag">Michelin Bib Gourmand</span>
+                </div>
+                <div class="ai-venue-card__meta">
+                  <span>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span>8 min Grab / walk from Chew Jetty</span>
+                  </span>
+                  <span>•</span>
+                  <span>RM 12 / pax</span>
+                </div>
+              </div>
             </div>
-            <div class="wanderbot-actions">
+            <div class="chat-message__actions">
               <button id="btn-insert-proposal" class="btn btn--sm btn--primary ${isInserted ? 'btn-insert-proposal--inserted' : ''}" type="button">
-                ${isInserted ? '✓ Inserted as Proposed Slot' : 'Insert as Proposed Slot'}
+                ${isInserted ? '✓ Inserted as Proposed Slot' : '+ Insert as Proposed Slot'}
               </button>
               ${
                 isInserted
@@ -576,6 +577,7 @@ export function createChatView(initialBlockId = null) {
                   : ''
               }
             </div>
+            <span class="chat-message__time">12:30 PM • AI Suggestion</span>
           </div>
         </div>
         `
@@ -621,13 +623,7 @@ export function createChatView(initialBlockId = null) {
       render();
     });
 
-    // Replay Banter button
-    const replayBtn = convElem.querySelector('#btn-trigger-banter');
-    if (replayBtn) {
-      replayBtn.addEventListener('click', () => {
-        executeBanterSimulation();
-      });
-    }
+    // (Replay Banter removed from webapp; managed via /remote)
 
     // Quick Reply buttons
     convElem.querySelectorAll('.btn-quick-reply').forEach((btn) => {

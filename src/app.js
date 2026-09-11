@@ -43,10 +43,10 @@ export function initApp() {
   // 2. Onboarding & Data Import Modal Component
   const onboardingModal = createOnboardingModal({
     onComplete: (type, survey) => {
-      const city = (survey?.destination || 'Tokyo').split(',')[0].trim();
+      const city = (survey?.destination || 'Penang').split(',')[0].trim();
       const newTrip = createTrip({
         title: `${city} Expedition`,
-        destination: survey?.destination || 'Tokyo, Japan',
+        destination: survey?.destination || 'Penang, Malaysia',
         startDate: survey?.startDate || '2026-10-12',
         endDate: survey?.endDate || '2026-10-14',
         totalDays: survey?.duration || 3,

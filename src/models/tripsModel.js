@@ -88,8 +88,8 @@ export function setActiveTripId(tripId) {
  * Create a new trip and set it active.
  */
 export function createTrip({
-  title = 'Tokyo Expedition',
-  destination = 'Tokyo & Kyoto, Japan',
+  title = 'Penang Food & Heritage Exploration',
+  destination = 'Penang, Malaysia',
   startDate = '2026-10-12',
   endDate = '2026-10-14',
   totalDays = 3,

@@ -36,8 +36,8 @@ export const PRESET_COVERS = [
 ];
 
 const DEFAULT_SETTINGS = {
-  title: 'Tokyo Expedition',
-  destination: 'Tokyo & Kyoto, Japan',
+  title: 'Penang Food & Heritage Exploration',
+  destination: 'Penang, Malaysia',
   startDate: '2026-10-12',
   endDate: '2026-10-14',
   totalDays: 3,
