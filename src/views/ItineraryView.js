@@ -809,7 +809,7 @@ export function createItineraryView() {
 
         // Status styling and label
         let statusClass = 'status-pill-btn--proposed';
-        let statusLabel = 'Proposed Draft';
+        let statusLabel = 'Proposed';
         if (block.status === 'confirmed') {
           statusClass = 'status-pill-btn--confirmed';
           statusLabel = 'Confirmed';
@@ -841,7 +841,8 @@ export function createItineraryView() {
         } else if (isCancelled) {
           statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
         } else {
-          statusIconSvg = '<span class="status-dot-pulse">●</span>';
+          // Clean vector clock icon for proposed / pending consensus
+          statusIconSvg = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
         }
 
         const collapsedStatusLabel = isCancelled
@@ -850,30 +851,26 @@ export function createItineraryView() {
           ? 'Weather'
           : block.status === 'confirmed'
           ? 'Confirmed'
-          : 'PROPOSED DRAFT';
+          : 'Proposed';
 
-        // 1. Proposed Draft Actions Row (Liquid Glass, no duplicate icons)
+        // 1. Proposed Slot Actions Row (Awaiting team consensus + refined Vote button, no repeated badges or confirm button)
         const proposedActionsHtml = isProposed
           ? `
           <div class="timeline-card__proposed-bar" data-proposed-actions="${block.id}">
             <div class="proposed-bar__info">
-              <span class="proposed-bar__badge">Proposed Slot</span>
-              <span class="proposed-bar__hint">Awaiting team consensus</span>
+              <span class="proposed-bar__hint">
+                <span class="proposed-bar__hint-dot"></span>
+                <span>Awaiting team consensus</span>
+              </span>
             </div>
             <div class="proposed-bar__actions">
               <button type="button" class="btn-card-vote" data-vote-proposed="${block.id}" title="Put to group consensus vote">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                   <path d="m9 12 2 2 4-4"/>
                   <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z"/>
                   <path d="M22 19H2"/>
                 </svg>
                 <span>Vote</span>
-              </button>
-              <button type="button" class="btn-card-confirm" data-confirm-proposed="${block.id}" title="Confirm this slot">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                <span>Confirm</span>
               </button>
             </div>
           </div>
