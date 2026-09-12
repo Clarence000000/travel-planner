@@ -402,6 +402,16 @@ export function initPenangSparseDay1(options = {}) {
 /**
  * Helper to add Siam Road Char Koay Teow with its closure advisory to Day 1
  */
+export function resetToGenesisState() {
+  const tripId = getActiveTripId();
+  if (tripId) {
+    try {
+      localStorage.removeItem(`travel_planner_itinerary_${tripId}`);
+    } catch (e) {}
+  }
+  return initPenangSparseDay1();
+}
+
 export function addSiamRoadAdvisoryBlock() {
   return addOrUpdateBlock({ ...PENANG_SIAM_ROAD_CKT, day: 1 });
 }

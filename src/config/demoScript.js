@@ -21,7 +21,9 @@ import {
   shiftBlockToDay,
   resolveContingencyBlock,
   getItineraryData,
+  resetToGenesisState,
 } from '../models/itineraryData.js';
+import { resetChatToGenesis } from '../models/chatData.js';
 import {
   sendRemoteEvent,
   onRemoteEvent,
@@ -75,13 +77,32 @@ export function startDay2Simulation(options = {}) {
   simulationState.isDay2Running = true;
   simulationState.day2Step = 0;
 
-  const delays = options.delays || [4000, 8000, 12000];
+  const delays = options.delays || [1500, 4500, 8000];
 
   // Step 1: Entopia Butterfly Farm (T+4s)
   scheduleTimer(() => {
     const entopia = PENANG_DAY2_BLOCKS[0];
     addOrUpdateBlock(entopia);
     simulationState.day2Step = 1;
+
+    try {
+      createChatThread({
+        blockId: entopia.id,
+        title: entopia.title,
+        category: entopia.category,
+        day: 2,
+        location: entopia.location,
+        initialMessage: 'Morning nature walk at Entopia Butterfly Farm booked for 09:30 AM.',
+      });
+      addMessageToThread('day-2-penang', {
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: 'Added Entopia by Penang Butterfly Farm to Day 2 for 09:30 AM! 🦋',
+      });
+    } catch (e) {
+      console.warn('[DemoScript] Could not update Day 2 chat:', e);
+    }
 
     addNotification({
       title: 'Tony added Entopia Butterfly Farm',
@@ -97,6 +118,7 @@ export function startDay2Simulation(options = {}) {
       title: 'Tony added Entopia by Penang Butterfly Farm to Day 2',
       unreadCount: 1,
     });
+    window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: { step: 1, block: entopia } }));
 
     options.onStep?.(1, entopia);
   }, delays[0]);
@@ -106,6 +128,25 @@ export function startDay2Simulation(options = {}) {
     const escapePark = PENANG_DAY2_BLOCKS[1];
     addOrUpdateBlock(escapePark);
     simulationState.day2Step = 2;
+
+    try {
+      createChatThread({
+        blockId: escapePark.id,
+        title: escapePark.title,
+        category: escapePark.category,
+        day: 2,
+        location: escapePark.location,
+        initialMessage: 'Day 2 afternoon gravity play & world-record tube slide added.',
+      });
+      addMessageToThread('day-2-penang', {
+        sender: 'Wei Gang',
+        avatar: 'WG',
+        isCurrentUser: false,
+        text: 'Just added Escape Adventure Park & Gravityplay right after Entopia! Ready for the gravity slides. 🧗',
+      });
+    } catch (e) {
+      console.warn('[DemoScript] Could not update Day 2 chat:', e);
+    }
 
     addNotification({
       title: 'Wei Gang added Escape Adventure Park',
@@ -121,6 +162,7 @@ export function startDay2Simulation(options = {}) {
       title: 'Wei Gang added Escape Adventure Park to Day 2',
       unreadCount: 2,
     });
+    window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: { step: 2, block: escapePark } }));
 
     options.onStep?.(2, escapePark);
   }, delays[1]);
@@ -131,6 +173,25 @@ export function startDay2Simulation(options = {}) {
     addOrUpdateBlock(borabora);
     simulationState.day2Step = 3;
     simulationState.isDay2Running = false;
+
+    try {
+      createChatThread({
+        blockId: borabora.id,
+        title: borabora.title,
+        category: borabora.category,
+        day: 2,
+        location: borabora.location,
+        initialMessage: 'Sunset drinks and beachfront dining along Batu Ferringhi.',
+      });
+      addMessageToThread('day-2-penang', {
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: 'Proposed Sunset Drinks at Bora Bora Batu Ferringhi for 6:30 PM! Great beach vibes to wrap up Day 2. 🍹',
+      });
+    } catch (e) {
+      console.warn('[DemoScript] Could not update Day 2 chat:', e);
+    }
 
     addNotification({
       title: 'Sunset Drinks Proposed',
@@ -147,6 +208,7 @@ export function startDay2Simulation(options = {}) {
       unreadCount: 3,
       completed: true,
     });
+    window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: { step: 3, block: borabora } }));
 
     options.onStep?.(3, borabora);
     options.onComplete?.();
@@ -434,6 +496,12 @@ export function resetSimulation() {
   simulationState.contingencyResolved = false;
   simulationState.contingencyMode = null;
 
+  resetToGenesisState();
+  resetChatToGenesis();
+
+// local reset completed, no circular broadcast
+
+  window.dispatchEvent(new CustomEvent('wandersync:reset_all'));
   sendRemoteEvent(REMOTE_EVENT_TYPES.RESET_DEMO, {});
   console.log('[DemoScript] Simulation reset cleanly.');
 }

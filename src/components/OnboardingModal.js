@@ -9,6 +9,7 @@
  */
 
 import { saveItineraryData, getItineraryData } from '../models/itineraryData.js';
+import { startBackgroundTripBanter } from '../models/chatData.js';
 import {
   getWishlist,
   addWishlistItem,
@@ -1091,6 +1092,108 @@ export function createOnboardingModal(options = {}) {
     }
   }
 
+  function openShareTripModal(trip, onContinue) {
+    let modal = document.querySelector('#share-trip-modal');
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.id = 'share-trip-modal';
+    modal.className = 'itinerary-modal-backdrop';
+
+    modal.innerHTML = `
+      <div class="itinerary-modal-sheet share-trip-sheet" role="dialog" aria-modal="true">
+        <div class="itinerary-modal-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="share-trip-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+              <span>Trip Created · Share with Friends</span>
+            </span>
+          </div>
+          <button type="button" class="drawer-close-btn" id="btn-close-share-modal" aria-label="Close">✕</button>
+        </div>
+
+        <h3 class="share-trip-sheet__title">Penang Expedition is Live!</h3>
+        <p class="share-trip-sheet__desc">Invite your friends to view the schedule, suggest spots, and vote on food stops together.</p>
+
+        <div class="share-link-box">
+          <label class="share-link-label">Squad Invite Link</label>
+          <div class="share-link-row">
+            <input type="text" class="share-link-input" id="share-link-input" value="https://wandersync.app/trip/penang-2026-squad" readonly />
+            <button type="button" class="btn btn--primary btn-copy-invite" id="btn-copy-invite">
+              <span>Copy</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="share-squad-group">
+          <span class="share-squad-label">Traveling Squad (3 Active)</span>
+          <div class="share-squad-avatars">
+            <div class="share-member-chip">
+              <span class="member-avatar member-avatar--cl">CL</span>
+              <div class="member-meta">
+                <strong>Clarence</strong>
+                <span class="member-role">Organizer</span>
+              </div>
+            </div>
+            <div class="share-member-chip">
+              <span class="member-avatar member-avatar--tn">TN</span>
+              <div class="member-meta">
+                <strong>Tony</strong>
+                <span class="member-status-online">● Online</span>
+              </div>
+            </div>
+            <div class="share-member-chip">
+              <span class="member-avatar member-avatar--wg">WG</span>
+              <div class="member-meta">
+                <strong>Wei Gang</strong>
+                <span class="member-status-online">● Online</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="share-sheet-footer">
+          <button type="button" class="btn btn--primary btn--full-width" id="btn-proceed-timeline">
+            <span>View Timeline Schedule →</span>
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeBtn = modal.querySelector('#btn-close-share-modal');
+    const proceedBtn = modal.querySelector('#btn-proceed-timeline');
+    const copyBtn = modal.querySelector('#btn-copy-invite');
+    const inputEl = modal.querySelector('#share-link-input');
+
+    const handleDismiss = () => {
+      modal.remove();
+      if (typeof onContinue === 'function') onContinue();
+    };
+
+    closeBtn.addEventListener('click', handleDismiss);
+    proceedBtn.addEventListener('click', handleDismiss);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) handleDismiss();
+    });
+
+    copyBtn.addEventListener('click', () => {
+      try {
+        navigator.clipboard.writeText(inputEl.value);
+      } catch (err) {
+        inputEl.select();
+        document.execCommand('copy');
+      }
+      copyBtn.innerHTML = '<span>✓ Copied!</span>';
+      copyBtn.style.background = '#16A34A';
+      setTimeout(() => {
+        copyBtn.innerHTML = '<span>Copy</span>';
+        copyBtn.style.background = '';
+      }, 2500);
+    });
+  }
+
   // ── Build Itinerary Action ───────────────────────────────────
   function buildPenangItinerary() {
     survey.destination = 'Penang, Malaysia';
@@ -1248,10 +1351,14 @@ export function createOnboardingModal(options = {}) {
       } catch (e) {}
     }
 
-    // 7. Open #itinerary view
-    window.location.hash = '#itinerary';
-    setActiveTab('itinerary');
-    showToastNotice('Penang itinerary initialized! Chew Jetty & Penang Hill anchors locked.');
+    // Trigger initial friendly squad banter in background
+    startBackgroundTripBanter();
+
+    // 7. Display Share Trip Modal and transition to timeline
+    openShareTripModal(activeTrip, () => {
+      window.location.hash = '#itinerary';
+      setActiveTab('itinerary');
+    });
 
     // 8. Invoke onComplete if provided, ensuring 2 blocks are preserved
     if (typeof onComplete === 'function') {

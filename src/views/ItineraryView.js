@@ -457,6 +457,8 @@ export function createItineraryView() {
       transitMode: 'GrabCar (15 min)',
       requirements: ['Cash Only', 'Expect 30-45m Queue'],
       advisory: 'Siam Road Char Koay Teow is closed on Mondays. Consider swapping with Day 3.',
+      fallback: 'Sin Guat Keat Hokkien Mee (Indoor Stalls)',
+      fallbackReason: 'closed',
       notes: 'Michelin Bib Gourmand charcoal-fried char koay teow with duck egg and cockles.',
       rating: 4.9,
     };
@@ -978,6 +980,8 @@ export function createItineraryView() {
                 <div class="timeline-card__body-col">
                   <div class="timeline-card__title-row">
                     <h3 class="timeline-card__title">${block.title}</h3>
+                    ${hasAdvisory ? `<span class="timeline-card__advisory-pill" title="Closed on Mondays: Tap to view fallback">⚠️ Closed Mondays</span>` : ''}
+                    ${weatherAlertActive && isPenangHill && block.status !== 'cancelled' ? `<button type="button" class="timeline-card__weather-pill" data-resolve-contingency="${block.id}" title="Heavy Monsoon Downpour: Tap to resolve contingency">🌧️ Monsoon Alert</button>` : ''}
                   </div>
                   ${block.location
               ? `
@@ -991,10 +995,6 @@ export function createItineraryView() {
                   `
                       : ''
                   }
-
-                  ${weatherAlertBannerHtml}
-                  ${advisoryHtml}
-                  ${proposedActionsHtml}
                 </div>
 
                 <!-- Right Edge Controls -->
@@ -1152,32 +1152,45 @@ export function createItineraryView() {
               : ''
             }
 
-                  ${block.fallback
+                  ${(block.fallback || block.advisory)
               ? (() => {
                 let reasonLabel = 'Backup Option';
                 let reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
-                if (block.fallbackReason === 'weather') {
-                  reasonLabel = 'Rain / Inclement Weather';
+                const isDisruptedWeather = weatherAlertActive && isPenangHill;
+                if (block.fallbackReason === 'weather' || isDisruptedWeather) {
+                  reasonLabel = isDisruptedWeather ? '🌧️ Monsoon Downpour Disruption' : 'Rain / Inclement Weather';
                   reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 16.58A5 5 0 0 0 18 7h-1.26A8 8 0 1 0 4 15.25"/><path d="M8 19v2"/><path d="M8 13v2"/><path d="M12 21v2"/><path d="M12 15v2"/><path d="M16 19v2"/><path d="M16 13v2"/></svg>';
                 } else if (block.fallbackReason === 'crowd') {
                   reasonLabel = 'Crowded / Long Queue';
                   reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>';
-                } else if (block.fallbackReason === 'closed') {
-                  reasonLabel = 'Closed / Sold Out';
+                } else if (block.fallbackReason === 'closed' || hasAdvisory) {
+                  reasonLabel = '⚠️ Closed on Mondays';
                   reasonIcon = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>';
                 }
 
                 return `
-                          <div class="contingency-card">
+                          <div class="contingency-card ${isDisruptedWeather ? 'contingency-card--weather-active' : ''}">
                             <div class="contingency-card__header">
                               <span class="contingency-card__badge contingency-card__badge--${block.fallbackReason || 'default'}">
                                 ${reasonIcon}
                                 <span>${reasonLabel}</span>
                               </span>
-                              <button type="button" class="contingency-card__swap-btn" data-swap-fallback="${block.id}" title="Swap active event with this backup">
-                                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
-                                <span>Swap to Backup</span>
-                              </button>
+                              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                                <button type="button" class="contingency-card__swap-btn" data-swap-fallback="${block.id}" title="Swap active event with this backup">
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"></path><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+                                  <span>Swap to Backup</span>
+                                </button>
+                                ${hasAdvisory ? `
+                                  <button type="button" class="contingency-card__shift-btn btn-shift-day3" data-shift-day3="${block.id}" title="Shift Siam Road CKT to Day 3 (Wednesday)">
+                                    <span>Shift to Day 3 · Wed</span>
+                                  </button>
+                                ` : ''}
+                                ${isDisruptedWeather ? `
+                                  <button type="button" class="contingency-card__options-btn btn-resolve-contingency" data-resolve-contingency="${block.id}" title="Open 3-Way Contingency Modal">
+                                    <span>3-Way Options ▾</span>
+                                  </button>
+                                ` : ''}
+                              </div>
                             </div>
                             <div class="contingency-card__body">
                               <span class="contingency-card__title">${block.fallback}</span>
@@ -1221,7 +1234,6 @@ export function createItineraryView() {
                   </div>
                 </div>
               </div>
-              ${proposedActionsHtml}
             </article>
           `;
         }
@@ -1231,7 +1243,16 @@ export function createItineraryView() {
         // 4. Timeline Gap Indicator Card Detection (> 2 hours between consecutive blocks)
         let gapCardHtml = '';
         const nextBlock = blocks[index + 1];
-        if (nextBlock) {
+        const hasMealOnDay = blocks.some(
+          (b) =>
+            b.category === 'meal' ||
+            b.category === 'food' ||
+            b.id.includes('chendul') ||
+            b.id.includes('siam') ||
+            (b.title && (b.title.includes('Chendul') || b.title.includes('Char Koay Teow')))
+        );
+
+        if (nextBlock && !hasMealOnDay) {
           const gapMinutes = timeToMinutes(nextBlock.startTime) - timeToMinutes(block.endTime);
           if (gapMinutes >= 120) {
             const gapHours = Math.max(1, Math.round(gapMinutes / 60));
@@ -2041,7 +2062,7 @@ export function createItineraryView() {
   window.TravelApp.triggerWeatherAlert = () => {
     weatherAlertActive = true;
     render();
-    showScheduleToast('🌧️ Monsoon Weather Alert triggered on Penang Hill');
+    // alert suppressed for remote presentation
   };
 
   // Custom Window Event Listeners
@@ -2061,6 +2082,21 @@ export function createItineraryView() {
     render();
   };
   window.addEventListener('wandersync:day2_activity', handleDay2Activity);
+
+  const handleResetAll = () => {
+    currentDay = 1;
+    day2HasActivity = false;
+    weatherAlertActive = false;
+    expandedCardIds.clear();
+    render();
+  };
+  window.addEventListener('wandersync:reset_all', handleResetAll);
+
+  const handleProposalInserted = () => {
+    render();
+  };
+  window.addEventListener('wandersync:proposal_inserted', handleProposalInserted);
+  window.addEventListener('wandersync:vote_confirmed', handleProposalInserted);
 
   const handleWeatherAlert = () => {
     weatherAlertActive = true;
@@ -2136,9 +2172,13 @@ export function createItineraryView() {
       ) {
         weatherAlertActive = true;
         render();
-        showScheduleToast('⚠️ Remote: Monsoon Weather Alert triggered on Penang Hill');
+        // remote toast suppressed
       } else if (data.type === 'CLEAR_WEATHER') {
         weatherAlertActive = false;
+        render();
+      } else if (data.type === 'RESET_ALL' || data.type === 'RESET_DEMO') {
+        handleResetAll();
+      } else if (data.type === 'INSERT_PROPOSAL' || data.type === 'VOTE_CONSENSUS_COMPLETE') {
         render();
       } else if (data.type === 'DAY2_ACTIVITY' || data.type === 'AUTONOMOUS_ADD') {
         day2HasActivity = true;
@@ -2186,6 +2226,7 @@ export function createItineraryView() {
       window.removeEventListener('open-propose-activity', handleOpenPropose);
       window.removeEventListener('trip-settings-updated', handleSettingsUpdate);
       window.removeEventListener('wandersync:day2_activity', handleDay2Activity);
+      window.removeEventListener('wandersync:reset_all', handleResetAll);
       window.removeEventListener('wandersync:weather_alert', handleWeatherAlert);
       window.removeEventListener('wandersync:clear_weather', handleClearWeather);
       window.removeEventListener('wandersync:insert_chendul', handleInsertChendul);

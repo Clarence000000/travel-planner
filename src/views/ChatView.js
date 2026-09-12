@@ -17,6 +17,9 @@ import {
   voteInPoll,
   createChatThread,
   saveChatThreads,
+  attachPollToThread,
+  removePollFromThread,
+  resetChatToGenesis,
   THREAD_CATEGORIES,
   getCategoryConfig,
   normalizeCategory,
@@ -26,6 +29,7 @@ import {
   getDayCalendarIconSvg,
   getThreadDay,
 } from '../models/chatData.js';
+import { confirmProposedBlock } from '../models/itineraryData.js';
 import { enableDragScroll } from '../utils/dragScroll.js';
 import { getTripSettings } from '../models/tripSettings.js';
 import { getActiveTrip, subscribeTrips } from '../models/tripsModel.js';
@@ -678,9 +682,13 @@ export function createChatView(initialBlockId = null) {
       btn.addEventListener('click', () => {
         const text = btn.getAttribute('data-reply');
         if (text) {
-          addMessageToThread(blockId, text);
-          render();
-          scrollToBottom();
+          if (text.includes('Vote on this') || text.includes('group vote')) {
+            runConsensusVoteSequence(blockId);
+          } else {
+            addMessageToThread(blockId, text);
+            render();
+            scrollToBottom();
+          }
         }
       });
     });
@@ -708,6 +716,15 @@ export function createChatView(initialBlockId = null) {
           render();
         });
       });
+
+      const closePollBtn = convElem.querySelector('.btn-close-poll');
+      if (closePollBtn) {
+        closePollBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          removePollFromThread(blockId);
+          render();
+        });
+      }
     }
 
     // WanderBot Insert Proposal button handler
@@ -748,18 +765,25 @@ export function createChatView(initialBlockId = null) {
         category: 'food',
         cost: 'RM 12 / pax',
         status: 'proposed',
-        voteCount: 0,
-        totalVotes: 2,
-        votes: [],
         notes: 'Iconic shaved ice dessert with pandan jelly, coconut milk, and gula melaka. Michelin Bib Gourmand selected.',
-        grabTime: '8 min Grab / walk from Chew Jetty',
+        grabTime: '8 min Grab from Chew Jetty',
         transitToNextMinutes: 25,
         transitMode: 'Transit (25 min) to Penang Hill',
         requirements: [],
       });
     }
 
-    showDashToast('Inserted Penang Road Teochew Chendul into Day 1 as Proposed', 'success');
+    // Attach consensus poll directly to day-1-penang thread
+    attachPollToThread('day-1-penang', {
+      id: 'poll-chendul',
+      question: 'Lock Penang Road Famous Teochew Chendul into Day 1 schedule?',
+      status: 'active',
+      userVote: null,
+      options: [
+        { id: 'opt-yes', label: 'Yes, lock into schedule', votes: 0 },
+        { id: 'opt-no', label: 'Explore other options', votes: 0 },
+      ],
+    });
 
     if (broadcast) {
       remoteSync.broadcast('INSERT_PROPOSAL', {
@@ -792,7 +816,7 @@ export function createChatView(initialBlockId = null) {
       return;
     }
 
-    // Reset thread to just Clarence's intro message
+    // Reset thread to just Clarence intro message to prevent duplicates
     const threads = getChatThreads();
     const d1Thread = threads.find((t) => t.blockId === 'day-1-penang');
     if (d1Thread) {
@@ -802,7 +826,8 @@ export function createChatView(initialBlockId = null) {
           sender: 'Clarence (You)',
           avatar: 'CL',
           text: 'Starting our morning at Chew Jetty! Plan is to explore the clan jetties before heading up to Penang Hill later in the afternoon.',
-          time: '09:15 AM',
+          date: 'Today',
+          time: 'Today, 09:15 AM',
           isCurrentUser: true,
         },
       ];
@@ -814,7 +839,7 @@ export function createChatView(initialBlockId = null) {
     const existingProposal = container.querySelector('#wanderbot-proposal-wrapper');
     if (existingProposal) existingProposal.style.display = 'none';
 
-    // Step 1: Tony typing indicator
+    // Step 1: Tony typing indicator (1800ms natural delay)
     const tonyTyping = document.createElement('div');
     tonyTyping.className = 'chat-typing-bubble';
     tonyTyping.innerHTML = `
@@ -828,19 +853,20 @@ export function createChatView(initialBlockId = null) {
 
     setTimeout(() => {
       tonyTyping.remove();
-      // Append Tony message
-      addMessageToThread(
-        'day-1-penang',
-        'Guys, what are we eating after Chew Jetty? Anyone craving Char Koay Teow or Chendul?',
-        'Tony'
-      );
+      // Append Tony message with proper avatar & non-current-user flag
+      addMessageToThread('day-1-penang', {
+        text: 'Guys, what are we eating after Chew Jetty? Anyone craving Char Koay Teow or Chendul?',
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+      });
       render();
 
       const feed2 = container.querySelector('#thread-chat-feed');
       const prop2 = container.querySelector('#wanderbot-proposal-wrapper');
       if (prop2) prop2.style.display = 'none';
 
-      // Step 2: Wei Gang typing indicator
+      // Step 2: Wei Gang typing indicator (2000ms delay)
       const wgTyping = document.createElement('div');
       wgTyping.className = 'chat-typing-bubble';
       wgTyping.innerHTML = `
@@ -854,19 +880,22 @@ export function createChatView(initialBlockId = null) {
 
       setTimeout(() => {
         wgTyping.remove();
-        // Append Wei Gang message
-        addMessageToThread(
-          'day-1-penang',
-          'Lebuh Keng Kwee Famous Teochew Chendul is a must-try.',
-          'Wei Gang'
-        );
+        const currentThread2 = getThreadById('day-1-penang');
+        if (!currentThread2?.messages?.some(m => m.text && m.text.includes('Lebuh Keng Kwee'))) {
+          addMessageToThread('day-1-penang', {
+            text: 'Lebuh Keng Kwee Famous Teochew Chendul is a must-try.',
+            sender: 'Wei Gang',
+            avatar: 'WG',
+            isCurrentUser: false,
+          });
+        }
         render();
 
         const feed3 = container.querySelector('#thread-chat-feed');
         const prop3 = container.querySelector('#wanderbot-proposal-wrapper');
         if (prop3) prop3.style.display = 'none';
 
-        // Step 3: WanderBot analyzing indicator
+        // Step 3: WanderBot analyzing indicator (2200ms delay)
         const botTyping = document.createElement('div');
         botTyping.className = 'chat-typing-bubble';
         botTyping.style.background = 'rgba(254, 243, 199, 0.9)';
@@ -882,17 +911,93 @@ export function createChatView(initialBlockId = null) {
 
         setTimeout(() => {
           botTyping.remove();
-          render();
-          const card = container.querySelector('#wanderbot-proposal-wrapper');
-          if (card) {
-            card.style.display = 'block';
-            card.scrollIntoView({ behavior: 'smooth', block: 'end' });
+          const currentThread3 = getThreadById('day-1-penang');
+          if (!currentThread3?.messages?.some(m => m.text && m.text.includes('open window between Chew Jetty'))) {
+            addMessageToThread('day-1-penang', {
+              sender: 'WanderBot',
+              avatar: 'WB',
+              isAi: true,
+              isCurrentUser: false,
+              type: 'ai_proposal',
+              text: "I noticed a 4-hour open window between Chew Jetty and Penang Hill at 12:30 PM. Here's a top-rated lunch suggestion:",
+              proposal: {
+                title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+                tag: 'Michelin Bib Gourmand',
+                distance: '8 min Grab / walk from Chew Jetty',
+                price: 'RM 12 / pax',
+                slotId: 'd1-chendul',
+              },
+            });
           }
+          render();
+          scrollToBottom();
           isSimulatingBanter = false;
           remoteSync.broadcast('CHAT_BANTER_COMPLETE', { success: true });
-        }, 800);
-      }, 900);
-    }, 800);
+        }, 2200);
+      }, 2000);
+    }, 1800);
+  }
+
+  // ──────────────── Consensus Voting Simulation (Chat Poll) ────────────────
+
+  function runConsensusVoteSequence(blockId = 'd1-chendul') {
+    let thread = getThreadById('day-1-penang');
+    if (!thread) return;
+
+    if (!thread.poll) {
+      attachPollToThread('day-1-penang', {
+        id: 'poll-chendul',
+        question: 'Lock Penang Road Famous Teochew Chendul into Day 1 schedule?',
+        status: 'active',
+        userVote: null,
+        options: [
+          { id: 'opt-yes', label: 'Yes, lock into schedule', votes: 0 },
+          { id: 'opt-no', label: 'Explore other options', votes: 0 },
+        ],
+      });
+    }
+
+    render();
+    scrollToBottom();
+
+    // Step 1: Wei Gang votes YES (50% progress)
+    setTimeout(() => {
+      const t1 = getThreadById('day-1-penang');
+      if (t1 && t1.poll && t1.poll.options) {
+        t1.poll.options[0].votes = 1;
+        saveChatThreads(getChatThreads());
+        render();
+        scrollToBottom();
+      }
+
+      // Step 2: Tony votes YES (100% consensus reached!)
+      setTimeout(() => {
+        const t2 = getThreadById('day-1-penang');
+        if (t2 && t2.poll && t2.poll.options) {
+          t2.poll.options[0].votes = 2;
+          t2.poll.status = 'closed';
+          saveChatThreads(getChatThreads());
+
+          // Confirm the block in the itinerary
+          confirmProposedBlock('d1-chendul');
+          confirmProposedBlock('penang-chendul-gap');
+
+          window.dispatchEvent(
+            new CustomEvent('wandersync:vote_confirmed', {
+              detail: { blockId: 'd1-chendul' },
+            })
+          );
+
+          render();
+          scrollToBottom();
+
+          remoteSync.broadcast('VOTE_CONSENSUS_COMPLETE', {
+            blockId: 'd1-chendul',
+            status: 'confirmed',
+          });
+        }
+      }, 1600);
+    }, 1200);
   }
 
   function scrollToBottom() {
@@ -909,8 +1014,6 @@ export function createChatView(initialBlockId = null) {
       }
     }, 50);
   }
-
-  // ──────────────── 3. New Discussion Thread Modal ────────────────
 
   function openNewThreadModal(defaultCategory = 'general') {
     const backdrop = document.createElement('div');
@@ -1100,9 +1203,15 @@ export function createChatView(initialBlockId = null) {
                    </span>`
             }
           </div>
-          <span class="poll-card__meta">
-            ${totalVotes} vote${totalVotes !== 1 ? 's' : ''} ${isClosed ? 'locked in' : 'cast'}
-          </span>
+          <div class="poll-card__actions-top">
+            <span class="poll-card__meta">
+              ${totalVotes} vote${totalVotes !== 1 ? 's' : ''} ${isClosed ? 'locked in' : 'cast'}
+            </span>
+            <button type="button" class="btn-close-poll" data-dismiss-poll="${activeThreadId || 'day-1-penang'}" title="Close & Dismiss Poll">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              <span>Close Poll</span>
+            </button>
+          </div>
         </div>
 
         <h3 class="poll-card__question">${escapeHtml(poll.question)}</h3>
@@ -1173,10 +1282,40 @@ export function createChatView(initialBlockId = null) {
     remoteSync.subscribe('INSERT_PROPOSAL', () => {
       insertProposedSlot(false);
     }),
+    remoteSync.subscribe('VOTE_CONSENSUS', (payload) => {
+      activeThreadId = 'day-1-penang';
+      render();
+      runConsensusVoteSequence(payload?.blockId || 'd1-chendul');
+    }),
+    remoteSync.subscribe('DAY2_ACTIVITY', () => {
+      render();
+      if (activeThreadId === 'day-2-penang') {
+        const feed = container.querySelector('.chat-feed');
+        if (feed) feed.scrollTop = feed.scrollHeight;
+      }
+    }),
     remoteSync.subscribe('RESET_ALL', () => {
+      activeThreadId = null;
+      isSimulatingBanter = false;
       render();
     }),
   ];
+
+  const handleVoteConsensus = (e) => {
+    activeThreadId = 'day-1-penang';
+    render();
+    runConsensusVoteSequence(e?.detail?.blockId || 'd1-chendul');
+  };
+  window.addEventListener('wandersync:vote_consensus', handleVoteConsensus);
+
+  const handleDay2Activity = () => {
+    render();
+    if (activeThreadId === 'day-2-penang') {
+      const feed = container.querySelector('.chat-feed');
+      if (feed) feed.scrollTop = feed.scrollHeight;
+    }
+  };
+  window.addEventListener('wandersync:day2_activity', handleDay2Activity);
 
   render();
   return {
@@ -1184,6 +1323,8 @@ export function createChatView(initialBlockId = null) {
     destroy: () => {
       container.classList.remove('chat-view--in-conversation');
       unsubs.forEach((u) => u && u());
+      window.removeEventListener('wandersync:vote_consensus', handleVoteConsensus);
+      window.removeEventListener('wandersync:day2_activity', handleDay2Activity);
     },
   };
 }

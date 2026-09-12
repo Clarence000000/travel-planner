@@ -1,6 +1,8 @@
 import { remoteSync } from './utils/remoteSync.js';
 import { showDashToast } from './views/ChatView.js';
-import { getItineraryData, addItineraryBlock, updateItineraryBlock } from './models/itineraryData.js';
+import { getItineraryData, addItineraryBlock, updateItineraryBlock, resetToGenesisState } from './models/itineraryData.js';
+import { resetChatToGenesis, attachPollToThread, addMessageToThread, createChatThread } from './models/chatData.js';
+import * as DemoEngine from './config/demoScript.js';
 /**
  * Mobile Travel Planner App
  * Features atmospheric sticky cat photo banner, clean slide-out sidebar,
@@ -143,7 +145,17 @@ export function initApp() {
   });
 
   // 6. View Switcher Logic
+  let currentViewInstance = null;
+
   function renderView(activeTab) {
+    if (currentViewInstance && typeof currentViewInstance.destroy === 'function') {
+      try {
+        currentViewInstance.destroy();
+      } catch (e) {
+        console.error('[App] Error destroying previous view:', e);
+      }
+      currentViewInstance = null;
+    }
     const activeTrip = getActiveTrip();
     const currentHash = window.location.hash.replace(/^#/, '');
 
@@ -193,6 +205,7 @@ export function initApp() {
         view = createItineraryView();
     }
 
+    currentViewInstance = view;
     viewContainer.appendChild(view.element);
     ensureBannerMenuButton();
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -232,7 +245,6 @@ export function initApp() {
   });
 
   remoteSync.subscribe('POPULATE_DAY1_ANCHORS', () => {
-    setActiveTab('itinerary');
     const items = getItineraryData();
     if (!items.some(i => i.id === 'd1-chew-jetty')) {
       addItineraryBlock({
@@ -262,12 +274,52 @@ export function initApp() {
         notes: 'Panoramic views across Penang island and canopy rainforest walk.',
       });
     }
-    showDashToast('Day 1 Anchors populated: Chew Jetty & Penang Hill', 'success');
+    remoteSync.broadcast('STATUS_ACK', { phase: 'GENESIS_POPULATED', message: 'Day 1 Chew Jetty & Penang Hill anchors locked.' });
+  });
+
+  remoteSync.subscribe('INSERT_PROPOSAL', () => {
+    const items = getItineraryData();
+    if (!items.some(i => i.id === 'd1-chendul')) {
+      addItineraryBlock({
+        id: 'd1-chendul',
+        day: 1,
+        startTime: '12:30',
+        endTime: '13:30',
+        title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+        location: '492, Lebuh Keng Kwee, George Town',
+        category: 'food',
+        cost: 'RM 12 / pax',
+        status: 'proposed',
+        notes: 'Iconic shaved ice dessert with pandan jelly, coconut milk, and gula melaka. Michelin Bib Gourmand selected.',
+        grabTime: '8 min Grab from Chew Jetty',
+        transitToNextMinutes: 25,
+        transitMode: 'Transit (25 min) to Penang Hill',
+        requirements: [],
+      });
+    }
+    attachPollToThread('day-1-penang', {
+      id: 'poll-chendul',
+      question: 'Lock Penang Road Famous Teochew Chendul into Day 1 schedule?',
+      status: 'active',
+      userVote: null,
+      options: [
+        { id: 'opt-yes', label: 'Yes, lock into schedule', votes: 0 },
+        { id: 'opt-no', label: 'Explore other options', votes: 0 },
+      ],
+    });
+    window.dispatchEvent(new CustomEvent('wandersync:proposal_inserted', { detail: { blockId: 'd1-chendul' } }));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'PROPOSAL_INSERTED', message: 'Chendul inserted into Day 1 schedule as proposed.' });
+    const cur = getActiveTab();
+    if (cur === 'itinerary' || cur === 'chat') {
+      renderView({ id: cur });
+    }
   });
 
   remoteSync.subscribe('TRIGGER_DAY2_WORKER', () => {
-    showDashToast('Act 2: Ambient Background Worker active on Day 2', 'info');
-    window.dispatchEvent(new CustomEvent('wandersync:day2_worker', { detail: { active: true } }));
+    // Ambient background worker: no presenter-facing toast!
+    DemoEngine.startDay2Simulation({ delays: [2000, 5500, 9000] });
+    window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: { active: true } }));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'DAY2_WORKER_ACTIVE', message: 'Day 2 ambient background simulation running.' });
   });
 
   remoteSync.subscribe('ADD_ENTOPIA_DAY2', () => {
@@ -286,47 +338,81 @@ export function initApp() {
         notes: 'Living sanctuary with over 15,000 free-flying butterflies.',
       });
     }
-    showDashToast('Day 2: Entopia Butterfly Sanctuary added in background', 'success');
+    try {
+      createChatThread({
+        blockId: 'd2-entopia',
+        title: 'Entopia by Penang Butterfly Farm',
+        category: 'location',
+        day: 2,
+        location: 'Jalan Teluk Bahang',
+        initialMessage: 'Morning nature walk at Entopia Butterfly Farm booked for 10:00 AM.',
+      });
+      addMessageToThread('day-2-penang', {
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: 'Added Entopia by Penang Butterfly Farm to Day 2 for 10:00 AM! 🦋',
+      });
+    } catch (e) {}
+    window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: { active: true } }));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'ENTOPIA_ADDED', message: 'Entopia added to Day 2.' });
+  });
+
+  remoteSync.subscribe('DAY2_ACTIVITY', (payload) => {
+    window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: payload }));
   });
 
   remoteSync.subscribe('TRIGGER_CHAT_BANTER', () => {
     setActiveTab('chat');
-    showDashToast('Act 3: Incoming banter from Tony & Wei Gang...', 'info');
+    remoteSync.broadcast('STATUS_ACK', { phase: 'CHAT_BANTER_STARTED', message: 'Chat banter active in Day 1 thread.' });
+  });
+
+  remoteSync.subscribe('VOTE_CONSENSUS', (payload) => {
+    setActiveTab('chat');
+    window.dispatchEvent(new CustomEvent('wandersync:vote_consensus', { detail: payload }));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'VOTING_ACTIVE', message: 'Consensus voting sequence running.' });
   });
 
   remoteSync.subscribe('START_MINI_POLL', () => {
     setActiveTab('chat');
-    showDashToast('Act 4: Group Consensus Poll launched', 'info');
+    remoteSync.broadcast('STATUS_ACK', { phase: 'POLL_ACTIVE', message: 'Consensus poll active.' });
   });
 
   remoteSync.subscribe('TRIGGER_SIAM_ROAD_ADVISORY', () => {
-    showDashToast('⚠️ Schedule Conflict Advisory: Siam Road CKT is closed on Mondays!', 'warning');
     window.dispatchEvent(new CustomEvent('wandersync:siam_road_advisory'));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'ADVISORY_ACTIVE', message: 'Siam Road Monday closure advisory active.' });
   });
 
   remoteSync.subscribe('TRIGGER_MONSOON', () => {
-    showDashToast('⛈️ Tropical Monsoon Alert: Heavy rain over Penang Island!', 'warning');
     window.dispatchEvent(new CustomEvent('wandersync:monsoon_alert', { detail: { alert: true } }));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'MONSOON_ACTIVE', message: 'Tropical monsoon alert active on Penang Hill.' });
   });
 
   remoteSync.subscribe('CONTINGENCY_1', () => {
-    showDashToast('Contingency 1: Switched to Indoor Fallback (The Top Komtar)', 'success');
     window.dispatchEvent(new CustomEvent('wandersync:contingency_1'));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'CONTINGENCY_1_APPLIED', message: 'Swapped to Indoor Fallback (The Top Komtar).' });
   });
 
   remoteSync.subscribe('CONTINGENCY_2', () => {
-    showDashToast('Contingency 2: Free-Time Pocket inserted at ChinaHouse Cafe', 'success');
     window.dispatchEvent(new CustomEvent('wandersync:contingency_2'));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'CONTINGENCY_2_APPLIED', message: 'Free-time pocket inserted at ChinaHouse Cafe.' });
   });
 
   remoteSync.subscribe('CONTINGENCY_3', () => {
-    showDashToast('Contingency 3: Chronological Reflow applied across Day 1 & Day 2', 'success');
     window.dispatchEvent(new CustomEvent('wandersync:contingency_3'));
+    remoteSync.broadcast('STATUS_ACK', { phase: 'CONTINGENCY_3_APPLIED', message: 'Chronological reflow applied.' });
   });
 
   remoteSync.subscribe('RESET_ALL', () => {
-    showDashToast('Demo Reset: Slate restored', 'info');
+    DemoEngine.resetSimulation();
+    resetToGenesisState();
+    resetChatToGenesis();
     window.dispatchEvent(new CustomEvent('wandersync:reset_all'));
+    remoteSync.broadcast('RESET_COMPLETE', { success: true, message: 'All demo state restored to Genesis zero-state.' });
+    const cur = getActiveTab();
+    if (cur === 'itinerary' || cur === 'chat') {
+      renderView({ id: cur });
+    }
   });
 
   // Expose clean helper API for testing and remote simulation

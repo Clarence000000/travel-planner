@@ -120,7 +120,7 @@ export function getThreadDay(thread) {
     if (!isNaN(d) && d > 0) return d;
   }
   if (typeof thread.blockId === 'string') {
-    const m = thread.blockId.match(/^d(\d+)-/);
+    const m = thread.blockId.match(/(?:^|[-_])(?:d|day-?)(\d+)(?:[-_]|$)/i);
     if (m) return parseInt(m[1], 10);
   }
   try {
@@ -157,8 +157,8 @@ export function getInitialThreadsForTrip(activeTrip) {
             sender: 'Wei Gang',
             avatar: 'WG',
             text: 'Welcome to Penang! Use this general thread to chat, coordinate schedule ideas, and discuss bookings.',
-            date: 'Yesterday',
-            time: 'Yesterday, 09:00 AM',
+            date: 'Today',
+            time: 'Today, 09:00 AM',
             isCurrentUser: false,
           },
         ],
@@ -178,45 +178,9 @@ export function getInitialThreadsForTrip(activeTrip) {
             sender: 'Clarence (You)',
             avatar: 'CL',
             text: 'Starting our morning at Chew Jetty! Plan is to explore the clan jetties before heading up to Penang Hill later in the afternoon.',
-            date: 'Yesterday',
-            time: 'Yesterday, 09:15 AM',
+            date: 'Today',
+            time: 'Today, 09:15 AM',
             isCurrentUser: true,
-          },
-          {
-            id: 'msg-d1-tony',
-            sender: 'Tony',
-            avatar: 'TN',
-            text: 'Guys, what are we eating after Chew Jetty? Anyone craving Char Koay Teow or Chendul?',
-            date: 'Yesterday',
-            time: 'Yesterday, 12:15 PM',
-            isCurrentUser: false,
-          },
-          {
-            id: 'msg-d1-weigang',
-            sender: 'Wei Gang',
-            avatar: 'WG',
-            text: 'Lebuh Keng Kwee Famous Teochew Chendul is a must-try.',
-            date: 'Yesterday',
-            time: 'Yesterday, 12:18 PM',
-            isCurrentUser: false,
-          },
-          {
-            id: 'msg-d1-wanderbot-proposal',
-            sender: 'WanderBot',
-            avatar: 'WB',
-            isAi: true,
-            type: 'ai_proposal',
-            text: "I noticed a 4-hour open window between Chew Jetty and Penang Hill at 12:30 PM. Here's a top-rated lunch suggestion:",
-            proposal: {
-              title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
-              tag: 'Michelin Bib Gourmand',
-              distance: '8 min Grab / walk from Chew Jetty',
-              price: 'RM 12 / pax',
-              slotId: 'd1-chendul',
-            },
-            date: 'Yesterday',
-            time: 'Yesterday, 12:30 PM • AI Suggestion',
-            isCurrentUser: false,
           },
         ],
       },
@@ -235,8 +199,8 @@ export function getInitialThreadsForTrip(activeTrip) {
             sender: 'Tony',
             avatar: 'TN',
             text: 'Morning nature day out at Entopia Butterfly Sanctuary and Escape Park, then sunset drinks along Batu Ferringhi beach!',
-            date: 'Yesterday',
-            time: 'Yesterday, 10:00 AM',
+            date: 'Today',
+            time: 'Today, 10:00 AM',
             isCurrentUser: false,
           },
         ],
@@ -269,8 +233,8 @@ export function getInitialThreadsForTrip(activeTrip) {
           sender: 'WanderBot',
           avatar: 'WB',
           text: `Welcome to ${tripCity}! Use this general thread to chat, coordinate schedule ideas, and discuss bookings.`,
-          date: 'Yesterday',
-          time: 'Yesterday, 09:00 AM',
+          date: 'Today',
+          time: 'Today, 09:00 AM',
           isCurrentUser: false,
         },
       ],
@@ -290,8 +254,8 @@ export function getInitialThreadsForTrip(activeTrip) {
           sender: 'You',
           avatar: 'YO',
           text: `Excited for Day 1 exploring ${tripCity}!`,
-          date: 'Yesterday',
-          time: 'Yesterday, 09:30 AM',
+          date: 'Today',
+          time: 'Today, 09:30 AM',
           isCurrentUser: true,
         },
       ],
@@ -332,30 +296,14 @@ export function getChatThreads() {
                 } else if (time && time.startsWith('Today')) {
                   date = 'Today';
                 } else {
-                  date = 'Yesterday';
+                  date = 'Today';
                   if (time && !time.includes(',')) {
-                    time = `Yesterday, ${time}`;
+                    time = `Today, ${time}`;
                   }
                 }
               }
-              return { ...m, date, time: time || 'Yesterday, 12:00 PM' };
+              return { ...m, date, time: time || 'Today, 12:00 PM' };
             });
-          }
-
-          // If this is day-1-penang and missing AI proposal message, add it
-          if (t.blockId === 'day-1-penang' && !t.messages.some((m) => m.isAi || m.type === 'ai_proposal')) {
-            const penangInit = initial.find((x) => x.blockId === 'day-1-penang');
-            const aiMsg = penangInit?.messages.find((m) => m.isAi);
-            if (aiMsg) {
-              const msgs = [...t.messages];
-              const wgIdx = msgs.findIndex((m) => m.id === 'msg-d1-weigang');
-              if (wgIdx !== -1) {
-                msgs.splice(wgIdx + 1, 0, aiMsg);
-              } else {
-                msgs.push(aiMsg);
-              }
-              t.messages = msgs;
-            }
           }
 
           return {
@@ -436,6 +384,10 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
 
   if (typeof textOrMsg === 'string') {
     rawText = textOrMsg;
+    if (typeof metadata === 'string') {
+      senderName = metadata;
+      metadata = { sender: metadata };
+    }
   } else if (textOrMsg && typeof textOrMsg === 'object') {
     rawText = textOrMsg.text || '';
     if (textOrMsg.sender) senderName = textOrMsg.sender;
@@ -445,6 +397,35 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
     if (textOrMsg.type !== undefined) type = textOrMsg.type;
     if (textOrMsg.proposal) proposal = textOrMsg.proposal;
     metadata = { ...metadata, ...textOrMsg };
+  }
+
+  if (metadata && typeof metadata === 'object') {
+    if (metadata.sender) senderName = metadata.sender;
+    if (metadata.avatar) avatar = metadata.avatar;
+    if (metadata.isCurrentUser !== undefined) isCurrentUser = metadata.isCurrentUser;
+    if (metadata.isAi !== undefined) isAi = metadata.isAi;
+    if (metadata.type !== undefined) type = metadata.type;
+    if (metadata.proposal) proposal = metadata.proposal;
+  }
+
+  // Smart defaults for known demo team members
+  const normSender = senderName.toLowerCase();
+  if (normSender.includes('tony')) {
+    avatar = avatar || 'TN';
+    if (metadata?.isCurrentUser === undefined && (typeof textOrMsg !== 'object' || textOrMsg?.isCurrentUser === undefined)) {
+      isCurrentUser = false;
+    }
+  } else if (normSender.includes('wei gang') || normSender.includes('weigang')) {
+    avatar = avatar || 'WG';
+    if (metadata?.isCurrentUser === undefined && (typeof textOrMsg !== 'object' || textOrMsg?.isCurrentUser === undefined)) {
+      isCurrentUser = false;
+    }
+  } else if (normSender.includes('wanderbot')) {
+    avatar = avatar || 'WB';
+    isAi = true;
+    if (metadata?.isCurrentUser === undefined && (typeof textOrMsg !== 'object' || textOrMsg?.isCurrentUser === undefined)) {
+      isCurrentUser = false;
+    }
   }
 
   if (!thread) {
@@ -488,35 +469,36 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
     isCurrentUser,
     isAi,
     type,
-    ...(proposal ? { proposal } : {}),
+    proposal,
   };
+
+  if (!Array.isArray(thread.messages)) {
+    thread.messages = [];
+  }
 
   thread.messages.push(newMessage);
   saveChatThreads(threads);
-  return { thread, newMessage };
+  return newMessage;
 }
 
-export function createChatThread({ blockId, title, category, day = null, location, initialMessage, poll = null }) {
+export function createChatThread(threadData) {
   const threads = getChatThreads();
-  const id = blockId || ('custom-' + Date.now());
+  const { blockId, title, category, location, day, initialMessage, poll } = threadData;
 
+  const id = blockId || 'thread-' + Date.now();
   const existing = threads.find((t) => t.blockId === id);
   if (existing) return existing;
 
-  const normalizedCategory = normalizeCategory(category || 'general');
-  const now = new Date();
-  const timeOnly = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  const timeStr = `Today, ${timeOnly}`;
-
+  const normalizedCategory = normalizeCategory(category);
   const messages = [];
-  if (initialMessage && String(initialMessage).trim()) {
+  if (initialMessage) {
     messages.push({
       id: 'msg-' + Date.now(),
       sender: 'Clarence (You)',
       avatar: 'CL',
       text: String(initialMessage).trim(),
       date: 'Today',
-      time: timeStr,
+      time: 'Today, Just now',
       isCurrentUser: true,
     });
   }
@@ -535,13 +517,43 @@ export function createChatThread({ blockId, title, category, day = null, locatio
     category: normalizedCategory,
     location: location?.trim() || 'Trip Wide',
     participantCount: 3,
-    poll,
+    poll: poll || null,
     messages,
   };
 
   threads.unshift(newThread);
   saveChatThreads(threads);
   return newThread;
+}
+
+export function attachPollToThread(blockId, pollData) {
+  const threads = getChatThreads();
+  const thread = threads.find((t) => t.blockId === blockId);
+  if (!thread) return null;
+
+  thread.poll = {
+    id: pollData.id || 'poll-' + Date.now(),
+    question: pollData.question || 'Group Decision Poll',
+    status: pollData.status || 'active',
+    userVote: pollData.userVote || null,
+    options: pollData.options || [
+      { id: 'opt-yes', label: 'Yes', votes: 0 },
+      { id: 'opt-no', label: 'No', votes: 0 },
+    ],
+  };
+
+  saveChatThreads(threads);
+  return thread;
+}
+
+export function removePollFromThread(blockId) {
+  const threads = getChatThreads();
+  const thread = threads.find((t) => t.blockId === blockId);
+  if (!thread) return null;
+
+  thread.poll = null;
+  saveChatThreads(threads);
+  return thread;
 }
 
 export function voteInPoll(blockId, optionId) {
@@ -560,4 +572,40 @@ export function voteInPoll(blockId, optionId) {
   thread.poll.userVote = optionId;
   saveChatThreads(threads);
   return thread;
+}
+
+/**
+ * Resets all chat threads back to the pristine Genesis state
+ */
+export function resetChatToGenesis() {
+  const activeTrip = getActiveTrip();
+  const initial = getInitialThreadsForTrip(activeTrip);
+  saveChatThreads(initial);
+  return initial;
+}
+
+/**
+ * Triggers friendly background banter upon trip creation
+ * Runs without switching the presenter away from the itinerary
+ */
+export function startBackgroundTripBanter() {
+  setTimeout(() => {
+    addMessageToThread('general', {
+      sender: 'Tony',
+      avatar: 'TN',
+      isCurrentUser: false,
+      text: 'Penang trip is locked in! 🚀 Ready for the food crawl.',
+    });
+    window.dispatchEvent(new CustomEvent('wandersync:chat_update', { detail: { threadId: 'general' } }));
+  }, 1200);
+
+  setTimeout(() => {
+    addMessageToThread('general', {
+      sender: 'Wei Gang',
+      avatar: 'WG',
+      isCurrentUser: false,
+      text: "Hyped! I'll look into street food spots near George Town.",
+    });
+    window.dispatchEvent(new CustomEvent('wandersync:chat_update', { detail: { threadId: 'general' } }));
+  }, 3200);
 }
