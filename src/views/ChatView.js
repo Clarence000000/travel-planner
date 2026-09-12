@@ -774,6 +774,14 @@ export function createChatView(initialBlockId = null) {
             <span>${escapeHtml(thread.location || 'George Town, Penang')}</span>
           </span>
         </div>
+        ${
+          isDay1Penang
+            ? `<button type="button" class="btn-replay-banter" id="btn-trigger-banter" title="Re-simulate Tony & Wei Gang banter and AI proposal">
+                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                 <span>Replay Banter</span>
+               </button>`
+            : ''
+        }
       </div>
 
       <!-- Attached Consensus Mini-Poll (if thread has an active poll) -->
@@ -864,7 +872,13 @@ export function createChatView(initialBlockId = null) {
       render();
     });
 
-    // (Replay Banter removed from webapp; managed via /remote)
+    // Replay Banter button (trigger Tony, Wei Gang & WanderBot sequence)
+    const replayBtn = convElem.querySelector('#btn-trigger-banter');
+    if (replayBtn) {
+      replayBtn.addEventListener('click', () => {
+        executeBanterSimulation();
+      });
+    }
 
     // Enable horizontal drag & wheel scrolling on Quick Reply pills
     const quickActions = convElem.querySelector('.chat-quick-actions');
