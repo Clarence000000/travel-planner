@@ -38,6 +38,8 @@ WanderSync is a mobile-first collaborative travel companion that unites real-tim
 | **Shared Multi-Currency Bill Splitter** | **Dropped (Deferred):** Excellent utility, but specialized expense tools (Splitwise) already dominate; focusing on schedule coordination delivered higher novel value. |
 | **Split-Group Branching Schedules** | **Dropped (Deferred):** Over-complicated the timeline UI for casual weekend group getaways. Kept schedule unified with flexible free-time slots. |
 
+<img width="1134" height="506" alt="image" src="https://github.com/user-attachments/assets/6f500649-11cb-42d2-ab93-d24a00f4c4af" />
+
 ### 2.2 Ideation Boards
 
 *Ideation diagrams, problem trees, and user flow architectures will be placed here by the team.*
