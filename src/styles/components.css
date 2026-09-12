@@ -1166,7 +1166,294 @@
   overflow: hidden;
 }
 
-/* Liquid Glass Poll Card & Options */
+/* ══════════════════════════════════════════════════════════════════
+   Hashtag Command Palette & AI Response Cards
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Quick Actions Divider & Hashtag Hint */
+.chat-quick-actions__divider {
+  display: inline-block;
+  width: 1px;
+  height: 22px;
+  background: rgba(200, 179, 155, 0.4);
+  flex-shrink: 0;
+  margin: 0 2px;
+  border-radius: 1px;
+}
+
+.btn-quick-reply--hashtag {
+  background: linear-gradient(180deg,
+      rgba(216, 88, 34, 0.12) 0%,
+      rgba(216, 88, 34, 0.06) 100%) !important;
+  border-color: rgba(216, 88, 34, 0.35) !important;
+  color: #D85822 !important;
+}
+
+.btn-quick-reply--hashtag:hover,
+.btn-quick-reply--hashtag:active {
+  background: linear-gradient(180deg,
+      rgba(216, 88, 34, 0.2) 0%,
+      rgba(216, 88, 34, 0.12) 100%) !important;
+  border-color: rgba(216, 88, 34, 0.5) !important;
+}
+
+.btn-quick-reply--hashtag svg {
+  stroke: #D85822 !important;
+}
+
+/* Floating Command Palette */
+.hashtag-command-palette {
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.92) 0%,
+      rgba(245, 239, 235, 0.85) 100%);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-radius: 20px;
+  box-shadow:
+    0 -8px 32px rgba(15, 23, 42, 0.08),
+    0 -2px 8px rgba(15, 23, 42, 0.04),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.98);
+  padding: 10px 12px 8px;
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  max-height: 240px;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+}
+
+.hashtag-command-palette--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hashtag-palette__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-bottom: 8px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(200, 179, 155, 0.3);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary, #6D7C8A);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.hashtag-palette__header svg {
+  stroke: #D85822;
+  flex-shrink: 0;
+}
+
+.hashtag-palette__header span {
+  flex: 1;
+}
+
+.hashtag-palette__close {
+  background: rgba(200, 179, 155, 0.2);
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-secondary, #6D7C8A);
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.hashtag-palette__close:hover {
+  background: rgba(200, 179, 155, 0.4);
+}
+
+.hashtag-palette__commands {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Individual Command Chip */
+.hashtag-cmd-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 14px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.hashtag-cmd-chip:hover {
+  background: rgba(216, 88, 34, 0.08);
+}
+
+.hashtag-cmd-chip:active {
+  background: rgba(216, 88, 34, 0.14);
+  transform: scale(0.98);
+}
+
+.hashtag-cmd-chip__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+
+.hashtag-cmd-chip__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.hashtag-cmd-chip__label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-primary, #26292E);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  letter-spacing: -0.01em;
+}
+
+.hashtag-cmd-chip__desc {
+  font-size: 11px;
+  color: var(--color-text-secondary, #6D7C8A);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* AI Hashtag Response Card */
+.ai-hashtag-response {
+  background: linear-gradient(180deg,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(245, 239, 235, 0.45) 100%);
+  border: 1px solid rgba(200, 179, 155, 0.35);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-top: 8px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.85);
+}
+
+.ai-hashtag-response__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.ai-hashtag-response__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  line-height: 1.2;
+  width: fit-content;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.ai-hashtag-response__badge svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
+}
+
+.ai-hashtag-response__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-primary, #26292E);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.ai-hashtag-response__text {
+  font-size: 12.5px;
+  color: var(--color-text-secondary, #6D7C8A);
+  line-height: 1.5;
+  margin: 0 0 10px;
+}
+
+.ai-hashtag-response__items {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ai-hashtag-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(200, 179, 155, 0.25);
+  border-radius: 12px;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  transition: transform 0.12s ease;
+}
+
+.ai-hashtag-item:hover {
+  transform: translateX(2px);
+}
+
+.ai-hashtag-item__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.ai-hashtag-item__name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-primary, #26292E);
+  line-height: 1.3;
+}
+
+.ai-hashtag-item__detail {
+  font-size: 11px;
+  color: var(--color-text-secondary, #6D7C8A);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-hashtag-item__tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+/* Thread conversation layout: hashtag palette sits between quick actions and input */
+.thread-conversation .hashtag-command-palette {
+  flex-shrink: 0;
+  margin-bottom: 4px;
+}
+
 .poll-card {
   background: linear-gradient(180deg,
       rgba(255, 255, 255, 0.85) 0%,
