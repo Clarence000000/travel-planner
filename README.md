@@ -105,10 +105,10 @@ graph TD
 
 | Feature | WanderSync Twist | Existing Tools (TripIt / Wanderlog) |
 | :--- | :--- | :--- |
-| **Transit Buffer Engine** | Automatically detects when subway/walking cushion is inadequate and displays warning alerts in real time. | Static itineraries ignore real-world transit cushions, causing missed reservations. |
-| **Social Media Native Influx** | Extracts hero venues directly from shared Instagram Reels and TikToks into a group proposal pool. | Requires manual copy-pasting of addresses and notes from social apps. |
-| **Contextual Activity Polling** | Voting is tied directly to candidate cards; winning option instantly slots into the day's timeline. | Decisions happen in chat apps, requiring someone to manually transcribe the result to the plan. |
-| **Contingency & Reflow Intelligence** | 1-tap `+30m` delay shifts and flexible cancellation (keep free-time pocket vs chronologically reflow). | Delaying one item requires manually updating every subsequent item's start/end time. |
+| **Travel Time Warnings** | Warns you immediately if there isn't enough walking or train time between spots, helping you avoid rushed dashes and missed reservations. | Schedules ignore realistic travel cushions, making it easy to run late or miss bookings. |
+| **Import from Instagram & TikTok** | Pulls place names, addresses, and photos directly from shared Reels and TikTok links into your group's idea list. | Forces you to manually copy and paste names, links, and addresses from social apps one by one. |
+| **Vote Directly on Plans** | Friends vote right on activity cards, and the winning spot automatically slots straight into the day's timeline. | Group decisions get lost in long chat threads, requiring someone to manually copy the final choice into the plan. |
+| **1-Tap Delay & Schedule Shifts** | Running late? Tap `+30m` to smoothly push back later plans, or remove a stop and let the schedule adjust automatically. | If one activity is delayed, you have to manually edit the start and end times for every single remaining stop. |
 
 ---
 
@@ -144,50 +144,51 @@ graph TD
 
 ### 5.3 Build Plan & Scope
 
-To ensure rapid delivery, architectural stability, and a polished user experience, our team is pursuing a **disciplined, tightly scoped build plan**. Rather than building an unfocused MVP with half-finished utilities, we focus exclusively on the core collaborative travel lifecycle: **Inspire → Consensual Planning → Frictionless Day-of Execution**.
+To make sure we build a high-quality, reliable app on time, we are focusing strictly on what matters most to travelers: **finding inspiration, planning together without arguments, and stress-free schedule adjustments during the trip**.
 
 ```mermaid
 gantt
-    title WanderSync Build Phase Schedule (5-Week Delivery)
+    title WanderSync 5-Week Build Plan
     dateFormat  YYYY-MM-DD
-    section Sprint 1: Core
-    Next.js Setup & Supabase DB Schema       :2026-09-15, 7d
-    Realtime Drag & Drop Timeline            :2026-09-19, 7d
-    section Sprint 2: Collaboration
-    Direct Social Reel URL Extractor         :2026-09-24, 6d
-    Activity Threads & 1-Tap Mini-Polls     :2026-09-28, 6d
-    section Sprint 3: Intelligence
-    Gemini 2.0 Flash Schedule Copilot        :2026-10-02, 7d
-    Weather MCP Forecast Contingency Engine  :2026-10-06, 6d
-    section Sprint 4: Hardening & Launch
-    Integration Testing & Performance Audit  :2026-10-10, 5d
-    Security Hardening (RLS) & Vercel Deploy :2026-10-13, 5d
+    section Sprint 1: Core Setup
+    Next.js Setup & Database Design          :2026-09-15, 7d
+    Live Drag-and-Drop Schedule              :2026-09-19, 7d
+    section Sprint 2: Group Planning
+    Instagram & TikTok Link Importer         :2026-09-24, 6d
+    Activity Chat & 1-Tap Group Voting       :2026-09-28, 6d
+    section Sprint 3: Smart Features
+    Gemini AI Schedule Assistant             :2026-10-02, 7d
+    Weather Alerts & Rain Alternatives       :2026-10-06, 6d
+    section Sprint 4: Polish & Launch
+    Final Testing & Speed Optimization       :2026-10-10, 5d
+    Security Checks & Live Deployment        :2026-10-13, 5d
 ```
 
-#### In-Scope Deliverables (The High-Value Core)
+#### What We Are Building (In-Scope)
 
-1. **Sprint 1: Collaborative Data Core & Real-Time Itinerary (Weeks 1–2)**
-   - Initialize Next.js 15 App Router with TypeScript and Tailwind CSS.
-   - Design and migrate the Supabase PostgreSQL relational schema (`trips`, `days`, `activities`, `collaborators`, `polls`) protected by Row-Level Security (RLS).
-   - Implement real-time drag-and-drop timeline with Supabase Realtime broadcast channels, featuring optimistic UI reordering and automatic chronological time recalculations.
-   - Deploy deterministic client-side Transit Buffer Engine providing visual buffer warnings when transit gaps are insufficient.
+1. **Sprint 1: Live Schedule & Setup (Weeks 1–2)**
+   - Set up the Next.js and Supabase foundation with clean mobile styling.
+   - Build a secure database to store trips, daily activities, group members, and votes, ensuring only invited friends can view each trip.
+   - Create a smooth drag-and-drop timeline that updates instantly on everyone's phone whenever an activity is moved.
+   - Add automatic travel time alerts that warn users when there isn't enough walking or subway time between stops.
 
-2. **Sprint 2: Social Reel Influx & In-Timeline Consensus (Week 3)**
-   - Implement direct Instagram/TikTok Reel link parser endpoint caching spot titles, geo-tags, and thumbnails directly to the itinerary quick-add drawer.
-   - Deliver contextual per-activity micro-threads and embedded mini-polls; resolving a poll automatically commits the winning activity to the schedule via Server Actions.
+2. **Sprint 2: Social Media Imports & Group Voting (Week 3)**
+   - Build an easy link importer that grabs the name, location, and photos directly from pasted Instagram Reels and TikTok videos.
+   - Add comments and quick polls directly onto activity cards, so friends can vote and have the winning choice automatically drop into the itinerary.
 
-3. **Sprint 3: Gemini 2.0 AI Assistant & Weather MCP Integration (Week 4)**
-   - Integrate Google Gemini 2.0 Flash using structured outputs (`responseSchema`) for prompt-based pace tuning (*Chill*, *Balanced*, *Turbo*).
-   - Connect the Weather MCP server to monitor 48-hour forecast alerts, generating 1-tap accept proposals to swap outdoor activities with indoor fallbacks.
+3. **Sprint 3: AI Assistant & Weather Adjustments (Week 4)**
+   - Connect Google Gemini to quickly adjust trip pacing (*Relaxed*, *Balanced*, or *Fast-Paced*) and suggest smart schedule reshuffles.
+   - Connect live weather forecasts to spot rainy days ahead of time and suggest indoor alternatives with a 1-tap swap button.
 
-4. **Sprint 4: Production Hardening & Deployment (Week 5)**
-   - Comprehensive end-to-end integration testing across collaborative channels and Gemini AI copilot flows.
-   - Conduct load testing on Supavisor connection pooling, audit Row-Level Security (RLS) policies, and optimize asset delivery.
-   - Deploy production build to the Vercel Edge Network.
+4. **Sprint 4: Final Testing & Launch (Week 5)**
+   - Test group syncing and AI features thoroughly across different phones and screen sizes.
+   - Check database speeds, test security rules, and optimize images for fast loading.
+   - Launch the production app live on Vercel.
 
-#### Explicitly Deferred Out-of-Scope Items (Disciplined Prioritization)
-The following secondary concepts are intentionally deferred to future iterations to preserve delivery focus:
-- **Dedicated "Live Day HUD" Separate Screen**: Omitted to keep the user experience focused entirely on the core collaborative itinerary without navigation fragmentation.
-- **Shared Multi-Currency Bill Splitter**: Mature third-party solutions (Splitwise) already dominate; focusing on schedule coordination delivers higher novel value.
-- **Branching Split-Group Schedules**: Managing diverging group sub-branches adds unnecessary cognitive overhead; flexible free-time slots achieve the same outcome with simpler UX.
-- **Native iOS/Android App Store Packaging**: The mobile-first responsive PWA delivers native-like 60fps fluidity via the browser without app store review delays.
+#### What We Are Leaving Out for Now (Out-of-Scope)
+
+To keep the app simple, fast, and delivered on schedule, we are holding off on features that add clutter or already have great standalone tools:
+- **Separate "Live Day" Mode**: We keep delay buttons and schedules in one unified view so users don't have to jump between different screens while traveling.
+- **In-App Bill Splitting**: Popular apps like Splitwise already do this well. We focus our energy on smooth schedule planning.
+- **Split-Group Branching Paths**: Having different sub-schedules for different people creates confusion. Simple free-time blocks give friends flexibility without cluttering the plan.
+- **Native App Store Downloads**: The app works smoothly in mobile web browsers without requiring users to download large files from an app store.
