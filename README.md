@@ -131,57 +131,8 @@ graph TD
 
 ### 5.2 System Architecture Diagram
 
-```mermaid
-graph TB
-    subgraph Client["Client Layer (Mobile-First Web App)"]
-        UI_Itin["Dynamic Itinerary<br>(Next.js Client Components)"]
-        UI_Social["Reel Ingestion Modal<br>(Direct URL Influx)"]
-        UI_Chat["Per-Activity Threads<br>& Mini-Polls Drawer"]
-        UI_AI["AI Assistant Drawer<br>(Pace Tuning & Weather Reshuffle)"]
-        UI_Design["Liquid Glass Tokens<br>(Tailwind / CSS Modules)"]
-    end
-
-    subgraph Edge["Hosting & Edge Compute (Vercel)"]
-        AppRouter["Next.js 15 App Router<br>(Server-Side Rendering)"]
-        ServerActions["Server Actions & API Routes<br>(Type-Safe Mutations)"]
-        AISDK["Vercel AI SDK Core<br>(Streaming & Tool Orchestration)"]
-    end
-
-    subgraph Supabase["Backend & Data Layer (Supabase Cloud)"]
-        Auth["Supabase Auth<br>(Google / Apple OAuth)"]
-        Pooler["Supavisor Connection Pooler<br>(PgBouncer Transaction Mode)"]
-        Postgres["PostgreSQL Database<br>(Relational Schema + RLS Policies)"]
-        Realtime["Supabase Realtime<br>(WebSocket Broadcast & Postgres CDC)"]
-        Storage["Supabase Storage<br>(QR Ticket Passes & Media CDN)"]
-    end
-
-    subgraph External["AI & External Services Layer"]
-        Gemini["Google Gemini 2.0 Flash<br>(Structured Outputs & Reasoning)"]
-        WeatherMCP["Weather MCP Server<br>(Hyper-Local Forecast Context)"]
-        ReelScraper["Social Media Reel Parser<br>(Instagram & TikTok Extraction)"]
-        MapsAPI["Google Places & Routes API<br>(Subway & Walking Buffers)"]
-    end
-
-    UI_Itin <--> Realtime
-    UI_Chat <--> Realtime
-    UI_Itin --> ServerActions
-    UI_Social --> ServerActions
-    UI_AI --> ServerActions
-
-    ServerActions --> AppRouter
-    ServerActions --> Auth
-    ServerActions --> Pooler
-    Pooler --> Postgres
-    Postgres --> Realtime
-    ServerActions --> Storage
-
-    ServerActions --> AISDK
-    AISDK <--> Gemini
-    Gemini <--> WeatherMCP
-    ServerActions <--> ReelScraper
-    ServerActions <--> MapsAPI
-```
-*Figure 5.1: WanderSync production architecture showing Next.js App Router, Supabase backend, Gemini 2.0 Flash, and external API integrations.*
+<img width="1443" height="554" alt="architecture drawio" src="https://github.com/user-attachments/assets/73f0ae66-aa94-463c-b6c0-6d248153202f" />
+*Figure 5.1: WanderSync Architecture Diagram*
 
 ---
 
