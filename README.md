@@ -28,6 +28,8 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 ### 2.1 Ideas We Considered
 
+<img width="1134" height="506" alt="image" src="https://github.com/user-attachments/assets/6f500649-11cb-42d2-ab93-d24a00f4c4af" />
+
 | Idea | Why it was dropped / kept |
 | :--- | :--- |
 | **Interactive Drag-and-Drop Timeline with Buffer Warnings (Chosen)** | **Kept:** Solves the core failure of static spreadsheets by automatically checking whether walking or subway time between consecutive stops is physically realistic. |
@@ -37,8 +39,6 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 | **Tinder-Style Group Attraction Swiping** | **Dropped (Deferred):** Fun concept, but created decision fatigue for groups with diverging tastes and added unnecessary UI complexity to the MVP. |
 | **Shared Multi-Currency Bill Splitter** | **Dropped (Deferred):** Excellent utility, but specialized expense tools (Splitwise) already dominate; focusing on schedule coordination delivered higher novel value. |
 | **Split-Group Branching Schedules** | **Dropped (Deferred):** Over-complicated the timeline UI for casual weekend group getaways. Kept schedule unified with flexible free-time slots. |
-
-<img width="1134" height="506" alt="image" src="https://github.com/user-attachments/assets/6f500649-11cb-42d2-ab93-d24a00f4c4af" />
 
 ### 2.2 Ideation Boards
 
@@ -71,14 +71,6 @@ graph TD
 
 ### 2.3 Mentor Consultation
 
-| Date | Mentor | Feedback Received | What Was Changed |
-| :--- | :--- | :--- | :--- |
-| **05/09/2026** | Jarod Tan | Asked how travel ideas are gathered from social media, and cautioned against forcing users into rigid 3, 5, or 7-day trip templates. | Explained how the app pulls details from Instagram and TikTok links, and replaced fixed day presets with a flexible calendar where users can easily add or remove days. |
-| **08/09/2026** | Janelle Tan | Felt the app was cluttered with too many bottom tabs, making the presentation feel disjointed. Suggested combining similar views and moving secondary settings into the sidebar. | Simplified the app into two main tabs (Itinerary & Ideas), removed the separate HUD mode to keep delay controls on the schedule, anchored chats directly to activity cards, and moved trip settings into the sidebar. |
-| **09/09/2026** | Jarod Tan | Pointed out that leaving the itinerary to find ideas interrupted the planning flow, and advised allowing direct Reel imports onto the schedule while keeping the 5-minute pitch narrative simple. | Added a quick add-spot action on the itinerary so users can paste Reel links directly into their schedule, creating a smooth flow from inspiration to voting. |
-| **11/09/2026** | Varsha Selvakumar | Suggested using live weather data to reschedule rainy activities, asked how group budgets and delays are handled, and advised opening the pitch video with a clear problem and user persona alongside a full system architecture diagram. | Added AI weather reshuffling for rainy days, added 1-tap delay buttons on schedule cards, clearly framed the pitch around friend groups, and included a complete system architecture diagram in Section 5.1. |
-| **12/09/2026** | Janelle Tan | Conducted a pitch practice run and provided final feedback on mobile screen usability and touch target sizes. | Rehearsed the live demo to keep it under 4 minutes, and polished button sizes for easy tapping on mobile phones. |
-
 <img src="./docs/mentor-consultation.png" alt="Mentor Consultation Board" />
 
 **Design Evolution:**
@@ -94,12 +86,23 @@ graph TD
 
 **UI Prototype:** [Public Link]
 
-*(Check that it opens in an incognito window. Key screen mockups and interactive screenshots with captions will be added here by the team)*
+*(Check that it opens in an incognito window.)*
 
-- **Screen 1: Dynamic Itinerary & Buffer Guard** — *Caption: Chronological timeline with transit cushions and status indicators.*
-- **Screen 2: Social Reel Spotlight & Wishlist** — *Caption: Extracted video content with visual source attribution.*
-- **Screen 3: Contextual Discussion & Mini-Poll** — *Caption: Inline consensus voting resolving conflicting preferences.*
-- **Screen 4: AI Schedule Copilot & Disruption Reflow** — *Caption: Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.*
+- **Screen 1: Dynamic Itinerary & Buffer Guard** — *Caption: Chronological timeline with transit cushions and status indicators.*  
+  <br>
+  <img src="./docs/screens/screen1.png" width="340" alt="Screen 1: Dynamic Itinerary & Buffer Guard" />
+
+- **Screen 2: Social Reel Spotlight & Wishlist** — *Caption: Extracted video content with visual source attribution.*  
+  <br>
+  <img src="./docs/screens/screen2.png" width="340" alt="Screen 2: Social Reel Spotlight & Wishlist" />
+
+- **Screen 3: Contextual Discussion & Mini-Poll** — *Caption: Inline consensus voting resolving conflicting preferences.*  
+  <br>
+  <img src="./docs/screens/screen3.png" width="340" alt="Screen 3: Contextual Discussion & Mini-Poll" />
+
+- **Screen 4: AI Schedule Copilot & Disruption Reflow** — *Caption: Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.*  
+  <br>
+  <img src="./docs/screens/screen4.png" width="340" alt="Screen 4: AI Schedule Copilot & Disruption Reflow" />
 
 ---
 
