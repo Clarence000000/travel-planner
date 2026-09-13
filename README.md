@@ -84,7 +84,7 @@ graph TD
 
 ## 3. Design & Prototype
 
-**UI Prototype:** [Public Link]
+**UI Prototype:** [Public Link](https://travel.hoezhiwan.my/)
 
 *(Check that it opens in an incognito window.)*
 
@@ -130,7 +130,7 @@ graph TD
 
 ### 5.2 System Architecture Diagram
 
-<img width="1442" height="554" alt="architecture drawio" src="https://github.com/user-attachments/assets/7e292842-981f-45a6-a384-7cb50aebbab0" />'
+<img width="1442" height="554" alt="architecture drawio" src="https://github.com/user-attachments/assets/7e292842-981f-45a6-a384-7cb50aebbab0" />
 
 *Figure 5.1: WanderSync Architecture Diagram*
 
