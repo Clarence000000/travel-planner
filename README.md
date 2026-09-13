@@ -1,6 +1,6 @@
 # WanderSync by WanderSync Team
 
-**Team:** Clearence, Tony, Wei Gang  
+**Team:** Clearence, Hoe Zhi Wan, Wei Gang  
 **Problem Statement:** Travel Planner  
 **Video Presentation:** [Youtube Link]  
 **Presentation Slides:** [Public Link](https://canva.link/5lfaaylakyr6e6s)
@@ -149,7 +149,7 @@ To make sure we build a high-quality, reliable app on time, we are focusing stri
    - Add activity status & lifecycle indicators (planned, in-progress, done) to each timeline card.
    - Create timeline-to-thread deep linking so tapping an activity jumps directly to its discussion thread.
 
-2. **Tony – AI Assistant and Chat**
+2. **Hoe Zhi Wan – AI Assistant and Chat**
    - Design and implement the onboarding UI, covering sign-in, trip creation, and friend invites.
    - Integrate the Gemini AI copilot for smart schedule suggestions and pacing adjustments (*Relaxed*, *Balanced*, *Fast-Paced*).
    - Build 1-tap disruption reshuffling so a single tap cascades a delay or cancellation across all affected stops.
