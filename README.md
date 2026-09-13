@@ -10,10 +10,10 @@
 ## 1. Project Overview
 
 ### The Problem
-Planning a group trip with friends is usually messy and frustrating. Recommendations and links get buried across WhatsApp chats, Instagram DMs, and separate notes apps. When the group finally puts a plan into a spreadsheet, it easily falls apart—often because nobody accounted for actual walking or train times between stops. And if bad weather hits or a spot is closed, manually updating every single time slot on your phone while walking around ruins the mood.
+Planning a group trip with friends is usually messy and frustrating. Recommendations and links get buried across WhatsApp chats, Instagram DMs, and separate notes apps. When the group finally puts a plan into a spreadsheet, it easily falls apart because nobody accounted for actual walking or train times between stops. And if bad weather hits or a spot is closed, manually updating every single time slot on your phone while walking around ruins the mood.
 
 ### Our Solution
-WanderSync is a mobile travel planner that makes group trips effortless. Friends can save places directly from Instagram Reels and TikTok into a shared wishlist, vote on activities right inside the schedule, and drag and drop stops to build the perfect day. The app automatically warns you if there isn't enough travel time between spots, and our AI assistant quickly suggests backup plans if plans change or it rains—keeping everyone relaxed and on track.
+WanderSync is a mobile travel planner that makes group trips effortless. Friends can save places directly from Instagram Reels and TikTok into a shared wishlist, vote on activities right inside the schedule, and drag and drop stops to build the perfect day. The app automatically warns you if there isn't enough travel time between spots, and our AI assistant quickly suggests backup plans if plans change or it rains, keeping everyone relaxed and on track.
 
 **Core Feature Set:**
 - **Smart Drag-and-Drop Schedule & Transit Buffer Warnings**
@@ -43,8 +43,6 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 ### 2.2 Ideation Boards
 
 <img src="./docs/ideation-board.png" alt="Ideation Board - Problem Tree" />
-
-*Figure 2.1: Problem tree illustrating root causes and WanderSync core architectural interventions.*
 
 ### 2.3 Mentor Consultation
 
@@ -123,13 +121,13 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 | Layer | Technology | Why We Chose It | Constraints & How We Mitigate Them |
 | :--- | :--- | :--- | :--- |
-| **Frontend** | **Next.js 15 (App Router, React 19, TypeScript)** with Tailwind CSS & Apple Liquid Glass tokens | • Makes pages load quickly on mobile phones.<br>• Automatically shrinks and sharpens photos saved from Instagram and TikTok.<br>• Creates simple shareable links for group members. | **Constraint:** Moving schedule cards quickly could feel slow or laggy.<br>**Mitigation:** The screen updates immediately when dragging a card, then saves the changes to the database quietly in the background. |
-| **Backend & APIs** | **Next.js Route Handlers & Server Actions** + **Supabase Edge Functions** (Deno) | • Keeps website and server code in one place for faster development.<br>• Prevents connection errors between screens and server logic.<br>• Runs quick background jobs without slowing down the user. | **Constraint:** Complex AI planning tasks might take too long and time out.<br>**Mitigation:** Stream AI answers word-by-word so travelers see suggestions instantly instead of waiting. |
-| **Database** | **PostgreSQL** (Managed via **Supabase Cloud**) | • Keeps trip details organized cleanly (days, stops, and group votes stay linked).<br>• Stores extra details from social media Reels with ease.<br>• Ensures private trip plans can only be seen by invited friends. | **Constraint:** Having many friends open the app at once could overload database connections.<br>**Mitigation:** Uses Supabase's connection manager to share connections safely without crashing. |
-| **Real-Time Sync** | **Supabase Realtime** (Postgres CDC & Broadcast Channels) | • Updates everyone's screen instantly—when one person moves a stop or votes in a poll, everyone sees it right away without refreshing the page. | **Constraint:** Weak travel Wi-Fi or mobile data could drop or repeat updates.<br>**Mitigation:** Changes show on screen immediately and use timestamps to ignore accidental duplicate messages. |
-| **AI Engine (LLM)** | **Google Gemini** (**Gemini 2.0 Flash** via `@google/genai` SDK & Vercel AI SDK) | • Responds in under a second for fast schedule changes.<br>• Can read photos and video screenshots from travel Reels.<br>• Easily handles long multi-day trips and lots of group chat messages at once.<br>• Reliably outputs clean, structured schedule updates. | **Constraint:** Daily AI request limits or slow internet connections while on the road.<br>**Mitigation:** Saves answers for popular tourist spots to reuse them, and falls back to simple built-in rules if the AI is slow to reply. |
-| **APIs & Services** | • **Social Reel Extraction:** RapidAPI / Apify Instagram & TikTok Scraper<br>• **Transit & Routing:** Google Places & Routes API (OSRM fallback)<br>• **Weather Intelligence:** OpenWeatherMap API / Weather MCP Server<br>• **Auth & Storage:** Supabase Auth (Google & Apple OAuth) + Supabase S3 Storage | • Saves users from having to type in places, addresses, and photos by hand.<br>• Gives realistic walking and train travel times between stops.<br>• Checks the weather forecast to warn of rain and recommend indoor alternatives.<br>• Lets friends sign in easily with Google or Apple, and safely stores ticket QR codes. | **Constraint:** Third-party APIs charge per search and have daily usage limits.<br>**Mitigation:** Saves travel times between popular landmarks in our database, keeps Reel info for 48 hours to avoid repeated calls, and shrinks ticket image sizes. |
-| **Hosting & Infra** | **Vercel Edge Network** (Frontend & Server Actions) + **Supabase Cloud** (Tokyo/Singapore Region) | • Loads fast anywhere in the world.<br>• Places database servers close to popular travel destinations in Asia for quick response times.<br>• Needs zero manual server maintenance. | **Constraint:** Free hosting plans have monthly bandwidth limits.<br>**Mitigation:** Saves ready-made page previews so the server does not have to rebuild the page every time someone views an itinerary. |
+| **Frontend** | **Next.js 15, React 19, Tailwind CSS** | Fast mobile loading, auto-optimized images from Reels, and seamless link sharing. | **Risk:** Dragging cards may feel laggy.<br>**Fix:** Screen updates instantly (optimistic UI) and saves in the background. |
+| **Backend** | **Next.js Server Actions & Supabase Edge Functions** | Unified codebase, zero API boilerplate, and fast serverless execution. | **Risk:** AI responses timing out.<br>**Fix:** Streams responses word-by-word so users see ideas immediately. |
+| **Database** | **PostgreSQL (Supabase Cloud)** | Organizes trips, stops, and votes cleanly with built-in row-level security. | **Risk:** High group traffic overloading connections.<br>**Fix:** Uses Supabase connection pooling (Supavisor). |
+| **Real-Time Sync** | **Supabase Realtime** | Instantly syncs card moves and votes across all group members' screens without refreshing. | **Risk:** Flaky mobile network or travel Wi-Fi.<br>**Fix:** Immediate local UI updates with timestamp deduplication. |
+| **AI Engine** | **Google Gemini 2.0 Flash** | Fast sub-second responses, understands Reel screenshots, and outputs structured schedules. | **Risk:** API limits or slow connections.<br>**Fix:** Caches common spot recommendations with rule-based fallbacks. |
+| **APIs & Services** | **Instagram/TikTok Scrapers, Google Places, OpenWeatherMap** | Pulls place details from social links, provides real transit times, and checks rain forecasts. | **Risk:** Third-party API rate limits and costs.<br>**Fix:** Caches routes and Reel venue data for 48 hours. |
+| **Hosting** | **Vercel Edge Network & Supabase (Asia Region)** | Fast global delivery close to Asian destinations with zero server maintenance. | **Risk:** Bandwidth limits.<br>**Fix:** Caches pre-rendered itinerary previews. |
 
 ---
 
