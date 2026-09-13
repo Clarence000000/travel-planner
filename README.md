@@ -2,8 +2,8 @@
 
 **Team:** Clearence, Tony, Wei Gang  
 **Problem Statement:** Travel Planner  
-**Video Presentation:** [Unlisted Youtube Link]  
-**Presentation Slides:** [Public Link]  
+**Video Presentation:** [Youtube Link]  
+**Presentation Slides:** [Public Link](https://canva.link/5lfaaylakyr6e6s)
 
 ---
 
@@ -166,7 +166,5 @@ To make sure we build a high-quality, reliable app on time, we are focusing stri
 #### What We Are Leaving Out for Now (Out-of-Scope)
 
 To keep the app simple, fast, and delivered on schedule, we are holding off on features that add clutter or already have great standalone tools:
-- **Separate "Live Day" Mode**: We keep delay buttons and schedules in one unified view so users don't have to jump between different screens while traveling.
 - **In-App Bill Splitting**: Popular apps like Splitwise already do this well. We focus our energy on smooth schedule planning.
 - **Split-Group Branching Paths**: Having different sub-schedules for different people creates confusion. Simple free-time blocks give friends flexibility without cluttering the plan.
-- **Native App Store Downloads**: The app works smoothly in mobile web browsers without requiring users to download large files from an app store.
