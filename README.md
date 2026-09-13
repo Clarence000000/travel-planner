@@ -88,21 +88,10 @@ graph TD
 
 *(Check that it opens in an incognito window.)*
 
-- **Screen 1: Dynamic Itinerary & Buffer Guard** — *Caption: Chronological timeline with transit cushions and status indicators.*  
-  <br>
-  <img src="./docs/screens/screen1.png" width="340" alt="Screen 1: Dynamic Itinerary & Buffer Guard" />
-
-- **Screen 2: Social Reel Spotlight & Wishlist** — *Caption: Extracted video content with visual source attribution.*  
-  <br>
-  <img src="./docs/screens/screen2.png" width="340" alt="Screen 2: Social Reel Spotlight & Wishlist" />
-
-- **Screen 3: Contextual Discussion & Mini-Poll** — *Caption: Inline consensus voting resolving conflicting preferences.*  
-  <br>
-  <img src="./docs/screens/screen3.png" width="340" alt="Screen 3: Contextual Discussion & Mini-Poll" />
-
-- **Screen 4: AI Schedule Copilot & Disruption Reflow** — *Caption: Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.*  
-  <br>
-  <img src="./docs/screens/screen4.png" width="340" alt="Screen 4: AI Schedule Copilot & Disruption Reflow" />
+| **Screen 1**<br>Dynamic Itinerary & Buffer Guard | **Screen 2**<br>Social Reel Spotlight & Wishlist | **Screen 3**<br>Contextual Discussion & Mini-Poll | **Screen 4**<br>AI Schedule Copilot & Disruption Reflow |
+| :---: | :---: | :---: | :---: |
+| <img src="./docs/screens/screen1.png" width="200" alt="Screen 1: Dynamic Itinerary & Buffer Guard" /> | <img src="./docs/screens/screen2.png" width="200" alt="Screen 2: Social Reel Spotlight & Wishlist" /> | <img src="./docs/screens/screen3.png" width="200" alt="Screen 3: Contextual Discussion & Mini-Poll" /> | <img src="./docs/screens/screen4.png" width="200" alt="Screen 4: AI Schedule Copilot & Disruption Reflow" /> |
+| *Chronological timeline with transit cushions and status indicators.* | *Extracted video content with visual source attribution.* | *Inline consensus voting resolving conflicting preferences.* | *Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.* |
 
 ---
 
