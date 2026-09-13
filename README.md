@@ -42,31 +42,8 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 ### 2.2 Ideation Boards
 
-```mermaid
-graph TD
-    subgraph Causes["Root Causes"]
-        RC1["Messy Group Chats & Scattered Reels"]
-        RC2["Rigid Spreadsheets with Zero Buffer Awareness"]
-        RC3["Fragmented Travel Day Passes & Directions"]
-    end
+<img src="./docs/ideation-board.png" alt="Ideation Board - Problem Tree" />
 
-    subgraph Problem["Core Challenge"]
-        CP["Group Travel Coordination Chaos & Trip-Day Inflexibility"]
-    end
-
-    subgraph Solutions["WanderSync Interventions"]
-        S1["Reel Import & Contextual In-Thread Polls"]
-        S2["Auto-Recalculating Buffer Engine & Schedule Reflow"]
-        S3["AI Assistant & Weather Contingency Reshuffle"]
-    end
-
-    RC1 --> CP
-    RC2 --> CP
-    RC3 --> CP
-    CP --> S1
-    CP --> S2
-    CP --> S3
-```
 *Figure 2.1: Problem tree illustrating root causes and WanderSync core architectural interventions.*
 
 ### 2.3 Mentor Consultation
@@ -88,10 +65,38 @@ graph TD
 
 *(Check that it opens in an incognito window.)*
 
-| **Screen 1**<br>Dynamic Itinerary & Buffer Guard | **Screen 2**<br>Social Reel Spotlight & Wishlist | **Screen 3**<br>Contextual Discussion & Mini-Poll | **Screen 4**<br>AI Schedule Copilot & Disruption Reflow |
-| :---: | :---: | :---: | :---: |
-| <img src="./docs/screens/screen1.png" width="200" alt="Screen 1: Dynamic Itinerary & Buffer Guard" /> | <img src="./docs/screens/screen2.png" width="200" alt="Screen 2: Social Reel Spotlight & Wishlist" /> | <img src="./docs/screens/screen3.png" width="200" alt="Screen 3: Contextual Discussion & Mini-Poll" /> | <img src="./docs/screens/screen4.png" width="200" alt="Screen 4: AI Schedule Copilot & Disruption Reflow" /> |
-| *Chronological timeline with transit cushions and status indicators.* | *Extracted video content with visual source attribution.* | *Inline consensus voting resolving conflicting preferences.* | *Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.* |
+<table width="100%">
+  <thead>
+    <tr>
+      <th width="25%" align="center"><b>Screen 1</b><br>Dynamic Itinerary & Buffer Guard</th>
+      <th width="25%" align="center"><b>Screen 2</b><br>Social Reel Spotlight & Wishlist</th>
+      <th width="25%" align="center"><b>Screen 3</b><br>Contextual Discussion & Mini-Poll</th>
+      <th width="25%" align="center"><b>Screen 4</b><br>AI Schedule Copilot & Disruption Reflow</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen1.png" width="100%" alt="Screen 1: Dynamic Itinerary & Buffer Guard" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen2.png" width="100%" alt="Screen 2: Social Reel Spotlight & Wishlist" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen3.png" width="100%" alt="Screen 3: Contextual Discussion & Mini-Poll" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen4.png" width="100%" alt="Screen 4: AI Schedule Copilot & Disruption Reflow" />
+      </td>
+    </tr>
+    <tr>
+      <td width="25%" align="center" valign="top"><em>Chronological timeline with transit cushions and status indicators.</em></td>
+      <td width="25%" align="center" valign="top"><em>Extracted video content with visual source attribution.</em></td>
+      <td width="25%" align="center" valign="top"><em>Inline consensus voting resolving conflicting preferences.</em></td>
+      <td width="25%" align="center" valign="top"><em>Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.</em></td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
