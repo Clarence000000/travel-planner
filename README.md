@@ -2,7 +2,7 @@
 
 **Team:** Clearence, Hoe Zhi Wan, Wei Gang  
 **Problem Statement:** Travel Planner  
-**Video Presentation:** (https://www.youtube.com/watch?v=IpRDh97kZvs)  
+**Video Presentation:** [Youtube Link](https://www.youtube.com/watch?v=IpRDh97kZvs)  
 **Presentation Slides:** [Public Link](https://canva.link/5lfaaylakyr6e6s)
 
 ---
@@ -28,7 +28,7 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 ### 2.1 Ideas We Considered
 
-<img width="1134" height="506" alt="image" src="https://github.com/user-attachments/assets/6f500649-11cb-42d2-ab93-d24a00f4c4af" />
+<img src="./docs/ideas.png" />
 
 | Idea | Why it was dropped / kept |
 | :--- | :--- |
@@ -127,7 +127,7 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 ### 5.2 System Architecture Diagram
 
-<img width="1442" height="554" alt="architecture drawio" src="https://github.com/user-attachments/assets/7e292842-981f-45a6-a384-7cb50aebbab0" />
+<img alt="architecture" src="./docs/architecture.png" />
 
 *Figure 5.1: WanderSync Architecture Diagram*
 
@@ -137,7 +137,7 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 To make sure we build a high-quality, reliable app on time, we are focusing strictly on what matters most to travelers: **finding inspiration, planning together without arguments, and stress-free schedule adjustments during the trip**.
 
-<img src="./docs/Gantt Chart Whiteboard (6).png" alt="WanderSync 3-Week Development Plan" />
+<img src="./docs/Gantt Chart Whiteboard.png" alt="WanderSync 3-Week Development Plan" />
 
 #### What We Are Building (In-Scope)
 
