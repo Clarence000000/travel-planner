@@ -1,19 +1,19 @@
 # WanderSync by WanderSync Team
 
-**Team:** Clearence, Tony, Wei Gang  
+**Team:** Clearence, Hoe Zhi Wan, Wei Gang  
 **Problem Statement:** Travel Planner  
-**Video Presentation:** [Unlisted Youtube Link]  
-**Presentation Slides:** [Public Link]  
+**Video Presentation:** [Youtube Link]  
+**Presentation Slides:** [Public Link](https://canva.link/5lfaaylakyr6e6s)
 
 ---
 
 ## 1. Project Overview
 
 ### The Problem
-Planning a group trip with friends is usually messy and frustrating. Recommendations and links get buried across WhatsApp chats, Instagram DMs, and separate notes apps. When the group finally puts a plan into a spreadsheet, it easily falls apart—often because nobody accounted for actual walking or train times between stops. And if bad weather hits or a spot is closed, manually updating every single time slot on your phone while walking around ruins the mood.
+Planning a group trip with friends is usually messy and frustrating. Recommendations and links get buried across WhatsApp chats, Instagram DMs, and separate notes apps. When the group finally puts a plan into a spreadsheet, it easily falls apart because nobody accounted for actual walking or train times between stops. And if bad weather hits or a spot is closed, manually updating every single time slot on your phone while walking around ruins the mood.
 
 ### Our Solution
-WanderSync is a mobile travel planner that makes group trips effortless. Friends can save places directly from Instagram Reels and TikTok into a shared wishlist, vote on activities right inside the schedule, and drag and drop stops to build the perfect day. The app automatically warns you if there isn't enough travel time between spots, and our AI assistant quickly suggests backup plans if plans change or it rains—keeping everyone relaxed and on track.
+WanderSync is a mobile travel planner that makes group trips effortless. Friends can save places directly from Instagram Reels and TikTok into a shared wishlist, vote on activities right inside the schedule, and drag and drop stops to build the perfect day. The app automatically warns you if there isn't enough travel time between spots, and our AI assistant quickly suggests backup plans if plans change or it rains, keeping everyone relaxed and on track.
 
 **Core Feature Set:**
 - **Smart Drag-and-Drop Schedule & Transit Buffer Warnings**
@@ -42,32 +42,7 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 ### 2.2 Ideation Boards
 
-```mermaid
-graph TD
-    subgraph Causes["Root Causes"]
-        RC1["Messy Group Chats & Scattered Reels"]
-        RC2["Rigid Spreadsheets with Zero Buffer Awareness"]
-        RC3["Fragmented Travel Day Passes & Directions"]
-    end
-
-    subgraph Problem["Core Challenge"]
-        CP["Group Travel Coordination Chaos & Trip-Day Inflexibility"]
-    end
-
-    subgraph Solutions["WanderSync Interventions"]
-        S1["Reel Import & Contextual In-Thread Polls"]
-        S2["Auto-Recalculating Buffer Engine & Schedule Reflow"]
-        S3["AI Assistant & Weather Contingency Reshuffle"]
-    end
-
-    RC1 --> CP
-    RC2 --> CP
-    RC3 --> CP
-    CP --> S1
-    CP --> S2
-    CP --> S3
-```
-*Figure 2.1: Problem tree illustrating root causes and WanderSync core architectural interventions.*
+<img src="./docs/ideation-board.png" alt="Ideation Board - Problem Tree" />
 
 ### 2.3 Mentor Consultation
 
@@ -84,14 +59,42 @@ graph TD
 
 ## 3. Design & Prototype
 
-**UI Prototype:** [Public Link]
+**UI Prototype:** [Public Link](https://travel.hoezhiwan.my/)
 
 *(Check that it opens in an incognito window.)*
 
-| **Screen 1**<br>Dynamic Itinerary & Buffer Guard | **Screen 2**<br>Social Reel Spotlight & Wishlist | **Screen 3**<br>Contextual Discussion & Mini-Poll | **Screen 4**<br>AI Schedule Copilot & Disruption Reflow |
-| :---: | :---: | :---: | :---: |
-| <img src="./docs/screens/screen1.png" width="200" alt="Screen 1: Dynamic Itinerary & Buffer Guard" /> | <img src="./docs/screens/screen2.png" width="200" alt="Screen 2: Social Reel Spotlight & Wishlist" /> | <img src="./docs/screens/screen3.png" width="200" alt="Screen 3: Contextual Discussion & Mini-Poll" /> | <img src="./docs/screens/screen4.png" width="200" alt="Screen 4: AI Schedule Copilot & Disruption Reflow" /> |
-| *Chronological timeline with transit cushions and status indicators.* | *Extracted video content with visual source attribution.* | *Inline consensus voting resolving conflicting preferences.* | *Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.* |
+<table width="100%">
+  <thead>
+    <tr>
+      <th width="25%" align="center"><b>Screen 1</b><br>Dynamic Itinerary & Buffer Guard</th>
+      <th width="25%" align="center"><b>Screen 2</b><br>Social Reel Spotlight & Wishlist</th>
+      <th width="25%" align="center"><b>Screen 3</b><br>Contextual Discussion & Mini-Poll</th>
+      <th width="25%" align="center"><b>Screen 4</b><br>AI Schedule Copilot & Disruption Reflow</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen1.png" width="100%" alt="Screen 1: Dynamic Itinerary & Buffer Guard" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen2.png" width="100%" alt="Screen 2: Social Reel Spotlight & Wishlist" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen3.png" width="100%" alt="Screen 3: Contextual Discussion & Mini-Poll" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen4.png" width="100%" alt="Screen 4: AI Schedule Copilot & Disruption Reflow" />
+      </td>
+    </tr>
+    <tr>
+      <td width="25%" align="center" valign="top"><em>Chronological timeline with transit cushions and status indicators.</em></td>
+      <td width="25%" align="center" valign="top"><em>Extracted video content with visual source attribution.</em></td>
+      <td width="25%" align="center" valign="top"><em>Inline consensus voting resolving conflicting preferences.</em></td>
+      <td width="25%" align="center" valign="top"><em>Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.</em></td>
+    </tr>
+  </tbody>
+</table>
 
 ---
 
@@ -108,29 +111,23 @@ graph TD
 
 ## 5. Technical Architecture & Feasibility
 
-> [!NOTE]
-> **Prototype Validation vs. Production Build Phase:**  
-> The current repository implementation serves as our rapid client-side prototype (Vanilla JS / Vite / LocalStorage simulation) engineered for immediate 60fps tactile validation, offline resilience, and interactive pitch delivery. The architecture outlined below details the production-ready, scalable stack that our team will implement during the formal **Building Phase**.
-
----
-
 ### 5.1 Production Tech Stack
 
-| Layer | Technology | Why We Chose It | Constraints & How We Mitigate Them |
-| :--- | :--- | :--- | :--- |
-| **Frontend** | **Next.js 15 (App Router, React 19, TypeScript)** with Tailwind CSS & Apple Liquid Glass tokens | • Makes pages load quickly on mobile phones.<br>• Automatically shrinks and sharpens photos saved from Instagram and TikTok.<br>• Creates simple shareable links for group members. | **Constraint:** Moving schedule cards quickly could feel slow or laggy.<br>**Mitigation:** The screen updates immediately when dragging a card, then saves the changes to the database quietly in the background. |
-| **Backend & APIs** | **Next.js Route Handlers & Server Actions** + **Supabase Edge Functions** (Deno) | • Keeps website and server code in one place for faster development.<br>• Prevents connection errors between screens and server logic.<br>• Runs quick background jobs without slowing down the user. | **Constraint:** Complex AI planning tasks might take too long and time out.<br>**Mitigation:** Stream AI answers word-by-word so travelers see suggestions instantly instead of waiting. |
-| **Database** | **PostgreSQL** (Managed via **Supabase Cloud**) | • Keeps trip details organized cleanly (days, stops, and group votes stay linked).<br>• Stores extra details from social media Reels with ease.<br>• Ensures private trip plans can only be seen by invited friends. | **Constraint:** Having many friends open the app at once could overload database connections.<br>**Mitigation:** Uses Supabase's connection manager to share connections safely without crashing. |
-| **Real-Time Sync** | **Supabase Realtime** (Postgres CDC & Broadcast Channels) | • Updates everyone's screen instantly—when one person moves a stop or votes in a poll, everyone sees it right away without refreshing the page. | **Constraint:** Weak travel Wi-Fi or mobile data could drop or repeat updates.<br>**Mitigation:** Changes show on screen immediately and use timestamps to ignore accidental duplicate messages. |
-| **AI Engine (LLM)** | **Google Gemini** (**Gemini 2.0 Flash** via `@google/genai` SDK & Vercel AI SDK) | • Responds in under a second for fast schedule changes.<br>• Can read photos and video screenshots from travel Reels.<br>• Easily handles long multi-day trips and lots of group chat messages at once.<br>• Reliably outputs clean, structured schedule updates. | **Constraint:** Daily AI request limits or slow internet connections while on the road.<br>**Mitigation:** Saves answers for popular tourist spots to reuse them, and falls back to simple built-in rules if the AI is slow to reply. |
-| **APIs & Services** | • **Social Reel Extraction:** RapidAPI / Apify Instagram & TikTok Scraper<br>• **Transit & Routing:** Google Places & Routes API (OSRM fallback)<br>• **Weather Intelligence:** OpenWeatherMap API / Weather MCP Server<br>• **Auth & Storage:** Supabase Auth (Google & Apple OAuth) + Supabase S3 Storage | • Saves users from having to type in places, addresses, and photos by hand.<br>• Gives realistic walking and train travel times between stops.<br>• Checks the weather forecast to warn of rain and recommend indoor alternatives.<br>• Lets friends sign in easily with Google or Apple, and safely stores ticket QR codes. | **Constraint:** Third-party APIs charge per search and have daily usage limits.<br>**Mitigation:** Saves travel times between popular landmarks in our database, keeps Reel info for 48 hours to avoid repeated calls, and shrinks ticket image sizes. |
-| **Hosting & Infra** | **Vercel Edge Network** (Frontend & Server Actions) + **Supabase Cloud** (Tokyo/Singapore Region) | • Loads fast anywhere in the world.<br>• Places database servers close to popular travel destinations in Asia for quick response times.<br>• Needs zero manual server maintenance. | **Constraint:** Free hosting plans have monthly bandwidth limits.<br>**Mitigation:** Saves ready-made page previews so the server does not have to rebuild the page every time someone views an itinerary. |
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | Next.js 15, React 19, Tailwind CSS |
+| **Backend** | Next.js Server Actions & Supabase Edge Functions |
+| **Database** | PostgreSQL (Supabase Cloud) |
+| **Real-Time Sync** | Supabase Realtime |
+| **AI Engine** | Gemini Flash |
+| **APIs & Services** | Instagram/TikTok Scrapers, Google Places, OpenWeatherMap |
+| **Hosting** | Vercel Edge Network & Supabase (Asia Region) |
 
 ---
 
 ### 5.2 System Architecture Diagram
 
-<img width="1442" height="554" alt="architecture drawio" src="https://github.com/user-attachments/assets/7e292842-981f-45a6-a384-7cb50aebbab0" />'
+<img width="1442" height="554" alt="architecture drawio" src="https://github.com/user-attachments/assets/7e292842-981f-45a6-a384-7cb50aebbab0" />
 
 *Figure 5.1: WanderSync Architecture Diagram*
 
@@ -152,7 +149,7 @@ To make sure we build a high-quality, reliable app on time, we are focusing stri
    - Add activity status & lifecycle indicators (planned, in-progress, done) to each timeline card.
    - Create timeline-to-thread deep linking so tapping an activity jumps directly to its discussion thread.
 
-2. **Tony – AI Assistant and Chat**
+2. **Hoe Zhi Wan – AI Assistant and Chat**
    - Design and implement the onboarding UI, covering sign-in, trip creation, and friend invites.
    - Integrate the Gemini AI copilot for smart schedule suggestions and pacing adjustments (*Relaxed*, *Balanced*, *Fast-Paced*).
    - Build 1-tap disruption reshuffling so a single tap cascades a delay or cancellation across all affected stops.
@@ -166,7 +163,5 @@ To make sure we build a high-quality, reliable app on time, we are focusing stri
 #### What We Are Leaving Out for Now (Out-of-Scope)
 
 To keep the app simple, fast, and delivered on schedule, we are holding off on features that add clutter or already have great standalone tools:
-- **Separate "Live Day" Mode**: We keep delay buttons and schedules in one unified view so users don't have to jump between different screens while traveling.
 - **In-App Bill Splitting**: Popular apps like Splitwise already do this well. We focus our energy on smooth schedule planning.
 - **Split-Group Branching Paths**: Having different sub-schedules for different people creates confusion. Simple free-time blocks give friends flexibility without cluttering the plan.
-- **Native App Store Downloads**: The app works smoothly in mobile web browsers without requiring users to download large files from an app store.

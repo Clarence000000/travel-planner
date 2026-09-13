@@ -211,7 +211,7 @@ export function createIdeasView() {
             (item) => `
             <div class="wishlist-card ${item.source === 'reel' ? 'wishlist-card--has-reel' : ''}" data-id="${item.id}">
               <div class="wishlist-card__image-wrap">
-                <img src="${item.imageUrl || './src/assets/card-temple.png'}" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
+                <img src="${item.imageUrl || './src/assets/bg-ideas.jpg'}" onerror="this.onerror=null; this.src='./src/assets/hero-banner.jpg';" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
                 <div class="wishlist-card__badge-row">
                   <span class="card-origin-badge card-origin-badge--category">
                     ${item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Activity'}
@@ -598,7 +598,11 @@ export function createIdeasView() {
 
   // ── Modal: Add to Wishlist ──────────────────────────────────────────
   function openAddWishlistModal(target) {
+    const existing = document.getElementById('modal-add-wishlist');
+    if (existing) existing.remove();
+
     const backdrop = document.createElement('div');
+    backdrop.id = 'modal-add-wishlist';
     backdrop.className = 'itinerary-modal-backdrop is-open';
 
     backdrop.innerHTML = `
@@ -705,7 +709,8 @@ export function createIdeasView() {
       });
 
       close();
-      renderWishlist(target);
+      const currentTarget = target || container.querySelector('#ideas-subview-content');
+      if (currentTarget) renderWishlist(currentTarget);
       showToast(`Added "${title}" (${category}) to Wishlist`);
     });
 
@@ -776,24 +781,22 @@ export function createIdeasView() {
     document.body.appendChild(backdrop);
   }
 
-  if (!window.TravelApp) window.TravelApp = {};
-  window.TravelApp.openAddWishlistModal = () => {
+  const triggerAddWishlist = () => {
     currentSubTab = 'wishlist';
     render();
-    const content = container.querySelector('#ideas-content');
+    const content = container.querySelector('#ideas-subview-content');
     if (content) openAddWishlistModal(content);
   };
-  window.addEventListener('open-add-wishlist', () => {
-    currentSubTab = 'wishlist';
-    render();
-    const content = container.querySelector('#ideas-content');
-    if (content) openAddWishlistModal(content);
-  });
+
+  if (!window.TravelApp) window.TravelApp = {};
+  window.TravelApp.openAddWishlistModal = triggerAddWishlist;
+  window.addEventListener('open-add-wishlist', triggerAddWishlist);
 
   // Re-render when trip settings or destination change
-  window.addEventListener('trip-settings-updated', () => {
+  const handleTripSettingsUpdated = () => {
     render();
-  });
+  };
+  window.addEventListener('trip-settings-updated', handleTripSettingsUpdated);
 
   // Initial render
   render();
@@ -801,5 +804,10 @@ export function createIdeasView() {
   return {
     element: container,
     render,
+    openAddWishlistModal: triggerAddWishlist,
+    destroy: () => {
+      window.removeEventListener('open-add-wishlist', triggerAddWishlist);
+      window.removeEventListener('trip-settings-updated', handleTripSettingsUpdated);
+    },
   };
 }

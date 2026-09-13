@@ -74,38 +74,41 @@ flowchart TD
 
 ## 3. Screen-by-Screen Walkthrough Narrative
 
-### Act 1: Dynamic Genesis & Social Reel Import
-- **Screen**: Welcome / Onboarding Modal
-- **What Happens**:
-  1. The presenter clicks **"Import from Social Reels"**.
-  2. The modal scans the sample IG Reel (`@penangfoodie: 5 Must-Visit Heritage Spots & Sunset Lookouts`).
-  3. **Date & Duration Customizer**:
-     - Defaults to a **3-Day Trip** (`Oct 12 – Oct 14`) with quick selector pills: `[Weekend (3D)]`, `[4 Days]`, `[5 Days]`.
-     - Date inputs allow direct calendar picking.
-  4. **Draggable Extracted Cards**:
-     - Detected venues appear with vertical drag handles:
-       - 📍 *Clan Jetties (Chew Jetty) Morning Heritage Walk* (`[Day 1 ▾]`)
-       - 📍 *Penang Hill Funicular & The Habitat Sunset Canopy Walk* (`[Day 1 ▾]`)
-     - Presenter drags them to set the desired order, then taps **"Build Itinerary"**.
-  5. **Timeline Zero-State Anchor**:
-     - Day 1 opens containing **strictly those 2 extracted spots**.
-     - Between them sits an active dotted slot:
-       > **⚡ 4h Free Pocket**: *Chew Jetty ➔ Penang Hill. Need a lunch recommendation or Grab transit link?*
+### Act 1: Dynamic Genesis & Squad Assembly (Two Distinct Paths)
+- **Screen**: Welcome / Onboarding Modal (`WanderSync Genesis`)
+- **Two Distinct Premium Paths**:
+  1. **Option 1: Extract from Social Reel (`AI Video Scan`)**:
+     - Scans Instagram Reels or TikToks (e.g. `@penangfoodie: 5 Must-Visit Heritage Spots & Sunset Lookouts`).
+     - Extracts verified coordinates, durations, and key landmarks into draggable anchor cards:
+       - 📍 *Clan Jetties (Chew Jetty) Morning Heritage Walk* (09:30 AM)
+       - 📍 *Penang Hill Funicular & The Habitat Sunset Canopy Walk* (16:30 PM)
+     - Deposits non-anchor suggestions (Teochew Chendul & Siam Road) directly into the Trip Wishlist.
+  2. **Option 2: AI Trip Architect (`Custom Wizard`)**:
+     - Configures arbitrary destination (`Penang, Malaysia`), arbitrary dates (`Oct 12 – Oct 14`), and group pacing (`Chill`, `Balanced`, `Turbo`).
+     - Directly incorporates top-voted group wishlist items into the schedule.
+- **Share with Friends Step (Clean 1-Tap Invite Link)**:
+  - **1-Tap Trip Invite Link**: `https://wandersync.app/join/penang-squad-842` with instant `[✓ Copied!]` feedback and interactive QR join pass preview.
+  - Clean, zero-friction sharing—friends click the link to join the trip, propose spots, and cast consensus votes.
+- **Dynamic Reveal Sheet & Timeline Zero-State Anchor**:
+  - Summarizes the 3-day itinerary DNA: **2 confirmed anchors on Day 1** separated by an authentic **4-hour open lunch gap** (`11:00 AM – 16:30 PM`), with transit buffer calculation:
+    > `✓ 5h 30m transit buffer (12m needed)`
 - **Presenter Pitch**:
-  > *"Travel inspiration doesn't come from blank spreadsheets; it starts on Instagram Reels and TikTok. WanderSync extracts actual Penang venues directly into a flexible multi-day trip, leaving smart gap opportunities instead of forcing a rigid pre-packaged template."*
+  > *"Travel planning fails when it forces people into rigid templates. WanderSync gives you two distinct workflows: turn viral Instagram reels into verified calendar anchors with open lunch windows, or let our AI Architect balance pacing and squad wishlists. Then, invite your squad with a single shareable link so everyone collaborates on the same live canvas."*
 
 ---
 
-### Act 2: Ambient Background Influx & Brainstorming Whiteboard
-- **Screen**: Navigation between Itinerary & Ideas Tab
-- **What Happens**:
-  1. As soon as the trip is created, the **Autonomous Background Engine** quietly starts. A subtle amber activity dot `●` appears on the **Day 2** tab pill.
-  2. The presenter navigates to the **Ideas & Whiteboard** tab:
-     - Shows the team's visual canvas with categorized sticky notes.
-     - Presenter clicks `+ Add Idea`, types *"Sunset Drinks at Bora Bora Batu Ferringhi"*, and selects `[Propose to Group]`.
-     - Sticky note appears on the board. Presenter clicks `[⚡ Promote to Day 1]`.
+### Act 2: Organic Multi-User Simulation (25-Second Staged Sequence) & Ideas
+- **Screen**: Itinerary Day Tabs & Ideas / Whiteboard
+- **Organic Background Simulation (Realistic Pacing)**:
+  - As soon as the trip begins, the background worker kicks off an organic **25-second collaboration sequence** (`[5000ms, 15000ms, 25000ms]`):
+    - **T+0s**: Day 2 chip illuminates with a subtle activity dot (`Day 2 ●`).
+    - **T+5s**: Tony adds *Entopia by Penang Butterfly Farm* (`Day 2 · ● 1 stop`).
+    - **T+15s**: Wei Gang adds *Escape Adventure Theme Park* (`Day 2 · ● 2 stops`).
+    - **T+25s**: Clarence locks in *Batu Ferringhi Sunset Beach* (`Day 2 · ● 3 stops ✓`).
+  - Presenter doesn't have to wait or rush—while the presenter explores the **Ideas & Whiteboard** tab, the team is autonomously working in the background.
+  - Tapping **Day 2** reveals the completed schedule with calculated transit buffers and activity chat threads, clearing the dot.
 - **Presenter Pitch**:
-  > *"Not all ideas are ready for a rigid time slot. Our Ideas Whiteboard lets the travel party brainstorm casually, then promote winning spots directly to any day with one tap."*
+  > *"Collaborative travel shouldn't require everyone to sit on a Zoom call editing simultaneously. WanderSync runs an organic background simulation where Tony and Wei Gang draft Day 2 independently. Notice the live status badge on the Day 2 tab showing their progress in real time."*
 
 ---
 

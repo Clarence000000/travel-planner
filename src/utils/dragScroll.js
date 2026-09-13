@@ -14,32 +14,34 @@ export function enableDragScroll(slider) {
 
   slider.style.cursor = "grab";
 
+  function onMouseMove(e) {
+    if (!isDown) return;
+    const currentX = e.pageX !== undefined && e.pageX !== 0 ? e.pageX : e.clientX;
+    const walk = (currentX - startX) * 1.5;
+    if (Math.abs(walk) > 4) {
+      hasDragged = true;
+    }
+    slider.scrollLeft = scrollLeft - walk;
+  }
+
+  function onMouseUp() {
+    if (isDown) {
+      isDown = false;
+      slider.style.cursor = "grab";
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    }
+  }
+
   slider.addEventListener("mousedown", (e) => {
     if (e.button !== 0) return;
     isDown = true;
     hasDragged = false;
     slider.style.cursor = "grabbing";
-    const pageX = e.pageX !== undefined && e.pageX !== 0 ? e.pageX : e.clientX;
-    startX = pageX - slider.offsetLeft;
+    startX = e.pageX !== undefined && e.pageX !== 0 ? e.pageX : e.clientX;
     scrollLeft = slider.scrollLeft;
-  });
-
-  window.addEventListener("mouseup", () => {
-    if (isDown) {
-      isDown = false;
-      slider.style.cursor = "grab";
-    }
-  });
-
-  window.addEventListener("mousemove", (e) => {
-    if (!isDown) return;
-    const pageX = e.pageX !== undefined && e.pageX !== 0 ? e.pageX : e.clientX;
-    const x = pageX - slider.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    if (Math.abs(walk) > 4) {
-      hasDragged = true;
-    }
-    slider.scrollLeft = scrollLeft - walk;
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
   });
 
   slider.addEventListener("click", (e) => {
@@ -52,9 +54,11 @@ export function enableDragScroll(slider) {
 
   // Enable horizontal mouse wheel scrolling
   slider.addEventListener("wheel", (e) => {
-    if (e.deltaY !== 0 && slider.scrollWidth > slider.clientWidth) {
-      e.preventDefault();
-      slider.scrollLeft += e.deltaY;
+    if (slider.scrollWidth > slider.clientWidth) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && e.deltaY !== 0) {
+        e.preventDefault();
+        slider.scrollLeft += e.deltaY;
+      }
     }
   }, { passive: false });
 }
