@@ -144,7 +144,7 @@ To make sure we build a high-quality, reliable app on time, we are focusing stri
 
 #### What We Are Building (In-Scope)
 
-> **🏁 Week 1 Milestone – Core Itinerary** | **🏁 Week 2 Milestone – AI and Chat**
+> **🏁 Week 1 Milestone – Core Itinerary** | **🏁 Week 2 Milestone – AI and Chat** | **🏁 Week 3 Milestone – Live HUD & Final Polish**
 
 1. **Clarence – Itinerary & Interaction**
    - Build an interactive visual timeline that displays all daily activities in chronological order.
