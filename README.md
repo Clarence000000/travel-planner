@@ -30,6 +30,8 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 <img src="./docs/ideas.png" />
 
+*Figure 2.1: Ideas Board*
+
 | Idea | Why it was dropped / kept |
 | :--- | :--- |
 | **Interactive Drag-and-Drop Timeline with Buffer Warnings (Chosen)** | **Kept:** Solves the core failure of static spreadsheets by automatically checking whether walking or subway time between consecutive stops is physically realistic. |
@@ -44,9 +46,13 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 <img src="./docs/ideation-board.png" alt="Ideation Board - Problem Tree" />
 
+*Figure 2.2: Ideation Board - Problem Tree*
+
 ### 2.3 Mentor Consultation
 
 <img src="./docs/mentor-consultation.png" alt="Mentor Consultation Board" />
+
+*Figure 2.3: Mentor Consultation Board*
 
 **Design Evolution:**
 
@@ -60,8 +66,6 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 ## 3. Design & Prototype
 
 **UI Prototype:** [Public Link](https://travel.hoezhiwan.my/)
-
-*(Check that it opens in an incognito window.)*
 
 <table width="100%">
   <thead>
@@ -121,7 +125,7 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 | **Real-Time Sync** | Supabase Realtime |
 | **AI Engine** | Gemini Flash |
 | **APIs & Services** | Instagram/TikTok Scrapers, Google Places, OpenWeatherMap |
-| **Hosting** | Vercel Edge Network & Supabase (Asia Region) |
+| **Hosting** | Vercel Edge Network & Supabase |
 
 ---
 
@@ -139,9 +143,11 @@ To make sure we build a high-quality, reliable app on time, we are focusing stri
 
 <img src="./docs/Gantt Chart Whiteboard.png" alt="WanderSync 3-Week Development Plan" />
 
+*Figure 5.2: WanderSync Build Plan*
+
 #### What We Are Building (In-Scope)
 
-> **🏁 Week 1 Milestone – Core Itinerary** | **🏁 Week 2 Milestone – AI and Chat** | **🏁 Week 3 Milestone – Deployment & Polish**
+> **🏁 Week 1 Milestone – Core Itinerary** | **🏁 Week 2 Milestone – AI and Chat** | **🏁 Week 3 Milestone – Polish**
 
 1. **Clarence – Itinerary & Interaction**
    - Build an interactive visual timeline that displays all daily activities in chronological order.
