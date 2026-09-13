@@ -43,10 +43,18 @@ export function createAssistantView() {
 
   function render() {
     container.innerHTML = `
-      <div class="view-header">
-        <div class="view-header__meta">
-          <span class="view-badge">Schedule Optimizer</span>
-          <p class="view-subtitle">Auto-reshuffle schedule stops based on budget constraints, travel pace, and unexpected delays</p>
+      <!-- Atmospheric Vertical Asset Banner (Sticky Cat Photo Header) -->
+      <div class="view-banner" style="background-image: url('./src/assets/bg-assistant.png');">
+        <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="view-banner__scrim">
+          <span class="view-banner__badge"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg> AI Copilot</span>
+          <h2 class="view-banner__title">Schedule Assistant</h2>
         </div>
       </div>
 

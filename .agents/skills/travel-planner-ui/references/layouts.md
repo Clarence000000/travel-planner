@@ -1,14 +1,11 @@
-# Page Layouts
+# Page Layouts — Apple iOS 26 "Liquid Glass"
 
-This document defines the three primary page layouts visible in the travel
-planner mockup: **Home**, **Detail**, and **Trips**. Each layout specifies the
-page structure, content sections, and responsive behavior.
+This document defines the layout architecture and the 5 primary views of the
+Travel Planner application: **Itinerary**, **Chat**, **Assistant**, **Ideas**, and **Dashboard**.
 
 ---
 
-## Base HTML Template
-
-Every page begins with this HTML shell:
+## Base HTML Structure
 
 ```html
 <!DOCTYPE html>
@@ -17,419 +14,114 @@ Every page begins with this HTML shell:
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#F5F0E8" />
-  <title>Travel Planner</title>
+  <title>WanderSync — Travel Planner</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet"
-  />
-  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./src/styles/tokens.css" />
+  <link rel="stylesheet" href="./src/styles/base.css" />
+  <link rel="stylesheet" href="./src/styles/layout.css" />
+  <link rel="stylesheet" href="./src/styles/components.css" />
+  <link rel="stylesheet" href="./src/styles/itinerary.css" />
+  <link rel="stylesheet" href="./src/styles/ideas.css" />
 </head>
 <body>
-  <div class="app-shell">
-    <div class="app-container">
-      <!-- PAGE CONTENT HERE -->
-    </div>
-  </div>
-  <script src="app.js" type="module"></script>
+  <div id="app"></div>
+  <script type="module" src="./src/app.js"></script>
 </body>
 </html>
 ```
 
-### Global Reset (include in `styles.css`)
+---
+
+## App Shell Layout Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐  top: 0
+│  .app-shell__top-guard (fixed, h: 14px, z: 39)           │  (Masks content bleeding above banner)
+├──────────────────────────────────────────────────────────┤
+│  ┌────────────────────────────────────────────────────┐  │  top: 12px
+│  │ .view-banner (sticky, h: 124px, r: 28px, z: 40)    │  │  (Sticky cat photo banner + menu btn)
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  .main-content (window scroll container)                 │
+│  ┌────────────────────────────────────────────────────┐  │
+│  │ Active View Body (Day chips, Feed, Cards)          │  │
+│  │                                                    │  │
+│  │                                                    │  │
+│  │ .nav-spacer (h: nav-height + safe-area + 32px)     │  │
+│  └────────────────────────────────────────────────────┘  │
+│                                                          │
+│  ┌────────────────────────────────────────────────────┐  │  bottom: 12px
+│  │ .bottom-nav (fixed dock, h: 66px, r: 32px, z: 100) │  │  (5-tab liquid glass dock)
+│  └────────────────────────────────────────────────────┘  │
+├──────────────────────────────────────────────────────────┤
+│  .app-shell__bottom-guard (fixed, h: 14px, z: 90)        │  bottom: 0
+└──────────────────────────────────────────────────────────┘  (Masks content bleeding below dock)
+```
+
+### Dynamic Background Wallpapers
+
+The `.app-shell` updates its background pattern dynamically via `data-active-tab`:
 
 ```css
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html {
-  font-family: var(--font-family);
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: var(--color-text-primary);
-  background-color: var(--color-background);
-}
-
-body {
-  min-height: 100dvh;
-}
-
-img {
-  display: block;
-  max-width: 100%;
-}
-
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
-button {
-  font-family: inherit;
+.app-shell[data-active-tab="itinerary"] {
+  background-image: 
+    linear-gradient(180deg, rgba(245, 240, 232, 0.82) 0%, rgba(245, 240, 232, 0.92) 100%),
+    url('../assets/bg-itinerary.png');
+  background-repeat: repeat;
+  background-size: 240px auto;
+  background-position: top center;
+  background-attachment: fixed;
 }
 ```
+
+The fixed occlusion guards (`.app-shell__top-guard`, `.app-shell__bottom-guard`) replicate these exact background declarations, ensuring that content scrolling behind them is occluded seamlessly without visual seams.
 
 ---
 
-## 1. Home Page
+## 1. Itinerary View (Master Timeline)
 
-The Home page is the app's landing screen with location selector, search,
-country filters, and horizontally scrollable destination cards.
-
-### Structure
-
-```
-┌─────────────────────────────┐
-│  Top Header                 │  (Location + bell + avatar)
-├─────────────────────────────┤
-│  Search Bar                 │  (Input + filter button)
-├─────────────────────────────┤
-│  Filter Chips               │  (Horizontal scroll)
-├─────────────────────────────┤
-│  Section Header             │  ("Popular Destinations" + "View all")
-├─────────────────────────────┤
-│  Destination Cards Carousel │  (Horizontal scroll of large cards)
-│                             │
-│                             │
-├─────────────────────────────┤
-│  Bottom Navigation          │  (Fixed, "Home" active)
-└─────────────────────────────┘
-```
-
-### HTML
-
-```html
-<div class="app-container">
-  <!-- Top Header -->
-  <header class="top-header">
-    <div class="top-header__location">
-      <span class="top-header__label">Location</span>
-      <button class="top-header__city">Berlin <span class="top-header__dropdown-icon">▾</span></button>
-    </div>
-    <div class="top-header__actions">
-      <button class="icon-btn" aria-label="Notifications">🔔</button>
-      <div class="avatar avatar--sm"><img src="avatar.jpg" alt="User" /></div>
-    </div>
-  </header>
-
-  <!-- Search -->
-  <div class="search-bar">
-    <div class="search-bar__input-wrapper">
-      <span class="search-bar__icon">🔍</span>
-      <input type="search" class="search-bar__input" placeholder="Search" />
-    </div>
-    <button class="search-bar__filter-btn" aria-label="Filters">⚙</button>
-  </div>
-
-  <!-- Country Chips -->
-  <div class="chip-row">
-    <button class="chip chip--active"><span class="chip__flag">🇩🇪</span> Germany</button>
-    <button class="chip"><span class="chip__flag">🇩🇰</span> Denmark</button>
-    <button class="chip"><span class="chip__flag">🇸🇪</span> Sweden</button>
-  </div>
-
-  <!-- Popular Destinations -->
-  <div class="section-header">
-    <h2 class="section-header__title">Popular Destinations</h2>
-    <a href="#" class="section-header__link">View all ›</a>
-  </div>
-
-  <div class="card-carousel" id="destinations-carousel">
-    <!-- Destination cards rendered here -->
-  </div>
-
-  <!-- Spacer for bottom nav -->
-  <div class="nav-spacer"></div>
-
-  <!-- Bottom Nav -->
-  <nav class="bottom-nav" aria-label="Main navigation">
-    <a href="/" class="bottom-nav__tab bottom-nav__tab--active">🏠 <span>Home</span></a>
-    <a href="/tracks" class="bottom-nav__tab">🧭 <span>Tracks</span></a>
-    <a href="/trips" class="bottom-nav__tab">🎒 <span>Trips</span></a>
-    <a href="/more" class="bottom-nav__tab">⋯ <span>More</span></a>
-    <a href="/settings" class="bottom-nav__tab">⚙ <span>Settings</span></a>
-  </nav>
-</div>
-```
-
-### Carousel CSS
-
-```css
-.card-carousel {
-  display: flex;
-  gap: var(--space-4);
-  padding: 0 var(--page-padding);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-.card-carousel::-webkit-scrollbar {
-  display: none;
-}
-
-.card-carousel > .destination-card {
-  scroll-snap-align: start;
-}
-
-.nav-spacer {
-  height: calc(var(--nav-height) + var(--space-4));
-}
-```
+- **Banner**: Contextual badge (`Tokyo • Day X of 3`) and clean view title (`Trip Itinerary`) over `bg-itinerary.png`.
+- **Day Selector**: Horizontally scrollable chip row (Day 1 Tokyo, Day 2 Kyoto, Day 3 Shibuya).
+- **Transit Buffer Alerts**: Displays warnings when consecutive blocks have deficit travel windows.
+- **Timeline Feed**: Draggable cards connected by a vertical electric blue spine (`#2563EB`) with clear white node pins.
+- **Card States**:
+  - *Collapsed State*: Clean summary with time, category tag, title, and chevron.
+  - *Expanded State*: Horizontal split layout with left summary strip and right detail panel containing circular venue illustration SVG, notes, cost, and drag grip.
+- **Drag & Drop Auto-Scrolling**: Dragging cards near the top or bottom viewport edges triggers instant responsive auto-scrolling via `window.scrollBy`.
 
 ---
 
-## 2. Detail Page
+## 2. Chat View (Per-Activity Discussions)
 
-The destination detail page has a large hero image at the top, scrollable
-content below, and no bottom navigation (replaced by the back/heart header
-overlay).
-
-### Structure
-
-```
-┌─────────────────────────────┐
-│  Hero Image                 │  (Full-width illustrated image)
-│  ┌───┐              ┌───┐  │
-│  │ ← │              │ ♡ │  │  (Detail header overlay)
-│  └───┘              └───┘  │
-├─────────────────────────────┤
-│  Destination Title + Country│
-├─────────────────────────────┤
-│  Description Text           │
-├─────────────────────────────┤
-│  Map Embed                  │
-├─────────────────────────────┤
-│  Weather Widget             │  (Condition + time + temperature)
-├─────────────────────────────┤
-│  Amenity Tags               │  (Ticket, Hotel, Meal)
-├─────────────────────────────┤
-│  Author / Reviewer Row      │  (Avatar + name + rating)
-└─────────────────────────────┘
-```
-
-### HTML
-
-```html
-<div class="app-container detail-page">
-  <!-- Hero -->
-  <div class="detail-hero">
-    <img src="sunny-ridge-farm.jpg" alt="Sunny Ridge Farm" class="detail-hero__image" />
-    <header class="detail-header">
-      <button class="icon-btn icon-btn--round" aria-label="Go back">←</button>
-      <button class="icon-btn icon-btn--round" aria-label="Favorite">♡</button>
-    </header>
-  </div>
-
-  <!-- Content Sheet -->
-  <div class="detail-sheet">
-    <h1 class="detail-sheet__title">Sunny Ridge Farm</h1>
-    <p class="detail-sheet__country">🇩🇪 Germany</p>
-    <p class="detail-sheet__description">
-      Fictional countryside gem surrounded by windmills, lakes, and soft green hills.
-    </p>
-
-    <!-- Map -->
-    <div class="map-embed">
-      <img src="map.png" alt="Route map" class="map-embed__img" />
-    </div>
-
-    <!-- Weather -->
-    <div class="weather-widget">
-      <div class="weather-widget__condition">🌧 <span>Rainy</span></div>
-      <span class="weather-widget__time">8:40 AM</span>
-      <span class="weather-widget__temp">32<sup>°C</sup></span>
-    </div>
-
-    <!-- Amenities -->
-    <div class="amenity-tags">
-      <span class="amenity-tag">🎫 Ticket</span>
-      <span class="amenity-tag">🏨 Hotel</span>
-      <span class="amenity-tag">🍴 Meal</span>
-    </div>
-
-    <!-- Author -->
-    <div class="author-row">
-      <div class="avatar avatar--sm"><img src="james.jpg" alt="James Kir" /></div>
-      <span class="author-row__name">By James Kir</span>
-      <div class="author-row__rating">
-        <span class="author-row__star">★</span>
-        <span class="author-row__value">4.9</span>
-      </div>
-    </div>
-  </div>
-</div>
-```
-
-### Detail Page CSS
-
-```css
-.detail-page {
-  background: var(--color-surface);
-}
-
-.detail-hero {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  background: var(--color-surface-alt);
-}
-
-.detail-hero__image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.detail-sheet {
-  position: relative;
-  margin-top: -var(--space-6);
-  background: var(--color-surface);
-  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
-  padding: var(--space-6) var(--page-padding);
-  padding-bottom: var(--space-10);
-}
-
-.detail-sheet__title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.detail-sheet__country {
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-4);
-}
-
-.detail-sheet__description {
-  font-size: var(--text-base);
-  line-height: var(--leading-relaxed);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-5);
-}
-```
+- **Banner**: `📦 Boxed Buddies Chat` (`bg-chat.png`).
+- **Threads Hub**: Filter chips (All Threads, Day 1, Day 2, Active Polls) with liquid glass thread summary cards.
+- **Active Thread Conversation**: Back navigation button, member list, attached activity polls with interactive voting, message bubble feed, and floating glass message input bar.
 
 ---
 
-## 3. Trips Page
+## 3. Assistant View (AI Schedule Assistant)
 
-Grid-based listing of the user's trips, presented in a 2-column grid.
-
-### Structure
-
-```
-┌─────────────────────────────┐
-│  Top Header                 │  (Location + bell + avatar)
-├─────────────────────────────┤
-│  Search Bar                 │
-├─────────────────────────────┤
-│  Section Header             │  ("My Trips" + "View all")
-├─────────────────────────────┤
-│  ┌──────────┐ ┌──────────┐ │
-│  │ Trip Card│ │ Trip Card│ │
-│  └──────────┘ └──────────┘ │
-│  ┌──────────┐ ┌──────────┐ │
-│  │ Trip Card│ │ Trip Card│ │
-│  └──────────┘ └──────────┘ │
-│         ...                 │
-├─────────────────────────────┤
-│  Bottom Navigation          │  (Fixed, "Trips" active)
-└─────────────────────────────┘
-```
-
-### HTML
-
-```html
-<div class="app-container">
-  <!-- Top Header (same as Home) -->
-  <header class="top-header">...</header>
-
-  <!-- Search (same as Home) -->
-  <div class="search-bar">...</div>
-
-  <!-- My Trips Section -->
-  <div class="section-header">
-    <h2 class="section-header__title">My Trips</h2>
-    <a href="#" class="section-header__link">View all ›</a>
-  </div>
-
-  <div class="trips-grid">
-    <article class="trip-card">...</article>
-    <article class="trip-card">...</article>
-    <article class="trip-card">...</article>
-    <article class="trip-card">...</article>
-  </div>
-
-  <div class="nav-spacer"></div>
-
-  <nav class="bottom-nav" aria-label="Main navigation">
-    <!-- "Trips" tab has bottom-nav__tab--active -->
-  </nav>
-</div>
-```
+- **Banner**: `✨ Smiling Copilot` (`bg-assistant.png`).
+- **Schedule Diagnostics**: Real-time pace indicators (Relaxed, Balanced, Packed) and route optimization suggestions.
+- **Interactive Proposals**: Glass scenario cards proposing buffer extensions or activity swaps, with one-click Accept/Reject actions.
 
 ---
 
-## Responsive Breakpoints
+## 4. Ideas View (Wishlist & Whiteboard)
 
-### Tablet (≥ 768px)
-
-```css
-@media (min-width: 768px) {
-  .app-container {
-    max-width: 768px;
-    border-left: 1px solid var(--color-border);
-    border-right: 1px solid var(--color-border);
-  }
-
-  .trips-grid {
-    grid-template-columns: 1fr 1fr 1fr;   /* 3 columns on tablet */
-  }
-
-  .destination-card {
-    width: 280px;
-  }
-}
-```
-
-### Desktop (≥ 1024px)
-
-```css
-@media (min-width: 1024px) {
-  .app-container {
-    max-width: 430px;   /* Stay phone-width, centered */
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.1);
-    border-radius: var(--radius-2xl);
-    margin: var(--space-8) auto;
-    min-height: calc(100dvh - var(--space-8) * 2);
-  }
-
-  .bottom-nav {
-    max-width: 430px;
-    border-radius: 0 0 var(--radius-2xl) var(--radius-2xl);
-  }
-}
-```
+- **Banner**: `💡 Creative Workshop` (`bg-chat.png`).
+- **Segmented Control**: Floating glass dock toggling between **Wishlist Grid** and **Notes Whiteboard**.
+- **Wishlist Cards**: High-priority user destination ideas with upvoting counters and tags.
+- **Pastel Glass Sticky Notes**: Translucent notes (yellow, pink, green, blue) that float over the underlying cat wallpaper with subtle tilt angles.
 
 ---
 
-## Scrolling & Safe Areas
+## 5. Dashboard View (Now & Next Live HUD)
 
-- **Page content** scrolls vertically; the bottom nav stays fixed.
-- **Card carousels** and **chip rows** scroll horizontally.
-- Use `padding-bottom: env(safe-area-inset-bottom)` on the bottom nav for
-  notched devices.
-- Use `100dvh` (dynamic viewport height) instead of `100vh` to account for
-  mobile browser chrome.
+- **Banner**: `🐾 Cozy Live HUD` (`bg-dashboard.png`).
+- **Now & Next Cards**: Real-time card showing current active stop, time remaining, and immediate next destination.
+- **Live Transit Directions**: Step-by-step subway/walking guidance cards with line badges and countdowns.
+- **Shift Toolbar**: Quick buttons to bump schedule forward/backward (+15m, +30m) with cascading recalculation.
+- **Checklist**: Pre-departure preparation checklist with interactive checkboxes.

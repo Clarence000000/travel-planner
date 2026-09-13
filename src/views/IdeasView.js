@@ -14,7 +14,7 @@ import {
   deleteWhiteboardNote,
   promoteToItinerary,
 } from '../models/wishlistData.js';
-import { enableDragScroll } from '../utils/dragScroll.js';
+import { getTripSettings } from '../models/tripSettings.js';
 
 export function createIdeasView() {
   const container = document.createElement('div');
@@ -22,6 +22,7 @@ export function createIdeasView() {
 
   let currentSubTab = 'wishlist'; // 'wishlist' | 'whiteboard'
   let currentCategory = 'all';
+
   let selectedStickyColor = 'yellow';
 
   function showToast(message) {
@@ -39,13 +40,31 @@ export function createIdeasView() {
   }
 
   function render() {
-    container.innerHTML = `
-      <div class="view-header">
-        <div class="view-header__meta">
-          <span class="view-badge">Collaborative Ideation</span>
-          <p class="view-subtitle">Brainstorm stops, drop links & photos, and sketch ideas before locking them in</p>
-        </div>
+    const settings = getTripSettings();
+    const coverBg = './src/assets/bg-ideas.jpg';
+    const cityTitle = (settings.destination || settings.title || 'Tokyo').split(',')[0].trim();
 
+    container.innerHTML = `
+      <!-- Atmospheric Vertical Asset Banner -->
+      <div class="view-banner" style="background-image: url('${coverBg}');">
+
+        <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="view-banner__scrim">
+          <span class="view-banner__badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7zM9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1z"></path></svg>
+            ${cityTitle} Ideas
+          </span>
+          <h2 class="view-banner__title">Wishlist & Notes</h2>
+        </div>
+      </div>
+
+      <div class="view-header">
         <!-- Segmented Sub-view Switcher -->
         <div class="segmented-control" role="tablist">
           <button 
@@ -71,6 +90,17 @@ export function createIdeasView() {
       <div id="ideas-subview-content"></div>
     `;
 
+
+
+    const openSidebarBtn = container.querySelector('#btn-open-sidebar');
+    if (openSidebarBtn) {
+      openSidebarBtn.addEventListener('click', () => {
+        if (window.TravelApp && window.TravelApp.sidebar) {
+          window.TravelApp.sidebar.open();
+        }
+      });
+    }
+
     // Attach sub-tab events
     const subTabBtns = container.querySelectorAll('.segmented-btn');
     subTabBtns.forEach((btn) => {
@@ -88,26 +118,38 @@ export function createIdeasView() {
     }
   }
 
-  // ──────────────── Render Wishlist ────────────────
-
+  // ── Render Wishlist ──────────────────────────────────────────
   function renderWishlist(target) {
-    const items = getWishlist();
-    const filtered =
-      currentCategory === 'all'
-        ? items
-        : items.filter((item) => item.category === currentCategory);
+    const allItems = getWishlist();
+
+    // Extract dynamic categories ONLY from items user created
+    const userCategories = Array.from(
+      new Set(
+        allItems
+          .map((item) => (item.category || '').toLowerCase().trim())
+          .filter(Boolean)
+      )
+    );
+
+    if (currentCategory !== 'all' && !userCategories.includes(currentCategory.toLowerCase())) {
+      currentCategory = 'all';
+    }
+
+    const categories = userCategories.length > 0 ? ['all', ...userCategories] : [];
+
+    // Filter items according to active category
+    const items = currentCategory === 'all'
+      ? allItems
+      : allItems.filter((i) => (i.category || '').toLowerCase().trim() === currentCategory.toLowerCase().trim());
 
     const wrap = document.createElement('div');
     wrap.className = 'wishlist-container';
 
     wrap.innerHTML = `
       <div class="wishlist-controls">
-        <div class="category-filter-bar">
-          <button class="filter-chip ${currentCategory === 'all' ? 'filter-chip--active' : ''}" data-cat="all">All (${items.length})</button>
-          <button class="filter-chip ${currentCategory === 'sightseeing' ? 'filter-chip--active' : ''}" data-cat="sightseeing">Sightseeing</button>
-          <button class="filter-chip ${currentCategory === 'food' ? 'filter-chip--active' : ''}" data-cat="food">Food</button>
-          <button class="filter-chip ${currentCategory === 'activity' ? 'filter-chip--active' : ''}" data-cat="activity">Activity</button>
-          <button class="filter-chip ${currentCategory === 'nightlife' ? 'filter-chip--active' : ''}" data-cat="nightlife">Nightlife</button>
+        <div class="wishlist-controls__summary">
+          <span class="wishlist-count-badge">${items.length} of ${allItems.length} ${allItems.length === 1 ? 'Idea' : 'Ideas'}</span>
+          <span class="wishlist-count-desc">Saved places & activities</span>
         </div>
         <button type="button" class="btn btn--primary btn--sm" id="btn-open-add-wishlist">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -115,27 +157,84 @@ export function createIdeasView() {
         </button>
       </div>
 
+      <!-- Category Filter Bar (Dynamically reflects ONLY user placed categories) -->
+      ${categories.length > 1 ? `
+      <div class="category-filter-bar" role="tablist" aria-label="Filter wishlist by type">
+        ${categories.map((cat) => {
+      const count = cat === 'all'
+        ? allItems.length
+        : allItems.filter((i) => (i.category || '').toLowerCase().trim() === cat).length;
+      const label = cat === 'all' ? 'All' : cat.charAt(0).toUpperCase() + cat.slice(1);
+      const isActive = currentCategory.toLowerCase() === cat.toLowerCase();
+      return `
+            <button type="button" role="tab" aria-selected="${isActive}" class="filter-chip ${isActive ? 'filter-chip--active' : ''}" data-cat="${cat}">
+              <span>${label}</span>
+              <span class="filter-chip__count" style="font-size: 10.5px; opacity: 0.85; margin-left: 4px;">(${count})</span>
+            </button>
+          `;
+    }).join('')}
+      </div>
+      ` : ''}
+
       <div class="wishlist-grid">
-        ${
-          filtered.length === 0
-            ? `<div style="text-align: center; padding: 32px 16px; color: var(--color-text-secondary); font-size: var(--text-sm);">
-                No ideas found in this category. Tap <strong>Add Idea</strong> to save one!
-               </div>`
-            : filtered
-                .map(
-                  (item) => `
-            <div class="wishlist-card" data-id="${item.id}">
+        ${items.length === 0
+        ? `<div class="ideas-zero-grid" style="grid-column: 1 / -1;">
+                <div class="ideas-zero-card">
+                  <div class="ideas-zero-card__icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#E8621A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4>Drop Instagram Reels or TikToks</h4>
+                    <p>Save viral travel clips to auto-extract venue details, location pins, and ratings.</p>
+                  </div>
+                </div>
+
+                <div class="ideas-zero-card">
+                  <div class="ideas-zero-card__icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                  </div>
+                  <div>
+                    <h4>Pin Google Maps Venues</h4>
+                    <p>Collect candidate ramen bars, shrines, and spots in your group voting pool.</p>
+                  </div>
+                </div>
+              </div>`
+        : items
+          .map(
+            (item) => `
+            <div class="wishlist-card ${item.source === 'reel' ? 'wishlist-card--has-reel' : ''}" data-id="${item.id}">
               <div class="wishlist-card__image-wrap">
-                <img src="${item.imageUrl}" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
+                <img src="${item.imageUrl || './src/assets/bg-ideas.jpg'}" onerror="this.onerror=null; this.src='./src/assets/hero-banner.jpg';" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
                 <div class="wishlist-card__badge-row">
-                  <span class="wishlist-card__category">${item.category}</span>
-                  ${item.isScheduled ? `
+                  <span class="card-origin-badge card-origin-badge--category">
+                    ${item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Activity'}
+                  </span>
+                  ${item.source === 'reel'
+                ? `
+                    <span class="card-origin-badge card-origin-badge--reel">
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                      <span>Reel Pick</span>
+                    </span>
+                  `
+                : ''
+              }
+                  ${item.isScheduled
+                ? `
                     <span class="wishlist-card__status-tag">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
                       <span>Scheduled Day ${item.scheduledDay || 1}</span>
                     </span>
-                  ` : ''}
-                  <span class="wishlist-card__cost">${item.estimatedCost}</span>
+                  `
+                : ''
+              }
+                  <span class="wishlist-card__cost">${item.estimatedCost || 'Free'}</span>
                 </div>
               </div>
               <div class="wishlist-card__body">
@@ -146,9 +245,8 @@ export function createIdeasView() {
                 
                 <div class="wishlist-card__meta">
                   <span class="wishlist-card__author">Added by ${item.addedBy}</span>
-                  ${
-                    item.url
-                      ? `<a href="${item.url}" target="_blank" rel="noopener" class="wishlist-card__link">
+                  ${item.url
+                ? `<a href="${item.url}" target="_blank" rel="noopener" class="wishlist-card__link">
                           <span>Explore link</span>
                           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
@@ -156,8 +254,8 @@ export function createIdeasView() {
                             <line x1="10" y1="14" x2="21" y2="3"></line>
                           </svg>
                         </a>`
-                      : ''
-                  }
+                : ''
+              }
                 </div>
 
                 <div class="wishlist-card__actions">
@@ -175,52 +273,55 @@ export function createIdeasView() {
               </div>
             </div>
           `
-                )
-                .join('')
-        }
+          )
+          .join('')
+      }
       </div>
     `;
 
-    // Enable drag scrolling on category filter bar
-    enableDragScroll(wrap.querySelector('.category-filter-bar'));
-
     // Filter chip clicks
-    wrap.querySelectorAll('.filter-chip').forEach((btn) => {
+    wrap.querySelectorAll('[data-cat]').forEach((btn) => {
       btn.addEventListener('click', () => {
         currentCategory = btn.getAttribute('data-cat');
         renderWishlist(target);
       });
     });
 
-    // Vote button clicks
-    wrap.querySelectorAll('.btn-vote').forEach((btn) => {
+    // Voting click handler
+    wrap.querySelectorAll('[data-vote-id]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-vote-id');
-        toggleWishlistVote(id);
-        renderWishlist(target);
+        const updatedItem = toggleWishlistVote(id);
+        if (updatedItem) {
+          renderWishlist(target);
+          showToast(`Vote recorded for "${updatedItem.title}"`);
+        }
       });
     });
 
-    // Add to schedule button clicks
+    // Add to schedule handler
     wrap.querySelectorAll('[data-schedule-id]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-schedule-id');
-        const item = items.find((i) => i.id === id);
-        if (item) openScheduleModal(item);
+        openSchedulePicker(id, target);
       });
     });
 
-    // Add new wishlist item button
-    wrap.querySelector('#btn-open-add-wishlist').addEventListener('click', openAddWishlistModal);
+    // Add Idea button handler
+    const addBtn = wrap.querySelector('#btn-open-add-wishlist');
+    if (addBtn) {
+      addBtn.addEventListener('click', () => {
+        openAddWishlistModal(target);
+      });
+    }
 
-    target.innerHTML = '';
-    target.appendChild(wrap);
+    target.replaceChildren(wrap);
   }
 
-  // ──────────────── Render Whiteboard ────────────────
-
+  // ── Render Whiteboard ────────────────────────────────────────
   function renderWhiteboard(target) {
     const notes = getWhiteboardNotes();
+
     const wrap = document.createElement('div');
     wrap.className = 'whiteboard-container';
 
@@ -241,28 +342,29 @@ export function createIdeasView() {
           </button>
         </div>
         <div class="whiteboard-instructions">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
           <span>Drag notes freely • Double-tap canvas to place note</span>
         </div>
       </div>
 
       <div class="whiteboard-canvas" id="whiteboard-canvas-surface">
         ${notes
-          .map(
-            (n) => `
+        .map(
+          (n) => `
           <div 
-            class="sticky-note sticky-note--${n.color}" 
+            class="sticky-note sticky-note--${n.color || 'yellow'}" 
             id="note-elem-${n.id}"
             data-note-id="${n.id}"
-            style="left: ${n.x}px; top: ${n.y}px;"
+            style="left: ${n.x || 20}px; top: ${n.y || 20}px;"
           >
             <div class="sticky-note__pin">
-              <span class="sticky-note__tag">${n.tag}</span>
+              <span class="sticky-note__tag">${n.tag || 'Idea'}</span>
               <button type="button" class="sticky-note__delete" data-del-id="${n.id}" title="Delete note">✕</button>
             </div>
             <input 
               type="text" 
               class="sticky-note__title-input" 
-              value="${n.title}" 
+              value="${n.title || ''}" 
               data-edit-title="${n.id}"
               placeholder="Note title..."
             />
@@ -270,17 +372,17 @@ export function createIdeasView() {
               class="sticky-note__content" 
               data-edit-text="${n.id}"
               placeholder="Write thoughts..."
-            >${n.text}</textarea>
+            >${n.text || ''}</textarea>
             <div class="sticky-note__footer">
-              <span class="sticky-note__author">By ${n.author}</span>
+              <span class="sticky-note__author">By ${n.author || 'You'}</span>
               <button type="button" class="btn-note-schedule" data-note-schedule="${n.id}">
                 + Schedule
               </button>
             </div>
           </div>
         `
-          )
-          .join('')}
+        )
+        .join('')}
       </div>
     `;
 
@@ -296,36 +398,44 @@ export function createIdeasView() {
     const canvas = wrap.querySelector('#whiteboard-canvas-surface');
 
     // Add note button
-    wrap.querySelector('#btn-add-note').addEventListener('click', () => {
-      const newNote = addWhiteboardNote({
-        title: 'New Idea',
-        text: 'Drop inspiration or logistics note here.',
-        color: selectedStickyColor,
-        x: 40 + Math.floor(Math.random() * 60),
-        y: 60 + Math.floor(Math.random() * 80),
-        tag: 'Idea',
+    const addNoteBtn = wrap.querySelector('#btn-add-note');
+    if (addNoteBtn) {
+      addNoteBtn.addEventListener('click', () => {
+        addWhiteboardNote({
+          title: 'New Idea',
+          text: '',
+          color: selectedStickyColor,
+          x: 24 + Math.floor(Math.random() * 80),
+          y: 28 + Math.floor(Math.random() * 100),
+          tag: 'Idea',
+          author: 'You',
+        });
+        renderWhiteboard(target);
+        showToast('Sticky note added to whiteboard!');
       });
-      renderWhiteboard(target);
-      showToast(`Sticky note added!`);
-    });
+    }
 
-    // Double-click/double-tap canvas to add note
-    canvas.addEventListener('dblclick', (e) => {
-      if (e.target.closest('.sticky-note')) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = Math.max(10, Math.min(rect.width - 180, e.clientX - rect.left - 80));
-      const y = Math.max(10, Math.min(rect.height - 160, e.clientY - rect.top - 40));
+    // Double-click canvas to place note
+    if (canvas) {
+      canvas.addEventListener('dblclick', (e) => {
+        if (e.target.closest('.sticky-note')) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.max(10, Math.min(rect.width - 180, e.clientX - rect.left - 80));
+        const y = Math.max(10, Math.min(rect.height - 160, e.clientY - rect.top - 40));
 
-      addWhiteboardNote({
-        title: 'Quick Thought',
-        text: 'Double-tapped note.',
-        color: selectedStickyColor,
-        x: Math.round(x),
-        y: Math.round(y),
-        tag: 'Idea',
+        addWhiteboardNote({
+          title: 'Quick Thought',
+          text: '',
+          color: selectedStickyColor,
+          x: Math.round(x),
+          y: Math.round(y),
+          tag: 'Idea',
+          author: 'You',
+        });
+        renderWhiteboard(target);
+        showToast('Sticky note placed!');
       });
-      renderWhiteboard(target);
-    });
+    }
 
     // Delete note
     wrap.querySelectorAll('.sticky-note__delete').forEach((btn) => {
@@ -334,22 +444,26 @@ export function createIdeasView() {
         const id = btn.getAttribute('data-del-id');
         deleteWhiteboardNote(id);
         renderWhiteboard(target);
+        showToast('Note removed from whiteboard');
       });
     });
 
-    // Title & text editing
+    // Title editing
     wrap.querySelectorAll('[data-edit-title]').forEach((input) => {
-      input.addEventListener('change', () => {
+      input.addEventListener('input', () => {
         const id = input.getAttribute('data-edit-title');
         updateWhiteboardNote(id, { title: input.value });
       });
+      input.addEventListener('pointerdown', (e) => e.stopPropagation());
     });
 
+    // Text editing
     wrap.querySelectorAll('[data-edit-text]').forEach((textarea) => {
-      textarea.addEventListener('change', () => {
+      textarea.addEventListener('input', () => {
         const id = textarea.getAttribute('data-edit-text');
         updateWhiteboardNote(id, { text: textarea.value });
       });
+      textarea.addEventListener('pointerdown', (e) => e.stopPropagation());
     });
 
     // Schedule note button
@@ -358,14 +472,9 @@ export function createIdeasView() {
         e.stopPropagation();
         const id = btn.getAttribute('data-note-schedule');
         const note = notes.find((n) => n.id === id);
-        if (note) {
-          openScheduleModal({
-            title: note.title,
-            description: note.text,
-            category: 'activity',
-          });
-        }
+        if (note) openScheduleNoteModal(note, target);
       });
+      btn.addEventListener('pointerdown', (e) => e.stopPropagation());
     });
 
     // Dragging mechanics with Pointer Events
@@ -377,7 +486,7 @@ export function createIdeasView() {
       const noteId = elem.getAttribute('data-note-id');
 
       elem.addEventListener('pointerdown', (e) => {
-        // Prevent drag when interacting with inputs
+        // Prevent drag when interacting with inputs, textareas or buttons
         if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
 
         isDragging = true;
@@ -395,8 +504,8 @@ export function createIdeasView() {
         const dy = e.clientY - startY;
 
         const canvasRect = canvas.getBoundingClientRect();
-        const maxLeft = canvasRect.width - elem.offsetWidth - 10;
-        const maxTop = Math.max(canvasRect.height - elem.offsetHeight - 10, 400);
+        const maxLeft = Math.max(10, canvasRect.width - elem.offsetWidth - 10);
+        const maxTop = Math.max(10, 800 - elem.offsetHeight - 10);
 
         const newLeft = Math.max(8, Math.min(maxLeft, initialLeft + dx));
         const newTop = Math.max(8, Math.min(maxTop, initialTop + dy));
@@ -418,176 +527,287 @@ export function createIdeasView() {
       });
     });
 
-    target.innerHTML = '';
-    target.appendChild(wrap);
+    target.replaceChildren(wrap);
   }
 
-  // ──────────────── Modals ────────────────
+  // ── Modal: Schedule Sticky Note to Itinerary ─────────────────
+  function openScheduleNoteModal(note, target) {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'itinerary-modal-backdrop is-open';
 
-  function openScheduleModal(item) {
-    const modalBackdrop = document.createElement('div');
-    modalBackdrop.className = 'schedule-modal-backdrop';
+    const settings = getTripSettings();
+    const daysCount = settings.totalDays || 3;
+    const dayOptions = [];
+    for (let i = 1; i <= daysCount; i++) {
+      dayOptions.push(`<option value="${i}">Day ${i}</option>`);
+    }
 
-    modalBackdrop.innerHTML = `
-      <div class="schedule-modal" role="dialog" aria-labelledby="sch-title">
-        <h3 class="schedule-modal__title" id="sch-title">Add to Itinerary</h3>
-        <p style="font-size: var(--text-xs); color: var(--color-text-secondary); margin-top: -8px;">
-          Scheduling "<strong>${item.title}</strong>"
-        </p>
-
-        <div class="schedule-modal__field">
-          <label class="schedule-modal__label">Select Itinerary Day</label>
-          <select class="schedule-modal__select" id="target-day-select">
-            <option value="1">Day 1 (Tokyo Arrival & Ancient Taito)</option>
-            <option value="2">Day 2 (Kyoto Culture & Bamboo Groves)</option>
-            <option value="3">Day 3 (Modern Vibes & Departure)</option>
-          </select>
-        </div>
-
-        <div style="display: flex; gap: var(--space-2);">
-          <div class="schedule-modal__field" style="flex: 1;">
-            <label class="schedule-modal__label">Start Time</label>
-            <input type="time" class="schedule-modal__input" id="target-start-time" value="15:30" />
+    backdrop.innerHTML = `
+      <div class="itinerary-modal-sheet">
+        <div class="itinerary-modal-header">
+          <div>
+            <span style="font-size: 11px; font-weight: bold; color: var(--color-primary); text-transform: uppercase;">
+              Add to Itinerary
+            </span>
+            <h3 class="itinerary-modal-title">Schedule Sticky Note</h3>
           </div>
-          <div class="schedule-modal__field" style="flex: 1;">
-            <label class="schedule-modal__label">End Time</label>
-            <input type="time" class="schedule-modal__input" id="target-end-time" value="17:00" />
+          <button type="button" class="drawer-close-btn" id="close-note-modal">✕</button>
+        </div>
+
+        <form class="itinerary-form" id="note-promote-form">
+          <div class="form-group">
+            <label class="form-label" for="note-promote-day">Which day?</label>
+            <select class="form-input" id="note-promote-day">
+              ${dayOptions.join('')}
+            </select>
           </div>
-        </div>
 
-        <div class="schedule-modal__field">
-          <label class="schedule-modal__label">Category</label>
-          <select class="schedule-modal__select" id="target-cat-select">
-            <option value="activity" ${item.category === 'activity' ? 'selected' : ''}>Activity</option>
-            <option value="meal" ${item.category === 'food' || item.category === 'meal' ? 'selected' : ''}>Meal</option>
-            <option value="sightseeing" ${item.category === 'sightseeing' ? 'selected' : ''}>Sightseeing</option>
-            <option value="rest">Rest</option>
-          </select>
-        </div>
+          <div class="form-group">
+            <label class="form-label" for="note-promote-time">Target Start Time</label>
+            <input type="time" class="form-input" id="note-promote-time" value="14:00" required />
+          </div>
 
-        <div class="schedule-modal__actions">
-          <button type="button" class="btn btn--secondary" style="flex: 1;" id="btn-cancel-schedule">Cancel</button>
-          <button type="button" class="btn btn--primary" style="flex: 1;" id="btn-confirm-schedule">Confirm</button>
-        </div>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button type="submit" class="btn btn--primary" style="flex: 1;">Schedule Spot</button>
+            <button type="button" class="btn btn--secondary" id="cancel-note-promote-btn">Cancel</button>
+          </div>
+        </form>
       </div>
     `;
 
-    document.body.appendChild(modalBackdrop);
+    const close = () => backdrop.remove();
+    backdrop.querySelector('#close-note-modal').addEventListener('click', close);
+    backdrop.querySelector('#cancel-note-promote-btn').addEventListener('click', close);
 
-    modalBackdrop.querySelector('#btn-cancel-schedule').addEventListener('click', () => {
-      modalBackdrop.remove();
+    backdrop.querySelector('#note-promote-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const day = parseInt(backdrop.querySelector('#note-promote-day').value, 10);
+      const time = backdrop.querySelector('#note-promote-time').value;
+
+      promoteToItinerary(
+        { title: note.title || 'Whiteboard Idea', text: note.text, category: 'activity' },
+        { day, startTime: time }
+      );
+
+      close();
+      showToast(`Scheduled "${note.title || 'Note'}" on Day ${day} at ${time}`);
     });
 
-    modalBackdrop.addEventListener('click', (e) => {
-      if (e.target === modalBackdrop) modalBackdrop.remove();
-    });
-
-    modalBackdrop.querySelector('#btn-confirm-schedule').addEventListener('click', () => {
-      const day = modalBackdrop.querySelector('#target-day-select').value;
-      const startTime = modalBackdrop.querySelector('#target-start-time').value;
-      const endTime = modalBackdrop.querySelector('#target-end-time').value;
-      const category = modalBackdrop.querySelector('#target-cat-select').value;
-
-      promoteToItinerary({
-        title: item.title,
-        location: item.location || item.title,
-        category,
-        day,
-        startTime,
-        endTime,
-        notes: item.description || '',
-      });
-
-      modalBackdrop.remove();
-      showToast(`Scheduled "${item.title}" on Day ${day}!`);
-    });
+    document.body.appendChild(backdrop);
   }
 
-  function openAddWishlistModal() {
-    const modalBackdrop = document.createElement('div');
-    modalBackdrop.className = 'schedule-modal-backdrop';
+  // ── Modal: Add to Wishlist ──────────────────────────────────────────
+  function openAddWishlistModal(target) {
+    const existing = document.getElementById('modal-add-wishlist');
+    if (existing) existing.remove();
 
-    modalBackdrop.innerHTML = `
-      <div class="schedule-modal" role="dialog" aria-labelledby="add-title">
-        <h3 class="schedule-modal__title" id="add-title">Add Trip Idea</h3>
+    const backdrop = document.createElement('div');
+    backdrop.id = 'modal-add-wishlist';
+    backdrop.className = 'itinerary-modal-backdrop is-open';
 
-        <div class="schedule-modal__field">
-          <label class="schedule-modal__label">Place or Activity Name</label>
-          <input type="text" class="schedule-modal__input" id="wishlist-input-title" placeholder="e.g. Robot Restaurant or Tea Ceremony" required />
+    backdrop.innerHTML = `
+      <div class="itinerary-modal-sheet">
+        <div class="itinerary-modal-header">
+          <div>
+            <span style="font-size: 11px; font-weight: bold; color: var(--color-primary); text-transform: uppercase;">
+              New Recommendation
+            </span>
+            <h3 class="itinerary-modal-title">Add to Group Wishlist</h3>
+          </div>
+          <button type="button" class="drawer-close-btn" id="close-wishlist-modal">✕</button>
         </div>
 
-        <div class="schedule-modal__field">
-          <label class="schedule-modal__label">Category</label>
-          <select class="schedule-modal__select" id="wishlist-input-cat">
-            <option value="sightseeing">Sightseeing</option>
-            <option value="food">Food</option>
-            <option value="activity">Activity</option>
-            <option value="nightlife">Nightlife</option>
-          </select>
-        </div>
+        <form class="itinerary-form" id="wishlist-form">
+          <div class="form-group">
+            <label class="form-label" for="wl-title">Place / Activity Name <span style="color: var(--color-primary);">*</span></label>
+            <input type="text" class="form-input" id="wl-title" placeholder="e.g. Fushimi Inari Shrine" required />
+          </div>
 
-        <div class="schedule-modal__field">
-          <label class="schedule-modal__label">Description & Notes</label>
-          <input type="text" class="schedule-modal__input" id="wishlist-input-desc" placeholder="Why should the group visit?" />
-        </div>
+          <!-- Category / Type Selector -->
+          <div class="form-group">
+            <label class="form-label" for="wl-category">Category / Type <span style="color: var(--color-primary);">*</span></label>
+            <select class="form-input" id="wl-category" style="background: var(--color-surface); cursor: pointer;" required>
+              <option value="sightseeing">Sightseeing & Culture</option>
+              <option value="food">Food & Dining</option>
+              <option value="activity">Activity & Adventure</option>
+              <option value="nightlife">Nightlife & Drinks</option>
+              <option value="shopping">Shopping</option>
+              <option value="custom">+ Custom Type...</option>
+            </select>
+            <input 
+              type="text" 
+              class="form-input" 
+              id="wl-custom-category" 
+              placeholder="e.g. Onsen, Photography, Cafe" 
+              style="display: none; margin-top: 6px;" 
+            />
+          </div>
 
-        <div class="schedule-modal__field">
-          <label class="schedule-modal__label">Web Link URL (Optional)</label>
-          <input type="url" class="schedule-modal__input" id="wishlist-input-url" placeholder="https://..." />
-        </div>
+          <div class="form-group">
+            <label class="form-label" for="wl-cost">Estimated Cost</label>
+            <input type="text" class="form-input" id="wl-cost" placeholder="e.g. ¥2,000 (~$13) or Free" />
+          </div>
 
-        <div class="schedule-modal__field">
-          <label class="schedule-modal__label">Estimated Cost</label>
-          <input type="text" class="schedule-modal__input" id="wishlist-input-cost" placeholder="e.g. ¥2,000 (~$14) or Free" value="¥1,500 (~$10)" />
-        </div>
+          <div class="form-group">
+            <label class="form-label" for="wl-desc">Why should the group go?</label>
+            <textarea class="form-input" id="wl-desc" rows="3" placeholder="Notes, recommendations, or why you want to visit..."></textarea>
+          </div>
 
-        <div class="schedule-modal__actions">
-          <button type="button" class="btn btn--secondary" style="flex: 1;" id="btn-cancel-add-wishlist">Cancel</button>
-          <button type="button" class="btn btn--primary" style="flex: 1;" id="btn-confirm-add-wishlist">Save Idea</button>
-        </div>
+          <div class="form-group">
+            <label class="form-label" for="wl-url">Reference / Map Link (Optional)</label>
+            <input type="url" class="form-input" id="wl-url" placeholder="https://..." />
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button type="submit" class="btn btn--primary" style="flex: 1;">Add to Wishlist</button>
+            <button type="button" class="btn btn--secondary" id="cancel-wl-btn">Cancel</button>
+          </div>
+        </form>
       </div>
     `;
 
-    document.body.appendChild(modalBackdrop);
+    const close = () => backdrop.remove();
+    backdrop.querySelector('#close-wishlist-modal').addEventListener('click', close);
+    backdrop.querySelector('#cancel-wl-btn').addEventListener('click', close);
 
-    modalBackdrop.querySelector('#btn-cancel-add-wishlist').addEventListener('click', () => {
-      modalBackdrop.remove();
-    });
-
-    modalBackdrop.addEventListener('click', (e) => {
-      if (e.target === modalBackdrop) modalBackdrop.remove();
-    });
-
-    modalBackdrop.querySelector('#btn-confirm-add-wishlist').addEventListener('click', () => {
-      const title = modalBackdrop.querySelector('#wishlist-input-title').value.trim();
-      if (!title) {
-        alert('Please provide a name for this trip idea.');
-        return;
+    const categorySelect = backdrop.querySelector('#wl-category');
+    const customCategoryInput = backdrop.querySelector('#wl-custom-category');
+    categorySelect.addEventListener('change', () => {
+      if (categorySelect.value === 'custom') {
+        customCategoryInput.style.display = 'block';
+        customCategoryInput.focus();
+        customCategoryInput.required = true;
+      } else {
+        customCategoryInput.style.display = 'none';
+        customCategoryInput.required = false;
       }
-      const category = modalBackdrop.querySelector('#wishlist-input-cat').value;
-      const description = modalBackdrop.querySelector('#wishlist-input-desc').value.trim();
-      const url = modalBackdrop.querySelector('#wishlist-input-url').value.trim();
-      const estimatedCost = modalBackdrop.querySelector('#wishlist-input-cost').value.trim() || 'Free';
+    });
+
+
+
+    backdrop.querySelector('#wishlist-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = backdrop.querySelector('#wl-title').value.trim();
+      let category = categorySelect.value;
+      if (category === 'custom') {
+        category = customCategoryInput.value.trim() || 'activity';
+      }
+      category = category.toLowerCase();
+      const estimatedCost = backdrop.querySelector('#wl-cost').value.trim() || 'Free';
+      const description = backdrop.querySelector('#wl-desc').value.trim();
+      const url = backdrop.querySelector('#wl-url').value.trim();
 
       addWishlistItem({
         title,
         category,
-        description: description || 'Saved idea for the group itinerary.',
-        url: url || null,
-        imageUrl: 'https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&w=600&q=80',
         estimatedCost,
+        description,
+        url,
+        addedBy: 'You',
+        votes: 1,
+        userVoted: true,
       });
 
-      modalBackdrop.remove();
-      render();
-      showToast(`"${title}" saved to Wishlist!`);
+      close();
+      const currentTarget = target || container.querySelector('#ideas-subview-content');
+      if (currentTarget) renderWishlist(currentTarget);
+      showToast(`Added "${title}" (${category}) to Wishlist`);
     });
+
+    document.body.appendChild(backdrop);
   }
+
+  // ── Modal: Schedule Picker (Wishlist -> Itinerary) ───────────
+  function openSchedulePicker(wishlistId, target) {
+    const backdrop = document.createElement('div');
+    backdrop.className = 'itinerary-modal-backdrop is-open';
+
+    const settings = getTripSettings();
+    const daysCount = settings.totalDays || 3;
+    const dayOptions = [];
+    for (let i = 1; i <= daysCount; i++) {
+      dayOptions.push(`<option value="${i}">Day ${i}</option>`);
+    }
+
+    backdrop.innerHTML = `
+      <div class="itinerary-modal-sheet">
+        <div class="itinerary-modal-header">
+          <div>
+            <span style="font-size: 11px; font-weight: bold; color: var(--color-primary); text-transform: uppercase;">
+              Timeline Promotion
+            </span>
+            <h3 class="itinerary-modal-title">Promote to Itinerary</h3>
+          </div>
+          <button type="button" class="drawer-close-btn" id="close-promote-modal">✕</button>
+        </div>
+
+        <form class="itinerary-form" id="promote-form">
+          <div class="form-group">
+            <label class="form-label" for="promote-day">Which day?</label>
+            <select class="form-input" id="promote-day">
+              ${dayOptions.join('')}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="promote-time">Target Time</label>
+            <input type="time" class="form-input" id="promote-time" value="14:00" required />
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button type="submit" class="btn btn--primary" style="flex: 1;">Schedule Spot</button>
+            <button type="button" class="btn btn--secondary" id="cancel-promote-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    const close = () => backdrop.remove();
+    backdrop.querySelector('#close-promote-modal').addEventListener('click', close);
+    backdrop.querySelector('#cancel-promote-btn').addEventListener('click', close);
+
+    backdrop.querySelector('#promote-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const day = parseInt(backdrop.querySelector('#promote-day').value, 10);
+      const time = backdrop.querySelector('#promote-time').value;
+
+      promoteToItinerary(wishlistId, day, time);
+
+      close();
+      renderWishlist(target);
+      showToast(`Scheduled spot on Day ${day} at ${time}`);
+    });
+
+    document.body.appendChild(backdrop);
+  }
+
+  const triggerAddWishlist = () => {
+    currentSubTab = 'wishlist';
+    render();
+    const content = container.querySelector('#ideas-subview-content');
+    if (content) openAddWishlistModal(content);
+  };
+
+  if (!window.TravelApp) window.TravelApp = {};
+  window.TravelApp.openAddWishlistModal = triggerAddWishlist;
+  window.addEventListener('open-add-wishlist', triggerAddWishlist);
+
+  // Re-render when trip settings or destination change
+  const handleTripSettingsUpdated = () => {
+    render();
+  };
+  window.addEventListener('trip-settings-updated', handleTripSettingsUpdated);
 
   // Initial render
   render();
 
   return {
     element: container,
+    render,
+    openAddWishlistModal: triggerAddWishlist,
+    destroy: () => {
+      window.removeEventListener('open-add-wishlist', triggerAddWishlist);
+      window.removeEventListener('trip-settings-updated', handleTripSettingsUpdated);
+    },
   };
 }

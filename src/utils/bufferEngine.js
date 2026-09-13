@@ -7,7 +7,8 @@
 
 /**
  * Parse time string (e.g. "09:00", "14:30", "02:15 PM", "2:15") to minutes from midnight.
- * Gracefully handles both 24-hour and 12-hour AM/PM formats, plus heuristics for legacy data.
+ * Gracefully handles both 24-hour ("HH:MM") and 12-hour AM/PM formats strictly without
+ * unexpected hour-shifting heuristics.
  */
 export function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
@@ -23,11 +24,6 @@ export function timeToMinutes(timeStr) {
 
   if (isPM && hours < 12) hours += 12;
   if (isAM && hours === 12) hours = 0;
-
-  // Heuristic for legacy 12-hour values lacking AM/PM (e.g. "02:00", "04:30", "05:00" in afternoon slots)
-  if (!isAM && !isPM && hours >= 1 && hours <= 6) {
-    hours += 12;
-  }
 
   return hours * 60 + minutes;
 }
@@ -107,7 +103,8 @@ export function recalculateDaySchedule(blocks, anchorStartMinutes = null) {
     ? anchorStartMinutes
     : timeToMinutes(blocks[0].startTime);
 
-  if (!currentStart || currentStart <= 0) {
+  // Fallback to 09:00 AM if start time is invalid or overnight (10 PM to 6 AM)
+  if (!currentStart || currentStart <= 0 || currentStart >= 22 * 60 || currentStart < 6 * 60) {
     currentStart = 9 * 60; // Default 09:00 AM
   }
 
@@ -139,61 +136,118 @@ export function recalculateDaySchedule(blocks, anchorStartMinutes = null) {
 }
 
 /**
- * Calculate transit buffers and alerts for an ordered array of blocks
- * @param {Array} blocks Chronologically ordered blocks for a single day
- * @returns {Array} Augmented blocks with .transitBuffer info
+ * Calculate available buffer windows and alert on transit deficits.
+ * For each block (except the last), buffer = (nextBlock.startTime - thisBlock.endTime).
+ * Deficit occurs if buffer < transitToNextMinutes.
+ *
+ * @param {Array} blocks Chronological array of blocks for a day
+ * @returns {Array} Blocks enriched with transitBuffer metadata
  */
+/**
+ * Swap time slots between two blocks on a single day.
+ * Preserves each activity's duration while exchanging their scheduled start times.
+ * If an earlier activity extends past the next activity's start time,
+ * downstream activities are cleanly cascaded forward to prevent time collisions.
+ *
+ * @param {Array} blocks Current blocks for the day
+ * @param {string} sourceId ID of dragged block
+ * @param {string} targetId ID of target block
+ * @returns {Array} Updated array of blocks in chronological order
+ */
+export function swapBlockTimeSlots(blocks, sourceId, targetId) {
+  if (!Array.isArray(blocks) || blocks.length < 2) return blocks;
+
+  const sourceIndex = blocks.findIndex((b) => b.id === sourceId);
+  const targetIndex = blocks.findIndex((b) => b.id === targetId);
+
+  if (sourceIndex === -1 || targetIndex === -1 || sourceIndex === targetIndex) {
+    return blocks;
+  }
+
+  const newBlocks = blocks.map((b) => ({ ...b }));
+  const source = newBlocks[sourceIndex];
+  const target = newBlocks[targetIndex];
+
+  // Calculate durations for both blocks
+  const sourceStartMins = timeToMinutes(source.startTime);
+  const sourceEndMins = timeToMinutes(source.endTime);
+  const sourceDuration = Math.max(30, sourceEndMins - sourceStartMins);
+
+  const targetStartMins = timeToMinutes(target.startTime);
+  const targetEndMins = timeToMinutes(target.endTime);
+  const targetDuration = Math.max(30, targetEndMins - targetStartMins);
+
+  // Exchange start times
+  const newSourceStartMins = targetStartMins;
+  const newTargetStartMins = sourceStartMins;
+
+  source.startTime = minutesTo24(newSourceStartMins);
+  source.endTime = minutesTo24(newSourceStartMins + sourceDuration);
+
+  target.startTime = minutesTo24(newTargetStartMins);
+  target.endTime = minutesTo24(newTargetStartMins + targetDuration);
+
+  // Sort chronological by start time
+  newBlocks.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+  // Resolve any downstream overlaps cleanly while preserving activity durations
+  for (let i = 0; i < newBlocks.length - 1; i++) {
+    const currentEnd = timeToMinutes(newBlocks[i].endTime);
+    const minBuffer = newBlocks[i].transitToNextMinutes !== undefined && newBlocks[i].transitToNextMinutes !== null
+      ? Math.max(10, newBlocks[i].transitToNextMinutes)
+      : 15;
+    const earliestNextStart = currentEnd + minBuffer;
+
+    const nextStart = timeToMinutes(newBlocks[i + 1].startTime);
+    if (nextStart < earliestNextStart) {
+      const nextEnd = timeToMinutes(newBlocks[i + 1].endTime);
+      const nextDuration = Math.max(30, nextEnd - nextStart);
+      newBlocks[i + 1].startTime = minutesTo24(earliestNextStart);
+      newBlocks[i + 1].endTime = minutesTo24(earliestNextStart + nextDuration);
+    }
+  }
+
+  return newBlocks;
+}
+
 export function calculateItineraryBuffers(blocks) {
   if (!Array.isArray(blocks) || blocks.length === 0) return [];
 
   return blocks.map((block, index) => {
-    const nextBlock = blocks[index + 1];
-    if (!nextBlock) {
+    if (index === blocks.length - 1) {
+      // Last item on the day has no subsequent transit
       return {
         ...block,
-        transitBuffer: null, // End of the day
+        transitBuffer: null,
       };
     }
 
-    const currentEnd = timeToMinutes(block.endTime);
+    const nextBlock = blocks[index + 1];
+    const thisEnd = timeToMinutes(block.endTime);
     const nextStart = timeToMinutes(nextBlock.startTime);
-    const availableBufferMinutes = nextStart - currentEnd;
-    const requiredTransitMinutes = block.transitToNextMinutes || 15;
 
-    const isDeficit = availableBufferMinutes < requiredTransitMinutes;
+    // Available gap between activities
+    let availableBufferMinutes = nextStart - thisEnd;
+    if (availableBufferMinutes < 0) {
+      availableBufferMinutes = 0; // Overlapping or negative buffer
+    }
+
+    const requiredMinutes = block.transitToNextMinutes !== undefined && block.transitToNextMinutes !== null
+      ? block.transitToNextMinutes
+      : 15;
+
+    const isDeficit = availableBufferMinutes < requiredMinutes;
+    const deficitMinutes = isDeficit ? requiredMinutes - availableBufferMinutes : 0;
 
     return {
       ...block,
       transitBuffer: {
         availableMinutes: availableBufferMinutes,
-        requiredMinutes: requiredTransitMinutes,
-        isDeficit,
-        transitMode: block.transitMode || 'Transit to next spot',
-        warningMessage: isDeficit
-          ? `Transit Alert: Only ${Math.max(0, availableBufferMinutes)}m allocated for ${requiredTransitMinutes}m travel (${block.transitMode || 'transit'}).`
-          : null,
+        requiredMinutes: requiredMinutes,
+        isDeficit: isDeficit,
+        deficitMinutes: deficitMinutes,
+        transitMode: block.transitMode || 'Transit',
       },
-    };
-  });
-}
-
-/**
- * Auto-shift subsequent blocks after a block is modified or moved
- * @param {Array} blocks 
- * @param {Number} fromIndex 
- * @param {Number} deltaMinutes 
- */
-export function shiftSubsequentBlocks(blocks, fromIndex, deltaMinutes) {
-  return blocks.map((block, idx) => {
-    if (idx <= fromIndex) return block;
-
-    const startMins = timeToMinutes(block.startTime) + deltaMinutes;
-    const endMins = timeToMinutes(block.endTime) + deltaMinutes;
-
-    return {
-      ...block,
-      startTime: minutesTo24(startMins),
-      endTime: minutesTo24(endMins),
     };
   });
 }

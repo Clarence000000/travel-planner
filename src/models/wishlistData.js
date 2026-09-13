@@ -5,11 +5,9 @@
  */
 
 import { getItineraryData, saveItineraryData } from './itineraryData.js';
+import { getActiveTripId } from './tripsModel.js';
 
-const STORAGE_KEY_WISHLIST = 'travel_planner_wishlist_v2';
-const STORAGE_KEY_WHITEBOARD = 'travel_planner_whiteboard_v2';
-
-const INITIAL_WISHLIST = [
+export const SAMPLE_WISHLIST = [
   {
     id: 'wl-1',
     title: 'Ghibli Museum Mitaka',
@@ -17,7 +15,7 @@ const INITIAL_WISHLIST = [
     description: 'Whimsical animation wonderland with exclusive short films and Hayao Miyazaki sketches.',
     url: 'https://www.ghibli-museum.jp/en/',
     imageUrl: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80',
-    estimatedCost: '¥1,000 (~$7)',
+    estimatedCost: '\u00a51,000 (~$7)',
     votes: 5,
     userVoted: true,
     addedBy: 'Clarence',
@@ -30,7 +28,7 @@ const INITIAL_WISHLIST = [
     description: 'Wander lively alleys tasting fresh sea urchin, tamagoyaki skewers, and wagyu beef buns.',
     url: 'https://www.tsukiji.or.jp/english/',
     imageUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=600&q=80',
-    estimatedCost: '¥2,500 (~$17)',
+    estimatedCost: '\u00a52,500 (~$17)',
     votes: 4,
     userVoted: false,
     addedBy: 'Wei Gang',
@@ -56,7 +54,7 @@ const INITIAL_WISHLIST = [
     description: 'Six narrow alleys lined with over 200 tiny 5-seat character bars and jazz lounges.',
     url: 'https://goldengai.jp',
     imageUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=600&q=80',
-    estimatedCost: '¥3,000 (~$20)',
+    estimatedCost: '\u00a53,000 (~$20)',
     votes: 3,
     userVoted: false,
     addedBy: 'Clarence',
@@ -64,7 +62,9 @@ const INITIAL_WISHLIST = [
   },
 ];
 
-const INITIAL_WHITEBOARD_NOTES = [
+export const INITIAL_WISHLIST = SAMPLE_WISHLIST;
+
+export const SAMPLE_WHITEBOARD_NOTES = [
   {
     id: 'wn-1',
     title: 'IC Card Transit Tip',
@@ -98,7 +98,7 @@ const INITIAL_WHITEBOARD_NOTES = [
   {
     id: 'wn-4',
     title: 'Coin Lockers',
-    text: 'Tokyo Station B1 has large coin lockers (¥800/day) if hotel luggage hold is full.',
+    text: 'Tokyo Station B1 has large coin lockers (\u00a5800/day) if hotel luggage hold is full.',
     color: 'sky',
     x: 215,
     y: 215,
@@ -107,22 +107,72 @@ const INITIAL_WHITEBOARD_NOTES = [
   },
 ];
 
+export const INITIAL_WHITEBOARD_NOTES = SAMPLE_WHITEBOARD_NOTES;
+
+function getWishlistStorageKey() {
+  const tripId = getActiveTripId();
+  return tripId ? `travel_planner_wishlist_${tripId}` : 'travel_planner_wishlist_v2';
+}
+
+function getWhiteboardStorageKey() {
+  const tripId = getActiveTripId();
+  return tripId ? `travel_planner_whiteboard_${tripId}` : 'travel_planner_whiteboard_v2';
+}
+
+const wishlistListeners = new Set();
+
+export function onWishlistChange(callback) {
+  wishlistListeners.add(callback);
+  return () => wishlistListeners.delete(callback);
+}
+
+function notifyWishlistListeners() {
+  const items = getWishlist();
+  wishlistListeners.forEach((fn) => {
+    try {
+      fn(items);
+    } catch (e) {
+      console.error('[Wishlist] Listener error:', e);
+    }
+  });
+}
+
+/**
+ * Load wishlist (Clean slate default: returns [])
+ */
 export function getWishlist() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY_WISHLIST);
+    const key = getWishlistStorageKey();
+    const saved = localStorage.getItem(key);
     if (saved) return JSON.parse(saved);
   } catch (e) {
     console.warn('[Wishlist] Failed to read stored items:', e);
   }
-  return JSON.parse(JSON.stringify(INITIAL_WISHLIST));
+  return [];
 }
 
+/**
+ * Save wishlist items
+ */
 export function saveWishlist(items) {
   try {
-    localStorage.setItem(STORAGE_KEY_WISHLIST, JSON.stringify(items));
+    const key = getWishlistStorageKey();
+    localStorage.setItem(key, JSON.stringify(items));
   } catch (e) {
     console.error('[Wishlist] Failed to save items:', e);
   }
+  notifyWishlistListeners();
+}
+
+export function clearWishlistData() {
+  saveWishlist([]);
+  return [];
+}
+
+export function resetWishlistSample() {
+  const sample = JSON.parse(JSON.stringify(SAMPLE_WISHLIST));
+  saveWishlist(sample);
+  return sample;
 }
 
 export function getTopVotedWishlistItems(limit = 3) {
@@ -167,7 +217,7 @@ export function addWishlistItem(item) {
     id: 'wl-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
     votes: 1,
     userVoted: true,
-    addedBy: 'Clarence',
+    addedBy: 'You',
     isScheduled: false,
     ...item,
   };
@@ -195,22 +245,41 @@ export function toggleWishlistVote(id) {
   return list;
 }
 
+/**
+ * Load whiteboard notes (Clean slate default: returns [])
+ */
 export function getWhiteboardNotes() {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY_WHITEBOARD);
+    const key = getWhiteboardStorageKey();
+    const saved = localStorage.getItem(key);
     if (saved) return JSON.parse(saved);
   } catch (e) {
     console.warn('[Whiteboard] Failed to read stored notes:', e);
   }
-  return JSON.parse(JSON.stringify(INITIAL_WHITEBOARD_NOTES));
+  return [];
 }
 
+/**
+ * Save whiteboard notes
+ */
 export function saveWhiteboardNotes(notes) {
   try {
-    localStorage.setItem(STORAGE_KEY_WHITEBOARD, JSON.stringify(notes));
+    const key = getWhiteboardStorageKey();
+    localStorage.setItem(key, JSON.stringify(notes));
   } catch (e) {
     console.error('[Whiteboard] Failed to save notes:', e);
   }
+}
+
+export function clearWhiteboardNotes() {
+  saveWhiteboardNotes([]);
+  return [];
+}
+
+export function resetWhiteboardSample() {
+  const sample = JSON.parse(JSON.stringify(SAMPLE_WHITEBOARD_NOTES));
+  saveWhiteboardNotes(sample);
+  return sample;
 }
 
 export function addWhiteboardNote(note) {
@@ -222,7 +291,7 @@ export function addWhiteboardNote(note) {
     color: note.color || 'yellow',
     x: note.x !== undefined ? note.x : 40,
     y: note.y !== undefined ? note.y : 40,
-    author: 'Clarence',
+    author: 'You',
     tag: note.tag || 'Idea',
   };
   notes.push(newNote);
@@ -248,35 +317,38 @@ export function deleteWhiteboardNote(id) {
 /**
  * Promote an item (from Wishlist or Whiteboard note) into an active Itinerary Block
  */
-export function promoteToItinerary({ title, location, category, day = 1, startTime = '03:00', endTime = '04:30', notes = '', source = 'wishlist', sourceVotes = 4 }) {
-  const itinerary = getItineraryData();
-  const newId = `d${day}-${Date.now().toString().slice(-4)}`;
+export function promoteToItinerary(item, options = {}) {
+  const day = options.day || 1;
+  const startTime = options.startTime || '14:30';
+  const endTime = options.endTime || '16:00';
 
+  const category = item.category || 'activity';
   const newBlock = {
-    id: newId,
-    day: Number(day),
+    id: 'block-' + Date.now(),
+    day,
     startTime,
     endTime,
-    category: category || 'activity',
+    category,
     status: 'proposed',
-    title,
-    location: location || title,
-    transitToNextMinutes: 15,
-    transitMode: 'Metro or Walking',
-    requirements: ['Added from Group Wishlist'],
+    title: item.title || item.text || 'Promoted Spot',
+    location: item.location || (item.title ? `${item.title}, Tokyo` : 'Tokyo, Japan'),
+    transitToNextMinutes: 20,
+    transitMode: 'Subway',
+    requirements: ['Added from Whiteboard Wishlist'],
     fallback: null,
-    notes: notes || 'Scheduled from collaborative ideas wishlist.',
-    dressCode: 'Comfortable',
-    source: source || 'wishlist',
-    sourceVotes: sourceVotes || 4,
-    sourceAuthor: 'Clarence',
+    notes: item.description || item.text || 'Promoted directly into day schedule.',
+    dressCode: null,
+    source: item.source || (item.url && item.url.includes('instagram') ? 'reel' : 'manual'),
+    reelUrl: item.url || null,
   };
 
+  const itinerary = getItineraryData();
   itinerary.push(newBlock);
   saveItineraryData(itinerary);
 
-  // Mark in wishlist as scheduled
-  markWishlistScheduled(title, { day: Number(day), time: startTime });
+  if (item.id && item.id.startsWith('wl-')) {
+    markWishlistScheduled(item.id, { day, time: startTime });
+  }
 
   return newBlock;
 }

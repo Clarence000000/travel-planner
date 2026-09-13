@@ -1,20 +1,23 @@
 /**
- * View: "Now & Next" Live Dashboard
+ * View: "Now & Next" Live Dashboard (Day-Of Execution HUD)
  * Real-time HUD for the day of the trip: current spot, next transit directions,
  * 1-tap schedule shift buttons (+30m, +1h), and pre-departure checklist.
  *
  * Interactive Features:
- * 1. QR Pass Modal – high-fidelity ticket modal with SVG QR code
- * 2. One-Tap Shift – toast notification + dynamic time/countdown updates & itinerary recalculation
- * 3. Live State Progression – simulate destination arrival with fade animation
- * 4. Carpool & Transit Drawer – collaborative seat claims & pickup points
- * 5. Checklist Interaction – toggle items + live completion counter
+ * 1. Dedicated Day-of HUD execution mode with quick return to planning Itinerary.
+ * 2. QR Pass Modal – high-fidelity ticket modal with SVG QR code.
+ * 3. One-Tap Shift – toast notification + dynamic time/countdown updates & itinerary recalculation.
+ * 4. Live State Progression – simulate destination arrival with smooth transition.
+ * 5. Carpool & Transit Drawer – collaborative seat claims & pickup points.
+ * 6. Checklist Interaction – toggle items + live completion counter.
  */
 
 import { applyReshuffle } from '../models/itineraryData.js';
 import { openCarpoolDrawer } from '../components/CarpoolDrawer.js';
+import { setActiveTab } from '../config/navigation.js';
+import { getTripSettings } from '../models/tripSettings.js';
 
-// ── Activity Pipeline ───────────────────────────────────────────────────
+// ── Activity Pipeline ──────────────────────────────────────────
 const ACTIVITY_PIPELINE = [
   {
     id: 'sensoji',
@@ -103,38 +106,33 @@ const ACTIVITY_PIPELINE = [
   },
 ];
 
-// ── QR Code SVG Generator ───────────────────────────────────────────────
+// ── SVG QR Code Generator ─────────────────────────────────────
 function generateQRSvg() {
   const size = 21;
   const moduleSize = 8;
   const totalSize = size * moduleSize;
 
-  const finderPositions = [
-    [0, 0],
-    [14, 0],
-    [0, 14],
-  ];
+  const modules = [];
 
-  let modules = [];
-
-  for (const [fx, fy] of finderPositions) {
+  // Corner finder patterns
+  function addFinder(startX, startY) {
     for (let y = 0; y < 7; y++) {
       for (let x = 0; x < 7; x++) {
-        const isOuter = x === 0 || x === 6 || y === 0 || y === 6;
-        const isInner = x >= 2 && x <= 4 && y >= 2 && y <= 4;
-        if (isOuter || isInner) {
-          modules.push([fx + x, fy + y]);
+        const isBorder = x === 0 || x === 6 || y === 0 || y === 6;
+        const isCenter = x >= 2 && x <= 4 && y >= 2 && y <= 4;
+        if (isBorder || isCenter) {
+          modules.push([startX + x, startY + y]);
         }
       }
     }
   }
 
-  const seed = [
-    1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1,
-    0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1,
-    1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1,
-    0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0,
-  ];
+  addFinder(0, 0);
+  addFinder(size - 7, 0);
+  addFinder(0, size - 7);
+
+  // Pseudo-random data modules
+  const seed = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0];
   let si = 0;
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
@@ -165,7 +163,7 @@ function generateQRSvg() {
   `;
 }
 
-// ── Toast Notification System ───────────────────────────────────────────
+// ── Toast Notification System ─────────────────────────────────
 function showToast(container, message, type = 'info') {
   const existing = container.querySelector('.dash-toast');
   if (existing) existing.remove();
@@ -198,7 +196,7 @@ function showToast(container, message, type = 'info') {
   }, 2800);
 }
 
-// ── QR Pass Modal ───────────────────────────────────────────────────────
+// ── QR Pass Modal ─────────────────────────────────────────────
 function showQRModal(container, activity) {
   const existing = container.querySelector('.qr-modal-overlay');
   if (existing) existing.remove();
@@ -218,61 +216,33 @@ function showQRModal(container, activity) {
         ${generateQRSvg()}
       </div>
       <div class="qr-modal__info">
-        <h3 class="qr-modal__title">${activity.qr.name}</h3>
-        <div class="qr-modal__details">
-          <div class="qr-modal__detail-row">
-            <span class="qr-modal__detail-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </span>
-            <span>${activity.qr.time}</span>
-          </div>
-          <div class="qr-modal__detail-row">
-            <span class="qr-modal__detail-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-            </span>
-            <span>${activity.qr.guests}</span>
-          </div>
-          <div class="qr-modal__detail-row">
-            <span class="qr-modal__detail-icon">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-            </span>
-            <span>Today, ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-          </div>
+        <h3 class="qr-modal__title">${activity.qr?.name || activity.title}</h3>
+        <p class="qr-modal__venue">${activity.address}</p>
+        <div class="qr-modal__meta">
+          <span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            ${activity.qr?.time || '10:30 AM – 12:15 PM'}
+          </span>
+          <span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+            ${activity.qr?.guests || '3 Guests'}
+          </span>
         </div>
       </div>
-      <button type="button" class="btn btn--primary qr-modal__close-btn">Close</button>
     </div>
   `;
 
-  container.appendChild(overlay);
-  requestAnimationFrame(() => {
-    overlay.classList.add('qr-modal-overlay--visible');
+  overlay.querySelector('.qr-modal__close').addEventListener('click', () => {
+    overlay.remove();
   });
-
-  const closeModal = () => {
-    overlay.classList.remove('qr-modal-overlay--visible');
-    overlay.classList.add('qr-modal-overlay--exit');
-    setTimeout(() => overlay.remove(), 300);
-  };
-
-  overlay.querySelector('.qr-modal__close').addEventListener('click', closeModal);
-  overlay.querySelector('.qr-modal__close-btn').addEventListener('click', closeModal);
   overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closeModal();
+    if (e.target === overlay) overlay.remove();
   });
 
-  const handleEsc = (e) => {
-    if (e.key === 'Escape') {
-      closeModal();
-      document.removeEventListener('keydown', handleEsc);
-    }
-  };
-  document.addEventListener('keydown', handleEsc);
+  container.appendChild(overlay);
 }
 
-// ══════════════════════════════════════════════════════════════════════════
-// MAIN VIEW FACTORY
-// ══════════════════════════════════════════════════════════════════════════
+// ── View Factory ──────────────────────────────────────────────
 export function createDashboardView() {
   const container = document.createElement('div');
   container.className = 'feature-view dashboard-view';
@@ -420,17 +390,52 @@ export function createDashboardView() {
   function renderAll() {
     const current = getCurrent();
     const next = getNext();
+    const settings = getTripSettings();
+    const coverBg = settings.coverImage || './src/assets/bg-itinerary.png';
+    const cityTitle = settings.destination.split(',')[0];
 
     container.innerHTML = `
+      <!-- Atmospheric Vertical Asset Banner -->
+      <div class="view-banner" style="background-image: url('${coverBg}');">
+        <button type="button" class="view-banner__menu-btn" id="btn-open-sidebar" aria-label="Open Trip Menu" title="Open Menu">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <div class="view-banner__scrim">
+          <span class="view-banner__badge">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            ${cityTitle} • Day 1 Live Execution
+          </span>
+          <h2 class="view-banner__title">Live Day HUD</h2>
+        </div>
+      </div>
+
+      <!-- Top Return Action Bar -->
+      <div class="hud-top-action-bar">
+        <button type="button" class="hud-return-btn" id="btn-return-itinerary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          <span>Exit HUD (Back to Itinerary)</span>
+        </button>
+
+        <div class="hud-live-tag">
+          <span class="hud-live-tag__dot"></span>
+          <span>LIVE EXECUTION</span>
+        </div>
+      </div>
+
       <div class="view-header">
-        <div class="view-header__meta">
-          <div class="dash-header-row">
-            <span class="view-badge">Day-of-Trip HUD</span>
-            <button type="button" class="btn-sim-arrival" id="btn-sim-arrival" title="Simulate Destination Arrival" aria-label="Simulate Destination Arrival">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
-            </button>
-          </div>
-          <p class="view-subtitle">Real-time status, upcoming transit directions, and delay controls</p>
+        <div class="dash-header-row">
+          <span class="itinerary-count-badge">Now & Next Tracking</span>
+          <button type="button" class="btn-sim-arrival" id="btn-sim-arrival" title="Simulate Destination Arrival" aria-label="Simulate Destination Arrival">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 4 15 12 5 20 5 4"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+            <span style="font-size: 11px; margin-left: 4px;">Advance Spot</span>
+          </button>
         </div>
       </div>
 
@@ -463,6 +468,24 @@ export function createDashboardView() {
   }
 
   function bindEvents() {
+    // Open Sidebar
+    const openSidebarBtn = container.querySelector('#btn-open-sidebar');
+    if (openSidebarBtn) {
+      openSidebarBtn.addEventListener('click', () => {
+        if (window.TravelApp && window.TravelApp.sidebar) {
+          window.TravelApp.sidebar.open();
+        }
+      });
+    }
+
+    // Exit HUD mode -> back to itinerary
+    const returnBtn = container.querySelector('#btn-return-itinerary');
+    if (returnBtn) {
+      returnBtn.addEventListener('click', () => {
+        setActiveTab('itinerary');
+      });
+    }
+
     container.querySelectorAll('.btn-shift').forEach((btn) => {
       btn.addEventListener('click', () => {
         const mins = parseInt(btn.dataset.shift, 10);
@@ -512,89 +535,50 @@ export function createDashboardView() {
     }
   }
 
+  function bindChecklist() {
+    const checkboxes = container.querySelectorAll('.checklist-items input[type="checkbox"]');
+    const countEl = container.querySelector('#checklist-count');
+
+    checkboxes.forEach((cb) => {
+      cb.addEventListener('change', () => {
+        const total = checkboxes.length;
+        const checked = container.querySelectorAll('.checklist-items input[type="checkbox"]:checked').length;
+        if (countEl) countEl.textContent = `${checked}/${total} completed`;
+
+        if (checked === total) {
+          showToast(container, 'All prep items checked off! Ready to explore.', 'success');
+        }
+      });
+    });
+  }
+
   function simulateArrival() {
     if (isTransitioning) return;
     if (currentIndex >= pipeline.length - 1) {
-      showToast(container, 'No more activities to advance!', 'info');
+      showToast(container, 'Trip complete for today! Enjoy your evening.', 'info');
       return;
     }
 
     isTransitioning = true;
-    const cardsContainer = container.querySelector('#hud-cards-container');
-    if (!cardsContainer) {
-      isTransitioning = false;
-      return;
-    }
+    const nowCard = container.querySelector('#hud-now-card');
+    const nextCard = container.querySelector('#hud-next-card');
 
-    cardsContainer.classList.add('hud-cards--exit');
+    if (nowCard) nowCard.classList.add('hud-card--exit');
+    if (nextCard) nextCard.classList.add('hud-card--enter');
 
     setTimeout(() => {
       currentIndex++;
-      shiftOffset = 0;
-
-      const current = getCurrent();
-      const next = getNext();
-
-      cardsContainer.innerHTML = renderNowCard(current) + renderNextCard(next);
-      cardsContainer.classList.remove('hud-cards--exit');
-      cardsContainer.classList.add('hud-cards--enter');
-
-      const qrBtn = container.querySelector('#btn-qr-pass');
-      if (qrBtn) {
-        qrBtn.addEventListener('click', () => showQRModal(container, getCurrent()));
-      }
-      const nowCard = container.querySelector('#hud-now-card');
-      if (nowCard) {
-        nowCard.addEventListener('dblclick', () => simulateArrival());
-      }
-      bindCarpoolBtn();
-
-      showToast(container, `Now visiting: ${current.title}`, 'success');
-
-      setTimeout(() => {
-        cardsContainer.classList.remove('hud-cards--enter');
-        isTransitioning = false;
-      }, 450);
-    }, 350);
+      renderAll();
+      isTransitioning = false;
+      showToast(container, `Arrived at ${getCurrent().title}!`, 'success');
+    }, 400);
   }
 
-  function bindChecklist() {
-    const checkboxes = container.querySelectorAll('.checklist-item input[type="checkbox"]');
-    const countEl = container.querySelector('#checklist-count');
-
-    function updateCount() {
-      const total = checkboxes.length;
-      const checked = container.querySelectorAll('.checklist-item input[type="checkbox"]:checked').length;
-      if (countEl) {
-        countEl.textContent = `${checked}/${total} completed`;
-        countEl.classList.remove('checklist-card__count--done');
-        if (checked === total) {
-          countEl.classList.add('checklist-card__count--done');
-        }
-      }
-    }
-
-    checkboxes.forEach((cb) => {
-      cb.addEventListener('change', () => {
-        const label = cb.nextElementSibling;
-        if (label) {
-          label.classList.toggle('checklist-label--done', cb.checked);
-        }
-        updateCount();
-      });
-
-      const label = cb.nextElementSibling;
-      if (label && cb.checked) {
-        label.classList.add('checklist-label--done');
-      }
-    });
-
-    updateCount();
-  }
-
+  // Initial render
   renderAll();
 
   return {
     element: container,
+    render: renderAll,
   };
 }

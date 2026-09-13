@@ -1,5 +1,5 @@
 /**
- * Utility: Enable smooth mouse-drag scrolling on horizontal pill rows
+ * Utility: Enable smooth mouse-drag & wheel scrolling on horizontal pill rows
  * Allows desktop and mouse users to click and drag horizontal containers
  * such as day-chip-rows, category-filter-bars, and scenario chips.
  */
@@ -10,35 +10,55 @@ export function enableDragScroll(slider) {
   let isDown = false;
   let startX = 0;
   let scrollLeft = 0;
+  let hasDragged = false;
 
-  slider.style.cursor = 'grab';
+  slider.style.cursor = "grab";
 
-  slider.addEventListener('mousedown', (e) => {
-    // Only handle primary mouse button
-    if (e.button !== 0) return;
-    isDown = true;
-    slider.style.cursor = 'grabbing';
-    startX = e.pageX - slider.offsetLeft;
-    scrollLeft = slider.scrollLeft;
-  });
+  function onMouseMove(e) {
+    if (!isDown) return;
+    const currentX = e.pageX !== undefined && e.pageX !== 0 ? e.pageX : e.clientX;
+    const walk = (currentX - startX) * 1.5;
+    if (Math.abs(walk) > 4) {
+      hasDragged = true;
+    }
+    slider.scrollLeft = scrollLeft - walk;
+  }
 
-  window.addEventListener('mouseup', () => {
+  function onMouseUp() {
     if (isDown) {
       isDown = false;
-      slider.style.cursor = 'grab';
+      slider.style.cursor = "grab";
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
     }
+  }
+
+  slider.addEventListener("mousedown", (e) => {
+    if (e.button !== 0) return;
+    isDown = true;
+    hasDragged = false;
+    slider.style.cursor = "grabbing";
+    startX = e.pageX !== undefined && e.pageX !== 0 ? e.pageX : e.clientX;
+    scrollLeft = slider.scrollLeft;
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
   });
 
-  slider.addEventListener('mouseleave', () => {
-    isDown = false;
-    slider.style.cursor = 'grab';
-  });
+  slider.addEventListener("click", (e) => {
+    if (hasDragged) {
+      e.preventDefault();
+      e.stopPropagation();
+      hasDragged = false;
+    }
+  }, true);
 
-  slider.addEventListener('mousemove', (e) => {
-    if (!isDown) return;
-    e.preventDefault();
-    const x = e.pageX - slider.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    slider.scrollLeft = scrollLeft - walk;
-  });
+  // Enable horizontal mouse wheel scrolling
+  slider.addEventListener("wheel", (e) => {
+    if (slider.scrollWidth > slider.clientWidth) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && e.deltaY !== 0) {
+        e.preventDefault();
+        slider.scrollLeft += e.deltaY;
+      }
+    }
+  }, { passive: false });
 }
