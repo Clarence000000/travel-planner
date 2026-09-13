@@ -19,10 +19,10 @@
 // 7-seat van: [row0: Driver, Passenger], [row1: 2 seats], [row2: 3 seats]
 const DEFAULT_SEATS = [
   // Row 0 — Front
-  { id: 'seat-driver', row: 0, label: 'Driver', isDriver: true, occupant: { emoji: '🐱', name: 'Neko-san' } },
-  { id: 'seat-front', row: 0, label: 'Shotgun', isDriver: false, occupant: { emoji: '🌸', name: 'Sakura' } },
+  { id: 'seat-driver', row: 0, label: 'Driver', isDriver: true, occupant: { initials: 'CL', name: 'Clarence' } },
+  { id: 'seat-front', row: 0, label: 'Shotgun', isDriver: false, occupant: { initials: 'WG', name: 'Wei Gang' } },
   // Row 1 — Middle
-  { id: 'seat-mid-l', row: 1, label: 'Middle Left', isDriver: false, occupant: { emoji: '🍙', name: 'Haru' } },
+  { id: 'seat-mid-l', row: 1, label: 'Middle Left', isDriver: false, occupant: { initials: 'HR', name: 'Haru' } },
   { id: 'seat-mid-r', row: 1, label: 'Middle Right', isDriver: false, occupant: null },
   // Row 2 — Back
   { id: 'seat-back-l', row: 2, label: 'Back Left', isDriver: false, occupant: null },
@@ -37,7 +37,6 @@ const DEFAULT_SEATS = [
  * @param {string} opts.to - Destination
  * @param {string} opts.duration - Travel time string
  * @param {string} opts.line - Transit line name
- * @param {string} [opts.icon] - Emoji icon for transit type
  */
 export function openCarpoolDrawer(opts = {}) {
   const {
@@ -45,7 +44,6 @@ export function openCarpoolDrawer(opts = {}) {
     to = 'Shibuya Station',
     duration = '18 mins',
     line = 'Tokyo Metro Ginza Line',
-    icon = '🚐',
   } = opts;
 
   // Remove existing drawer if open
@@ -79,7 +77,10 @@ export function openCarpoolDrawer(opts = {}) {
         <!-- Header -->
         <div class="carpool-sheet__header">
           <div class="carpool-sheet__header-top">
-            <span class="carpool-sheet__badge">${icon} Carpool Planner</span>
+            <span class="carpool-sheet__badge">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 11.2 2 11.6 2 12v4c0 .6.4 1 1 1h2"></path><circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle></svg>
+              Carpool Planner
+            </span>
             <button type="button" class="carpool-sheet__close" aria-label="Close drawer">✕</button>
           </div>
           <div class="carpool-route">
@@ -91,8 +92,14 @@ export function openCarpoolDrawer(opts = {}) {
               <span class="carpool-route__name">${to}</span>
             </div>
             <div class="carpool-route__meta">
-              <span class="carpool-route__line">🚇 ${line}</span>
-              <span class="carpool-route__duration">⏱ ${duration}</span>
+              <span class="carpool-route__line">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><rect x="4" y="3" width="16" height="16" rx="2"></rect><path d="M4 11h16"></path><path d="M12 3v8"></path><path d="m8 19-2 3"></path><path d="m16 19 2 3"></path></svg>
+                ${line}
+              </span>
+              <span class="carpool-route__duration">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:-1px; margin-right:3px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                ${duration}
+              </span>
             </div>
           </div>
         </div>
@@ -114,7 +121,7 @@ export function openCarpoolDrawer(opts = {}) {
           <div class="carpool-van__body">
             <!-- Windshield -->
             <div class="carpool-van__windshield">
-              <span>⬆ FRONT</span>
+              <span>FRONT</span>
             </div>
 
             <!-- Row 0: Front -->
@@ -143,10 +150,10 @@ export function openCarpoolDrawer(opts = {}) {
         <!-- Footer Actions -->
         <div class="carpool-sheet__footer">
           <button type="button" class="btn btn--secondary carpool-sheet__reset-btn" id="carpool-reset-btn">
-            ↺ Reset Seat
+            Reset Seat
           </button>
           <button type="button" class="btn btn--primary carpool-sheet__confirm-btn" id="carpool-confirm-btn" ${!userSeatId ? 'disabled' : ''}>
-            ✓ Confirm Ride
+            Confirm Ride
           </button>
         </div>
       </div>
@@ -163,8 +170,8 @@ export function openCarpoolDrawer(opts = {}) {
     if (isDriverSeat) {
       return `
         <div class="carpool-seat carpool-seat--driver" data-seat-id="${seat.id}">
-          <div class="carpool-seat__avatar carpool-seat__avatar--driver">
-            <span>${seat.occupant.emoji}</span>
+          <div class="user-avatar-initials" style="margin: 0 auto 4px; width: 32px; height: 32px; font-size: 11px; background: var(--color-surface); border-color: var(--color-primary);">
+            ${seat.occupant.initials}
           </div>
           <span class="carpool-seat__name">${seat.occupant.name}</span>
           <span class="carpool-seat__role">Driver</span>
@@ -175,8 +182,8 @@ export function openCarpoolDrawer(opts = {}) {
     if (isOccupied) {
       return `
         <div class="carpool-seat carpool-seat--filled ${isUser ? 'carpool-seat--you' : ''}" data-seat-id="${seat.id}">
-          <div class="carpool-seat__avatar">
-            <span>${isUser ? '🧑' : seat.occupant.emoji}</span>
+          <div class="user-avatar-initials" style="margin: 0 auto 4px; width: 32px; height: 32px; font-size: 11px;">
+            ${isUser ? 'ME' : seat.occupant.initials}
           </div>
           <span class="carpool-seat__name">${isUser ? 'You' : seat.occupant.name}</span>
         </div>
@@ -227,7 +234,7 @@ export function openCarpoolDrawer(opts = {}) {
     if (confirmBtn) {
       confirmBtn.addEventListener('click', () => {
         if (userSeatId) {
-          showCarpoolToast(`🎉 Ride confirmed! Seat reserved.`);
+          showCarpoolToast(`Ride confirmed! Seat reserved.`);
           setTimeout(() => closeDrawer(), 1200);
         }
       });
@@ -253,7 +260,7 @@ export function openCarpoolDrawer(opts = {}) {
     const seat = seats.find((s) => s.id === seatId);
     if (!seat || seat.occupant) return;
 
-    seat.occupant = { emoji: '🧑', name: 'You' };
+    seat.occupant = { initials: 'ME', name: 'You' };
     userSeatId = seatId;
 
     // Animate the specific seat

@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Travel Planner Remote · Presenter Control</title>
+  <style>
+    :root {
+      --bg-body: #0b0c10;
+      --bg-card: #15171f;
+      --bg-card-sub: #1c1f2b;
+      --border-card: #272a38;
+      --border-sub: #32374a;
+      --text-main: #f1f3f9;
+      --text-muted: #8b92a5;
+      --text-dim: #5c6275;
+      --accent-primary: #e8621a;
+      --accent-indigo: #6366f1;
+      --accent-sky: #0ea5e9;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-pill: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.45;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 12px 12px 0;
+    }
+
+    .remote-container {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 24px;
+    }
+
+    /* Common Card Styles */
+    .section-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      position: relative;
+    }
+
+    /* Top Header */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, var(--accent-primary), var(--accent-amber));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .app-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .app-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* Status Pill */
+    .status-pill {
+      font-size: 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      padding: 3px 8px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .status-pill.disconnected {
+      border-color: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.12);
+      color: #fbbf24;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    /* Live Demo Tracker Banner (Shows where each step is RN) */
+    .live-tracker-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.95));
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: var(--radius-md);
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .tracker-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .tracker-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 7px;
+      border-radius: var(--radius-pill);
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.5);
+      color: #a5b4fc;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    .tracker-badge.pulse {
+      animation: trackerGlow 1.8s infinite;
+    }
+
+    @keyframes trackerGlow {
+      0%, 100% { opacity: 1; border-color: rgba(99, 102, 241, 0.6); }
+      50% { opacity: 0.6; border-color: rgba(99, 102, 241, 0.2); }
+    }
+
+    .tracker-text {
+      min-width: 0;
+    }
+
+    .tracker-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tracker-desc {
+      font-size: 11px;
+      color: #94a3b8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .tracker-action-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-sm);
+      color: #e2e8f0;
+      white-space: nowrap;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .tracker-action-pill:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+    }
+
+    /* Screen View Switcher */
+    .view-switcher-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 8px 10px;
+      background: #11131a;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-sm);
+    }
+
+    .view-switcher-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      white-space: nowrap;
+    }
+
+    .view-btn-group {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .view-btn {
+      background: #1e2230;
+      color: var(--text-muted);
+      border: 1px solid #2d3348;
+      border-radius: var(--radius-sm);
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .view-btn:hover {
+      background: #282e42;
+      color: #ffffff;
+      border-color: #3e4661;
+    }
+
+    .view-btn.active {
+      background: #2d3652;
+      color: #93c5fd;
+      border-color: #4b5980;
+      font-weight: 600;
+    }
+
+    /* Act Navigation Tabs */
+    .act-tabs-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .act-tabs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .act-tabs-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .act-tabs-progress {
+      font-size: 10px;
+      color: var(--text-dim);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .act-tab-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+      background: #0f1118;
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-card);
+    }
+
+    @media (max-width: 540px) {
+      .act-tab-strip {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .act-tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: var(--radius-sm);
+      padding: 7px 4px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      text-align: center;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+
+    .act-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+
+    .act-tab-btn.active {
+      background: #1f2433;
+      border-color: #3b4563;
+      color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .tab-status-chip {
+      font-size: 9px;
+      padding: 1px 5px;
+      border-radius: var(--radius-pill);
+      background: #161822;
+      color: var(--text-dim);
+      font-weight: 700;
+      border: 1px solid #282b3a;
+    }
+
+    .act-tab-btn.active .tab-status-chip {
+      background: #273048;
+      color: #93c5fd;
+      border-color: #3f4e75;
+    }
+
+    .tab-status-chip.done {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .tab-status-chip.running {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    /* Act Content Panels */
+    .act-panel {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .act-panel.active {
+      display: flex;
+    }
+
+    /* Act Panel Header */
+    .act-hero {
+      background: linear-gradient(180deg, #181c27 0%, var(--bg-card) 100%);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .act-hero-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .act-tag {
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 7px;
+      border-radius: var(--radius-sm);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .tag-act1 { background: rgba(232, 98, 26, 0.15); color: #fb923c; border: 1px solid rgba(232, 98, 26, 0.35); }
+    .tag-act2 { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.35); }
+    .tag-act3 { background: rgba(14, 165, 233, 0.15); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.35); }
+    .tag-act4 { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35); }
+    .tag-act5 { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.35); }
+    .tag-macro { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.35); }
+
+    .act-hero-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-top: 2px;
+    }
+
+    .act-hero-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .act-hero-pitch {
+      margin-top: 6px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      background: rgba(0, 0, 0, 0.3);
+      border-left: 2px solid var(--accent-primary);
+      font-size: 11px;
+      color: #cbd5e1;
+      font-style: italic;
+    }
+
+    /* Action & Timeline Step Cards */
+    .action-step-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.2s ease;
+    }
+
+    .action-step-card.is-active {
+      border-color: rgba(99, 102, 241, 0.6);
+      background: linear-gradient(180deg, #181b28 0%, var(--bg-card) 100%);
+    }
+
+    .action-step-card.is-done {
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .action-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .action-step-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+    }
+
+    .step-state-badge {
+      font-size: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      padding: 2px 7px;
+      border-radius: var(--radius-pill);
+      background: #181b26;
+      color: var(--text-dim);
+      border: 1px solid #282d3e;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .step-state-badge.state-running {
+      background: rgba(99, 102, 241, 0.18);
+      color: #c7d2fe;
+      border-color: rgba(99, 102, 241, 0.5);
+    }
+
+    .step-state-badge.state-done {
+      background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7;
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    /* Action Execution Buttons */
+    .btn-action-primary {
+      width: 100%;
+      background: #252a3b;
+      color: #ffffff;
+      border: 1px solid #3d4661;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+
+    .btn-action-primary:hover {
+      background: #2e354a;
+      border-color: #515c7e;
+    }
+
+    .btn-action-primary:active {
+      transform: scale(0.99);
+      background: #1d212f;
+    }
+
+    .btn-theme-orange {
+      background: linear-gradient(135deg, #c2410c, #b45309);
+      border-color: #ea580c;
+    }
+    .btn-theme-orange:hover { background: linear-gradient(135deg, #ea580c, #d97706); border-color: #f97316; }
+
+    .btn-theme-indigo {
+      background: linear-gradient(135deg, #4338ca, #3730a3);
+      border-color: #6366f1;
+    }
+    .btn-theme-indigo:hover { background: linear-gradient(135deg, #4f46e5, #4338ca); border-color: #818cf8; }
+
+    .btn-theme-emerald {
+      background: linear-gradient(135deg, #047857, #065f46);
+      border-color: #10b981;
+    }
+    .btn-theme-emerald:hover { background: linear-gradient(135deg, #059669, #047857); border-color: #34d399; }
+
+    .btn-theme-rose {
+      background: linear-gradient(135deg, #be123c, #9f1239);
+      border-color: #f43f5e;
+    }
+    .btn-theme-rose:hover { background: linear-gradient(135deg, #e11d48, #be123c); border-color: #fb7185; }
+
+    .btn-timing-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      background: rgba(0, 0, 0, 0.3);
+      color: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+    }
+
+    /* Live Progress Bar */
+    .step-progress-wrapper {
+      display: none;
+      flex-direction: column;
+      gap: 4px;
+      padding: 4px 0;
+    }
+
+    .step-progress-wrapper.visible {
+      display: flex;
+    }
+
+    .step-progress-track {
+      width: 100%;
+      height: 4px;
+      background: #1f2332;
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+
+    .step-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #6366f1, #38bdf8);
+      border-radius: var(--radius-pill);
+      transition: width 0.3s ease;
+    }
+
+    .step-progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    /* Timeline Stepper Container */
+    .timeline-box {
+      background: #11131a;
+      border: 1px solid var(--border-sub);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .timeline-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .timeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      padding-left: 14px;
+    }
+
+    .timeline-steps::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: #242938;
+    }
+
+    .timeline-node {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+
+    .timeline-node::before {
+      content: '';
+      position: absolute;
+      left: -14px;
+      top: 4px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #475069;
+      border: 1px solid #11131a;
+    }
+
+    .timeline-node.active {
+      color: #e2e8f0;
+    }
+
+    .timeline-node.active::before {
+      background: #6366f1;
+      box-shadow: 0 0 6px #6366f1;
+    }
+
+    .timeline-node.done {
+      color: #a7f3d0;
+    }
+
+    .timeline-node.done::before {
+      background: #10b981;
+    }
+
+    .timeline-time {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 600;
+      flex-shrink: 0;
+      width: 44px;
+    }
+
+    .timeline-desc {
+      flex: 1;
+    }
+
+    .timeline-outcome {
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px dashed #272c3d;
+      font-size: 10px;
+      color: #93c5fd;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Stepper Next / Prev Act Navigation */
+    .act-flow-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 10px 0 2px;
+      border-top: 1px solid var(--border-card);
+      margin-top: 4px;
+    }
+
+    .btn-flow {
+      background: #1c202d;
+      color: var(--text-main);
+      border: 1px solid #30374c;
+      border-radius: var(--radius-sm);
+      padding: 7px 12px;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-flow:hover {
+      background: #272d3f;
+      border-color: #4a5472;
+    }
+
+    .btn-flow-next {
+      margin-left: auto;
+      background: #1e283d;
+      color: #93c5fd;
+      border-color: #3b5280;
+    }
+
+    .btn-flow-next:hover {
+      background: #273654;
+      color: #ffffff;
+      border-color: #5577b8;
+    }
+
+    /* Subgroups for Contingencies */
+    .contingency-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .btn-contingency {
+      background: #181b26;
+      border: 1px solid #2e354a;
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      color: #e2e8f0;
+      font-size: 11px;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.15s ease;
+    }
+
+    .btn-contingency:hover {
+      background: #232838;
+      border-color: #454f6c;
+      color: #ffffff;
+    }
+
+    .btn-contingency.selected {
+      background: #1a3028;
+      border-color: #10b981;
+      color: #6ee7b7;
+    }
+
+    /* Fixed Docked Broadcast Log */
+    .docked-log-panel {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(13, 15, 20, 0.96);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid #2d3345;
+      padding: 8px 12px 10px;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);
+      transition: height 0.2s ease;
+    }
+
+    .docked-log-content {
+      width: 100%;
+      max-width: 640px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .docked-log-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .log-title-area {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .log-main-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #cbd5e1;
+    }
+
+    .log-count-tag {
+      font-size: 10px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: var(--text-dim);
+      background: #1b1e2a;
+      padding: 1px 6px;
+      border-radius: var(--radius-pill);
+      border: 1px solid #2d3245;
+    }
+
+    .log-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Heartbeat PING Filter Toggle Pill */
+    .btn-ping-filter {
+      background: #1f2535;
+      border: 1px solid #37415d;
+      border-radius: var(--radius-pill);
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #a5b4fc;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-ping-filter.filtering-active {
+      background: #172b22;
+      border-color: #10b981;
+      color: #6ee7b7;
+    }
+
+    .btn-log-action {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      padding: 2px 4px;
+      text-decoration: underline;
+    }
+
+    .btn-log-action:hover {
+      color: #ffffff;
+    }
+
+    .docked-log-window {
+      background: #090a0f;
+      border: 1px solid #222634;
+      border-radius: var(--radius-sm);
+      padding: 6px 8px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      height: 180px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      transition: height 0.2s ease;
+    }
+
+    .docked-log-window.expanded {
+      height: 320px;
+    }
+
+    .log-entry {
+      display: flex;
+      gap: 6px;
+      line-height: 1.35;
+      word-break: break-all;
+    }
+
+    .log-entry.hidden-ping {
+      display: none !important;
+    }
+
+    .log-entry.ping-type {
+      opacity: 0.6;
+    }
+
+    .log-time {
+      color: #555d72;
+      flex-shrink: 0;
+    }
+
+    .log-tag {
+      font-weight: 600;
+      color: #93c5fd;
+      flex-shrink: 0;
+    }
+
+    .log-tag.recv {
+      color: #86efac;
+    }
+
+    .log-tag.ping {
+      color: #64748b;
+    }
+
+    .log-tag.sys {
+      color: #f59e0b;
+    }
+
+    .log-content {
+      color: #d1d5db;
+    }
+
+    /* Global overview cards */
+    .overview-summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 480px) {
+      .overview-summary-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .summary-card {
+      background: #12141c;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .summary-card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .summary-card-desc {
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    .bottom-dock-spacer {
+      height: 250px;
+      width: 100%;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="remote-container">
+
+    <!-- Top Header -->
+    <header class="section-card header-bar">
+      <div class="brand-group">
+        <div class="brand-icon">W</div>
+        <div>
+          <h1 class="app-title">Travel Planner Remote</h1>
+          <p class="app-subtitle">Presenter Control Surface · Penang 3-Day</p>
+        </div>
+      </div>
+      <div class="status-pill" id="connection-pill">
+        <span class="status-dot"></span>
+        <span id="connection-text">Connecting...</span>
+      </div>
+    </header>
+
+    <!-- Live Step Tracker Banner (Shows where each step is RN) -->
+    <div class="live-tracker-card" id="live-tracker-card">
+      <div class="tracker-left">
+        <div class="tracker-badge pulse" id="tracker-phase-badge">ACT 1 READY</div>
+        <div class="tracker-text">
+          <div class="tracker-title" id="tracker-title">Ready to launch Genesis</div>
+          <div class="tracker-desc" id="tracker-desc">Select Act 1 below or click Launch Reel Genesis</div>
+        </div>
+      </div>
+      <button type="button" class="tracker-action-pill" id="tracker-jump-btn">Jump to Step</button>
+    </div>
+
+    <!-- Active Presentation View Switcher -->
+    <div class="view-switcher-bar">
+      <span class="view-switcher-label">Main Screen:</span>
+      <div class="view-btn-group">
+        <button type="button" class="view-btn" data-tab="trips">Trips</button>
+        <button type="button" class="view-btn" data-tab="ideas">Ideas</button>
+        <button type="button" class="view-btn" data-tab="itinerary">Itinerary</button>
+        <button type="button" class="view-btn" data-tab="chat">Chat</button>
+        <button type="button" class="view-btn" data-tab="dashboard">HUD</button>
+      </div>
+    </div>
+
+    <!-- Act Navigation Tabs -->
+    <section class="act-tabs-container">
+      <div class="act-tabs-header">
+        <span class="act-tabs-title">Presentation Acts</span>
+        <span class="act-tabs-progress" id="tabs-progress-indicator">Step 1 of 5</span>
+      </div>
+
+      <nav class="act-tab-strip" role="tablist">
+        <button type="button" class="act-tab-btn active" data-act="1" id="tab-btn-1">
+          <span>Act 1</span>
+          <span class="tab-status-chip" id="chip-act-1">0/2</span>
+        </button>
+        <button type="button" class="act-tab-btn" data-act="2" id="tab-btn-2">
+          <span>Act 2</span>
+          <span class="tab-status-chip" id="chip-act-2">0/2</span>
+        </button>
+        <button type="button" class="act-tab-btn" data-act="3" id="tab-btn-3">
+          <span>Act 3</span>
+          <span class="tab-status-chip" id="chip-act-3">0/2</span>
+        </button>
+        <button type="button" class="act-tab-btn" data-act="4" id="tab-btn-4">
+          <span>Act 4</span>
+          <span class="tab-status-chip" id="chip-act-4">0/2</span>
+        </button>
+        <button type="button" class="act-tab-btn" data-act="5" id="tab-btn-5">
+          <span>Act 5</span>
+          <span class="tab-status-chip" id="chip-act-5">0/2</span>
+        </button>
+        <button type="button" class="act-tab-btn" data-act="macro" id="tab-btn-macro">
+          <span>Macros</span>
+          <span class="tab-status-chip" id="chip-act-macro">All</span>
+        </button>
+      </nav>
+    </section>
+
+    <!-- ==================== ACT 1 PANEL ==================== -->
+    <section class="act-panel active" id="act-panel-1">
+      <div class="act-hero">
+        <div class="act-hero-header">
+          <span class="act-tag tag-act1">Act 1 · Dynamic Genesis</span>
+          <span class="step-state-badge" id="badge-act1-overall">Ready</span>
+        </div>
+        <h2 class="act-hero-title">Day 1 Social Reel Ingest & Anchor Setup</h2>
+        <p class="act-hero-desc">Extract viral Instagram Reel inspiration into verified schedule anchors with authentic lunch gap calculation.</p>
+        <div class="act-hero-pitch">"Travel planning fails when it forces people into rigid templates. WanderSync extracts anchors from reels with flexible open gaps."</div>
+      </div>
+
+      <!-- Step 1.1: Reel Genesis -->
+      <div class="action-step-card" id="card-act1-genesis">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 1.1 · Social Ingestion</span>
+          <span class="step-state-badge" id="badge-step-1-1">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary btn-theme-orange" id="btn-act1-genesis">
+          <span>⚡ Launch Reel Genesis</span>
+          <span class="btn-timing-tag">~1s</span>
+        </button>
+
+        <div class="step-progress-wrapper" id="prog-1-1">
+          <div class="step-progress-track">
+            <div class="step-progress-bar" id="bar-1-1"></div>
+          </div>
+          <div class="step-progress-meta">
+            <span id="label-1-1">Opening Reel Ingest Modal...</span>
+            <span id="time-1-1">0s</span>
+          </div>
+        </div>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Execution Timeline</span>
+            <span style="color: #94a3b8;">Duration: 1.2s</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-1-1-1">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Switch screen to Ideas tab & open Reel Ingest Modal</span>
+            </div>
+            <div class="timeline-node" id="tl-node-1-1-2">
+              <span class="timeline-time">T+0.5s</span>
+              <span class="timeline-desc">Ingest @penangfoodie reel with 5 heritage spots</span>
+            </div>
+            <div class="timeline-node" id="tl-node-1-1-3">
+              <span class="timeline-time">T+1.2s</span>
+              <span class="timeline-desc">Extract Chew Jetty & Penang Hill anchors + 4h open lunch window</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Ingest modal opens and populates extracted card list</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 1.2: Populate Anchors -->
+      <div class="action-step-card" id="card-act1-populate">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 1.2 · Day 1 Timeline Anchors</span>
+          <span class="step-state-badge" id="badge-step-1-2">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary" id="btn-act1-populate">
+          <span>📍 Populate Day 1 Anchors</span>
+          <span class="btn-timing-tag">Instant</span>
+        </button>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Execution Timeline</span>
+            <span style="color: #94a3b8;">Instant Baseline</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-1-2-1">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Locks 09:00 Chew Jetty Clan Waterfront Walk</span>
+            </div>
+            <div class="timeline-node" id="tl-node-1-2-2">
+              <span class="timeline-time">T+0.1s</span>
+              <span class="timeline-desc">Locks 15:00 Penang Hill Funicular & The Habitat</span>
+            </div>
+            <div class="timeline-node" id="tl-node-1-2-3">
+              <span class="timeline-time">T+0.2s</span>
+              <span class="timeline-desc">Generates 5h 30m open lunch window with 12m transit buffer</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Day 1 itinerary shows 2 confirmed anchor cards with open lunch gap</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 1 Flow Nav -->
+      <div class="act-flow-nav">
+        <button type="button" class="btn-flow" disabled style="opacity: 0.3;">← Beginning</button>
+        <button type="button" class="btn-flow btn-flow-next" data-next-act="2">Next: Act 2 (Ambient) →</button>
+      </div>
+    </section>
+
+    <!-- ==================== ACT 2 PANEL ==================== -->
+    <section class="act-panel" id="act-panel-2">
+      <div class="act-hero">
+        <div class="act-hero-header">
+          <span class="act-tag tag-act2">Act 2 · Ambient Synthesis</span>
+          <span class="step-state-badge" id="badge-act2-overall">Ready</span>
+        </div>
+        <h2 class="act-hero-title">Background Multi-User Collaboration</h2>
+        <p class="act-hero-desc">Tony and Wei Gang autonomously draft Day 2 (Entopia, Escape, Bora Bora) in the background without UI blocking.</p>
+        <div class="act-hero-pitch">"Collaborative travel shouldn't require everyone sitting on a Zoom call. Notice the live status badge on Day 2 updating quietly."</div>
+      </div>
+
+      <!-- Step 2.1: Background Worker -->
+      <div class="action-step-card" id="card-act2-worker">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 2.1 · Autonomous Loop</span>
+          <span class="step-state-badge" id="badge-step-2-1">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary btn-theme-indigo" id="btn-act2-worker">
+          <span>⚙️ Trigger Day 2 Worker</span>
+          <span class="btn-timing-tag">~25s Sequence</span>
+        </button>
+
+        <div class="step-progress-wrapper" id="prog-2-1">
+          <div class="step-progress-track">
+            <div class="step-progress-bar" id="bar-2-1"></div>
+          </div>
+          <div class="step-progress-meta">
+            <span id="label-2-1">Starting background simulation...</span>
+            <span id="time-2-1">0s / 25s</span>
+          </div>
+        </div>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Staged Simulation Timeline</span>
+            <span style="color: #94a3b8;">Total: 25.0s</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-2-1-0">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Worker initializes; subtle activity dot (●) lights up on Day 2 tab</span>
+            </div>
+            <div class="timeline-node" id="tl-node-2-1-1">
+              <span class="timeline-time">T+5.0s</span>
+              <span class="timeline-desc">Tony adds Entopia by Penang Butterfly Farm (09:30 AM, 1 stop)</span>
+            </div>
+            <div class="timeline-node" id="tl-node-2-1-2">
+              <span class="timeline-time">T+15.0s</span>
+              <span class="timeline-desc">Wei Gang adds Escape Adventure Theme Park (02:00 PM, 2 stops)</span>
+            </div>
+            <div class="timeline-node" id="tl-node-2-1-3">
+              <span class="timeline-time">T+25.0s</span>
+              <span class="timeline-desc">Tony shares Bora Bora link → WanderBot proposes slot → Wei Gang agrees → Added & confirmed ✓</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Day 2 chip badge updates (● 1 stop → 2 stops → 3 stops ✓)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2.2: Add Entopia Immediately -->
+      <div class="action-step-card" id="card-act2-entopia">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 2.2 · Instant Override</span>
+          <span class="step-state-badge" id="badge-step-2-2">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary" id="btn-act2-entopia">
+          <span>🦋 Add Entopia Day 2 Immediately</span>
+          <span class="btn-timing-tag">Instant</span>
+        </button>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Direct Action</span>
+            <span style="color: #94a3b8;">Instant</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-2-2-1">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Injects Entopia directly into Day 2 schedule without waiting</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Day 2 immediately receives Entopia card</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 2 Flow Nav -->
+      <div class="act-flow-nav">
+        <button type="button" class="btn-flow" data-prev-act="1">← Prev: Act 1</button>
+        <button type="button" class="btn-flow btn-flow-next" data-next-act="3">Next: Act 3 (Chat) →</button>
+      </div>
+    </section>
+
+    <!-- ==================== ACT 3 PANEL ==================== -->
+    <section class="act-panel" id="act-panel-3">
+      <div class="act-hero">
+        <div class="act-hero-header">
+          <span class="act-tag tag-act3">Act 3 · Chat & Proposal</span>
+          <span class="step-state-badge" id="badge-act3-overall">Ready</span>
+        </div>
+        <h2 class="act-hero-title">Contextual Banter & WanderBot Gap Detection</h2>
+        <p class="act-hero-desc">Team banter in Day 1 Chat triggers WanderBot AI to detect the lunch gap and propose Teochew Chendul.</p>
+        <div class="act-hero-pitch">"Proposed activities don't look like locked plans. They appear as frosted translucent drafts until confirmed."</div>
+      </div>
+
+      <!-- Step 3.1: Chat Banter -->
+      <div class="action-step-card" id="card-act3-banter">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 3.1 · Autonomous Influx</span>
+          <span class="step-state-badge" id="badge-step-3-1">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary btn-theme-orange" id="btn-act3-banter">
+          <span>💬 Trigger Chat Banter</span>
+          <span class="btn-timing-tag">~5.5s Influx</span>
+        </button>
+
+        <div class="step-progress-wrapper" id="prog-3-1">
+          <div class="step-progress-track">
+            <div class="step-progress-bar" id="bar-3-1"></div>
+          </div>
+          <div class="step-progress-meta">
+            <span id="label-3-1">Injecting messages to Day 1 Chat...</span>
+            <span id="time-3-1">0s / 5.5s</span>
+          </div>
+        </div>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Conversational Influx Timeline</span>
+            <span style="color: #94a3b8;">Total: 5.5s</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-3-1-0">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Switches main screen to Chat tab (Day 1 thread)</span>
+            </div>
+            <div class="timeline-node" id="tl-node-3-1-1">
+              <span class="timeline-time">T+1.5s</span>
+              <span class="timeline-desc">Tony: "Guys, what are we eating after Chew Jetty? Craving Chendul?"</span>
+            </div>
+            <div class="timeline-node" id="tl-node-3-1-2">
+              <span class="timeline-time">T+3.5s</span>
+              <span class="timeline-desc">Wei Gang: "Lebuh Keng Kwee Famous Teochew Chendul is a must-try."</span>
+            </div>
+            <div class="timeline-node" id="tl-node-3-1-3">
+              <span class="timeline-time">T+5.5s</span>
+              <span class="timeline-desc">🤖 WanderBot AI detects 12:30 PM gap and displays inline Proposal Card</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Live chat bubbles slide in + WanderBot meal gap proposal card</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3.2: Insert Proposal -->
+      <div class="action-step-card" id="card-act3-proposal">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 3.2 · Proposed Ghost Card</span>
+          <span class="step-state-badge" id="badge-step-3-2">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary" id="btn-act3-proposal">
+          <span>🤖 Insert Chendul Proposal to Timeline</span>
+          <span class="btn-timing-tag">Instant</span>
+        </button>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>State Transformation</span>
+            <span style="color: #94a3b8;">Day 1 Schedule</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-3-2-1">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Places dashed amber Frosted Glass Ghost Card into 12:30 PM slot</span>
+            </div>
+            <div class="timeline-node" id="tl-node-3-2-2">
+              <span class="timeline-time">T+0.1s</span>
+              <span class="timeline-desc">Attaches group mini-poll with [✓ Confirm] and [🗳️ Vote] actions</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Itinerary timeline displays frosted translucent card with dashed amber border</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 3 Flow Nav -->
+      <div class="act-flow-nav">
+        <button type="button" class="btn-flow" data-prev-act="2">← Prev: Act 2</button>
+        <button type="button" class="btn-flow btn-flow-next" data-next-act="4">Next: Act 4 (Consensus) →</button>
+      </div>
+    </section>
+
+    <!-- ==================== ACT 4 PANEL ==================== -->
+    <section class="act-panel" id="act-panel-4">
+      <div class="act-hero">
+        <div class="act-hero-header">
+          <span class="act-tag tag-act4">Act 4 · Consensus & Advisory</span>
+          <span class="step-state-badge" id="badge-act4-overall">Ready</span>
+        </div>
+        <h2 class="act-hero-title">Consensus Polling & Schedule Conflict Advisory</h2>
+        <p class="act-hero-desc">2-step voting converts the draft into a confirmed solid card, followed by Monday hawker closure detection.</p>
+        <div class="act-hero-pitch">"Our schedule engine continuously checks real-world constraints—like Monday closures—offering 1-tap adjustments."</div>
+      </div>
+
+      <!-- Step 4.1: Consensus Vote -->
+      <div class="action-step-card" id="card-act4-vote">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 4.1 · Democratic Consensus</span>
+          <span class="step-state-badge" id="badge-step-4-1">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary btn-theme-emerald" id="btn-act4-vote">
+          <span>🗳️ Trigger 2-Step Consensus Vote</span>
+          <span class="btn-timing-tag">~2.8s</span>
+        </button>
+
+        <div class="step-progress-wrapper" id="prog-4-1">
+          <div class="step-progress-track">
+            <div class="step-progress-bar" id="bar-4-1" style="background: linear-gradient(90deg, #10b981, #34d399);"></div>
+          </div>
+          <div class="step-progress-meta">
+            <span id="label-4-1">Starting group mini-poll...</span>
+            <span id="time-4-1">0% Consensus</span>
+          </div>
+        </div>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Voting & Morphesis Timeline</span>
+            <span style="color: #94a3b8;">Total: 2.8s</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-4-1-0">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Mini-poll initiates on Chendul proposed block</span>
+            </div>
+            <div class="timeline-node" id="tl-node-4-1-1">
+              <span class="timeline-time">T+1.0s</span>
+              <span class="timeline-desc">Wei Gang votes (1/2 votes · 50% Consensus)</span>
+            </div>
+            <div class="timeline-node" id="tl-node-4-1-2">
+              <span class="timeline-time">T+2.2s</span>
+              <span class="timeline-desc">Tony votes (2/2 votes · 100% Consensus reached!)</span>
+            </div>
+            <div class="timeline-node" id="tl-node-4-1-3">
+              <span class="timeline-time">T+2.8s</span>
+              <span class="timeline-desc">Card morphs to solid Liquid Glass + Grab buffers calculate (12m & 25m)</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Card border snaps solid, status dot flips to Confirmed Green, transit badges appear</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4.2: Siam Road Advisory -->
+      <div class="action-step-card" id="card-act4b-siam">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 4.2 · Schedule Conflict Advisory</span>
+          <span class="step-state-badge" id="badge-step-4-2">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary" id="btn-act4b-siam">
+          <span>⚠️ Trigger Siam Road Advisory</span>
+          <span class="btn-timing-tag">Instant</span>
+        </button>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Heuristic Conflict Resolution</span>
+            <span style="color: #94a3b8;">Anti-Slop Logic</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-4-2-1">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Detects Monday closure rule for Siam Road Char Koay Teow</span>
+            </div>
+            <div class="timeline-node" id="tl-node-4-2-2">
+              <span class="timeline-time">T+0.2s</span>
+              <span class="timeline-desc">Surfaces Apple-style calendar conflict card: "Shift to Day 3 · Wed"</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Restrained amber alert card appears with 1-tap reschedule action</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 4 Flow Nav -->
+      <div class="act-flow-nav">
+        <button type="button" class="btn-flow" data-prev-act="3">← Prev: Act 3</button>
+        <button type="button" class="btn-flow btn-flow-next" data-next-act="5">Next: Act 5 (Monsoon) →</button>
+      </div>
+    </section>
+
+    <!-- ==================== ACT 5 PANEL ==================== -->
+    <section class="act-panel" id="act-panel-5">
+      <div class="act-hero">
+        <div class="act-hero-header">
+          <span class="act-tag tag-act5">Act 5 · Monsoon & Recovery</span>
+          <span class="step-state-badge" id="badge-act5-overall">Ready</span>
+        </div>
+        <h2 class="act-hero-title">Live Day HUD & 3-Way Contingency Engine</h2>
+        <p class="act-hero-desc">Torrential tropical rainstorm disruption at Penang Hill resolved instantly via 3 distinct recovery pathways.</p>
+        <div class="act-hero-pitch">"When an afternoon tropical thunderstorm hits Penang, Live HUD gives you an instant 3-way contingency switch."</div>
+      </div>
+
+      <!-- Step 5.1: Monsoon Alert -->
+      <div class="action-step-card" id="card-act5-monsoon">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 5.1 · Weather Disruption</span>
+          <span class="step-state-badge" id="badge-step-5-1">Pending</span>
+        </div>
+        <button type="button" class="btn-action-primary btn-theme-rose" id="btn-act5-monsoon">
+          <span>⛈️ Broadcast Monsoon Alert</span>
+          <span class="btn-timing-tag">Disruption Trigger</span>
+        </button>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Disruption Sequence</span>
+            <span style="color: #94a3b8;">Penang Hill Summit</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node" id="tl-node-5-1-1">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Tropical monsoon downpour warning flashes on Penang Hill canopy walk</span>
+            </div>
+            <div class="timeline-node" id="tl-node-5-1-2">
+              <span class="timeline-time">T+0.2s</span>
+              <span class="timeline-desc">Suspends outdoor slot and prompts 3-Way Contingency Decision Sheet</span>
+            </div>
+          </div>
+          <div class="timeline-outcome">
+            <span>✓ Main screen: Weather alert banner pulses; surfaces 3 recovery options</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5.2: 3-Way Contingencies -->
+      <div class="action-step-card" id="card-act5-contingencies">
+        <div class="action-header-row">
+          <span class="action-step-label">Step 5.2 · Recovery Resolution</span>
+          <span class="step-state-badge" id="badge-step-5-2">Pick Option</span>
+        </div>
+
+        <div class="contingency-grid">
+          <button type="button" class="btn-contingency" id="btn-contingency-1">
+            <span>🏢 Option 1: Indoor Fallback (The Top Komtar)</span>
+            <span style="font-size: 10px; color: #94a3b8;">Swap slot</span>
+          </button>
+          <button type="button" class="btn-contingency" id="btn-contingency-2">
+            <span>☕ Option 2: Free-Time Pocket (ChinaHouse Cafe)</span>
+            <span style="font-size: 10px; color: #94a3b8;">Hold gap</span>
+          </button>
+          <button type="button" class="btn-contingency" id="btn-contingency-3">
+            <span>🔄 Option 3: Chronological Reflow</span>
+            <span style="font-size: 10px; color: #94a3b8;">Pull 90m</span>
+          </button>
+        </div>
+
+        <div class="timeline-box">
+          <div class="timeline-title">
+            <span>Contingency Comparison</span>
+            <span style="color: #94a3b8;">3 Pathways</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node">
+              <span class="timeline-time">Opt 1</span>
+              <span class="timeline-desc"><b>Indoor Fallback</b>: Swaps outdoor summit for The Top Komtar indoor skywalk without moving dinner.</span>
+            </div>
+            <div class="timeline-node">
+              <span class="timeline-time">Opt 2</span>
+              <span class="timeline-desc"><b>Free-Time Pocket</b>: Converts rain window into relaxed cake & coffee time at ChinaHouse.</span>
+            </div>
+            <div class="timeline-node">
+              <span class="timeline-time">Opt 3</span>
+              <span class="timeline-desc"><b>Chronological Reflow</b>: Pulls evening Gurney Drive dinner forward by 90 minutes.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Act 5 Flow Nav -->
+      <div class="act-flow-nav">
+        <button type="button" class="btn-flow" data-prev-act="4">← Prev: Act 4</button>
+        <button type="button" class="btn-flow btn-flow-next" data-next-act="macro">View Overview & Macros →</button>
+      </div>
+    </section>
+
+    <!-- ==================== MACROS / ALL PANEL ==================== -->
+    <section class="act-panel" id="act-panel-macro">
+      <div class="act-hero">
+        <div class="act-hero-header">
+          <span class="act-tag tag-macro">Macro Controls · Full Flow</span>
+          <span class="step-state-badge">Automation</span>
+        </div>
+        <h2 class="act-hero-title">Automated Pitch Fast-Forward & Reset</h2>
+        <p class="act-hero-desc">Run the complete 5-act demonstration sequence automatically, or return all state to Genesis zero-state.</p>
+      </div>
+
+      <div class="action-step-card">
+        <div class="action-header-row">
+          <span class="action-step-label">Global Automation</span>
+          <span class="step-state-badge" id="badge-macro-status">Ready</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button type="button" class="btn-action-primary btn-theme-indigo" id="btn-fast-forward">
+            <span>⚡ Fast Forward Demo</span>
+            <span class="btn-timing-tag">~5s Macro</span>
+          </button>
+          <button type="button" class="btn-action-primary btn-theme-rose" id="btn-reset-all">
+            <span>↺ Reset All State</span>
+            <span class="btn-timing-tag">Genesis</span>
+          </button>
+        </div>
+
+        <div class="timeline-box" style="margin-top: 6px;">
+          <div class="timeline-title">
+            <span>Fast Forward Sequence</span>
+            <span style="color: #94a3b8;">5-Act Chain</span>
+          </div>
+          <div class="timeline-steps">
+            <div class="timeline-node">
+              <span class="timeline-time">T+0.0s</span>
+              <span class="timeline-desc">Populate Day 1 Anchors (Chew Jetty & Penang Hill)</span>
+            </div>
+            <div class="timeline-node">
+              <span class="timeline-time">T+0.6s</span>
+              <span class="timeline-desc">Trigger Day 2 Ambient Worker</span>
+            </div>
+            <div class="timeline-node">
+              <span class="timeline-time">T+1.2s</span>
+              <span class="timeline-desc">Add Entopia Butterfly Farm to Day 2</span>
+            </div>
+            <div class="timeline-node">
+              <span class="timeline-time">T+1.8s</span>
+              <span class="timeline-desc">Trigger Chat Banter in Day 1 Thread</span>
+            </div>
+            <div class="timeline-node">
+              <span class="timeline-time">T+3.2s</span>
+              <span class="timeline-desc">Insert Proposed Chendul Ghost Card</span>
+            </div>
+            <div class="timeline-node">
+              <span class="timeline-time">T+4.5s</span>
+              <span class="timeline-desc">Trigger 2-Step Consensus Vote to Confirmed State</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acts Summary Status Grid -->
+      <div class="overview-summary-grid">
+        <div class="summary-card" data-jump-act="1" style="cursor: pointer;">
+          <div class="summary-card-title">
+            <span>Act 1: Genesis</span>
+            <span id="sum-status-1" class="step-state-badge">Ready</span>
+          </div>
+          <div class="summary-card-desc">Chew Jetty + Penang Hill anchors</div>
+        </div>
+        <div class="summary-card" data-jump-act="2" style="cursor: pointer;">
+          <div class="summary-card-title">
+            <span>Act 2: Ambient</span>
+            <span id="sum-status-2" class="step-state-badge">Ready</span>
+          </div>
+          <div class="summary-card-desc">Day 2 multi-user background worker</div>
+        </div>
+        <div class="summary-card" data-jump-act="3" style="cursor: pointer;">
+          <div class="summary-card-title">
+            <span>Act 3: Banter</span>
+            <span id="sum-status-3" class="step-state-badge">Ready</span>
+          </div>
+          <div class="summary-card-desc">Tony/Wei Gang chat + Chendul draft</div>
+        </div>
+        <div class="summary-card" data-jump-act="4" style="cursor: pointer;">
+          <div class="summary-card-title">
+            <span>Act 4: Consensus</span>
+            <span id="sum-status-4" class="step-state-badge">Ready</span>
+          </div>
+          <div class="summary-card-desc">2-step 100% vote + Monday closure</div>
+        </div>
+        <div class="summary-card" data-jump-act="5" style="cursor: pointer;">
+          <div class="summary-card-title">
+            <span>Act 5: Monsoon</span>
+            <span id="sum-status-5" class="step-state-badge">Ready</span>
+          </div>
+          <div class="summary-card-desc">Monsoon alert + 3-way contingency</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Dock Spacer to ensure full visibility when scrolled -->
+    <div class="bottom-dock-spacer"></div>
+
+  </main>
+
+  <!-- ==================== FIXED DOCKED BROADCAST LOG ==================== -->
+  <aside class="docked-log-panel" id="docked-log-panel">
+    <div class="docked-log-content">
+      <div class="docked-log-header">
+        <div class="log-title-area">
+          <span class="log-main-title">Broadcast Log</span>
+          <span class="log-count-tag" id="log-count-tag">0 events</span>
+        </div>
+        <div class="log-controls">
+          <!-- Heartbeat PING Filter Toggle -->
+          <button type="button" class="btn-ping-filter filtering-active" id="btn-toggle-ping" title="Click to show/hide heartbeat ping events">
+            <span id="ping-icon">🚫</span>
+            <span id="ping-text">Pings Hidden (0)</span>
+          </button>
+          <!-- Expand/Collapse Window Height -->
+          <button type="button" class="btn-log-action" id="btn-toggle-expand" title="Expand / Shrink Log Window">⤢ Expand</button>
+          <!-- Clear Log -->
+          <button type="button" class="btn-log-action" id="btn-clear-log" title="Clear All Log Entries">Clear</button>
+        </div>
+      </div>
+
+      <div class="docked-log-window" id="console-log">
+        <div class="log-entry sys-entry">
+          <span class="log-time">[Init]</span>
+          <span class="log-tag sys">SYS</span>
+          <span class="log-content">BroadcastChannel 'wandersync_simulation' initialized</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Script Engine -->
+  <script>
+    const CHANNEL_NAME = 'wandersync_simulation';
+    const channel = new BroadcastChannel(CHANNEL_NAME);
+
+    // DOM Elements
+    const logContainer = document.getElementById('console-log');
+    const logCountTag = document.getElementById('log-count-tag');
+    const connPill = document.getElementById('connection-pill');
+    const connText = document.getElementById('connection-text');
+    const btnTogglePing = document.getElementById('btn-toggle-ping');
+    const pingIcon = document.getElementById('ping-icon');
+    const pingText = document.getElementById('ping-text');
+    const btnToggleExpand = document.getElementById('btn-toggle-expand');
+
+    // Global Tracker Elements
+    const trackerCard = document.getElementById('live-tracker-card');
+    const trackerBadge = document.getElementById('tracker-phase-badge');
+    const trackerTitle = document.getElementById('tracker-title');
+    const trackerDesc = document.getElementById('tracker-desc');
+    const trackerJumpBtn = document.getElementById('tracker-jump-btn');
+    const tabsProgress = document.getElementById('tabs-progress-indicator');
+
+    // State Tracking
+    let activeTabId = '1';
+    let hidePings = true;
+    let hiddenPingCount = 0;
+    let totalEventCount = 1;
+    let isLogExpanded = false;
+
+    // Act Status Store
+    const actState = {
+      1: { step1: 'idle', step2: 'idle', completed: false },
+      2: { worker: 'idle', entopia: 'idle', stepCount: 0, completed: false },
+      3: { banter: 'idle', proposal: 'idle', banterStep: 0, completed: false },
+      4: { vote: 'idle', advisory: 'idle', votePercent: 0, completed: false },
+      5: { monsoon: 'idle', contingency: null, completed: false },
+    };
+
+    // Logging Engine with Heartbeat Filter
+    function log(tag, message, isIncoming = false, isPing = false) {
+      totalEventCount++;
+
+      if (isPing) {
+        hiddenPingCount++;
+        updatePingFilterUI();
+        if (hidePings) {
+          return; // Do not append DOM node when filtering pings
+        }
+      }
+
+      const now = new Date();
+      const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
+
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${isPing ? 'ping-type' : ''}`;
+      
+      let tagClass = 'log-tag';
+      if (isIncoming) tagClass += ' recv';
+      if (isPing) tagClass += ' ping';
+      if (tag.includes('SYS') || tag.includes('RESET')) tagClass += ' sys';
+
+      entry.innerHTML = `
+        <span class="log-time">[${timeStr}]</span>
+        <span class="${tagClass}">${escapeHtml(tag)}</span>
+        <span class="log-content">${escapeHtml(typeof message === 'object' ? JSON.stringify(message) : message)}</span>
+      `;
+
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+
+      // Limit DOM log entries to prevent memory bloating
+      if (logContainer.children.length > 200) {
+        logContainer.removeChild(logContainer.firstChild);
+      }
+
+      logCountTag.textContent = `${logContainer.children.length} visible`;
+    }
+
+    function updatePingFilterUI() {
+      if (hidePings) {
+        btnTogglePing.classList.add('filtering-active');
+        pingIcon.textContent = '🚫';
+        pingText.textContent = `Pings Hidden (${hiddenPingCount})`;
+      } else {
+        btnTogglePing.classList.remove('filtering-active');
+        pingIcon.textContent = '👁️';
+        pingText.textContent = `Showing Pings (${hiddenPingCount})`;
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Communication: Send Message
+    function send(type, payload = {}) {
+      const message = {
+        type,
+        payload,
+        sender: 'remote_controller',
+        timestamp: Date.now()
+      };
+      channel.postMessage(message);
+
+      const isPing = (type === 'PING');
+      log('SENT: ' + type, payload, false, isPing);
+    }
+
+    // Heartbeat PING / PONG
+    let lastPong = 0;
+    function ping() {
+      send('PING');
+    }
+    setInterval(ping, 4000);
+    ping();
+
+    // Heartbeat Timeout Watcher
+    setInterval(() => {
+      if (Date.now() - lastPong > 7000) {
+        connPill.classList.add('disconnected');
+        connText.textContent = 'Main Tab Offline';
+      }
+    }, 2000);
+
+    // Incoming Message Handler
+    channel.onmessage = (event) => {
+      const msg = event.data;
+      if (!msg || !msg.type) return;
+
+      if (msg.type === 'PONG') {
+        lastPong = Date.now();
+        connPill.classList.remove('disconnected');
+        connText.textContent = 'Main Tab Online';
+        log('RECV: PONG', msg.payload || {}, true, true);
+        return;
+      }
+
+      log('RECV: ' + msg.type, msg.payload || {}, true, false);
+
+      // Route state updates based on event type
+      handleIncomingSimulationEvent(msg.type, msg.payload || {});
+    };
+
+    // React to Incoming Simulation Events & update Live Step Status
+    function handleIncomingSimulationEvent(type, payload) {
+      switch (type) {
+        case 'STATUS_ACK':
+          handleStatusAck(payload);
+          break;
+
+        case 'DAY2_ACTIVITY':
+          handleDay2Activity(payload);
+          break;
+
+        case 'CHAT_INFLUX':
+          handleChatInflux(payload);
+          break;
+
+        case 'START_VOTE':
+          handleVoteProgress(payload);
+          break;
+
+        case 'VOTE_COMPLETED':
+          handleVoteComplete(payload);
+          break;
+
+        case 'CONTINGENCY_RAIN':
+          handleMonsoonRain(payload);
+          break;
+
+        case 'RESOLVE_CONTINGENCY':
+          handleContingencyResolved(payload);
+          break;
+
+        case 'RESET_DEMO':
+        case 'RESET_COMPLETE':
+          handleDemoReset();
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    function handleStatusAck(payload) {
+      if (!payload || !payload.phase) return;
+
+      if (payload.phase === 'GENESIS_POPULATED') {
+        markAct1Populated();
+      } else if (payload.phase === 'PROPOSAL_INSERTED') {
+        markAct3ProposalDone();
+      } else if (payload.phase === 'DAY2_WORKER_ACTIVE') {
+        markAct2WorkerStarted();
+      } else if (payload.phase === 'ENTOPIA_ADDED') {
+        markAct2EntopiaDone();
+      } else if (payload.phase === 'CHAT_BANTER_STARTED') {
+        markAct3BanterStarted();
+      } else if (payload.phase === 'VOTING_ACTIVE') {
+        markAct4VotingStarted();
+      } else if (payload.phase === 'ADVISORY_ACTIVE') {
+        markAct4AdvisoryDone();
+      } else if (payload.phase === 'MONSOON_ACTIVE') {
+        markAct5MonsoonActive();
+      } else if (payload.phase.includes('CONTINGENCY_')) {
+        markAct5ContingencyDone(payload.message || 'Contingency applied');
+      }
+    }
+
+    // --- State Handlers for Each Act ---
+
+    // Act 1 Handlers
+    function markAct1GenesisStarted() {
+      actState[1].step1 = 'done';
+      document.getElementById('badge-step-1-1').textContent = 'Done ✓';
+      document.getElementById('badge-step-1-1').className = 'step-state-badge state-done';
+      document.getElementById('tl-node-1-1-1').classList.add('done');
+      document.getElementById('tl-node-1-1-2').classList.add('done');
+      document.getElementById('tl-node-1-1-3').classList.add('done');
+      updateAct1Summary();
+      updateTracker('ACT 1 IN PROGRESS', 'Reel Genesis Launched', 'Populate Day 1 anchors next', '1');
+    }
+
+    function markAct1Populated() {
+      actState[1].step2 = 'done';
+      actState[1].completed = true;
+      document.getElementById('badge-step-1-2').textContent = 'Locked ✓';
+      document.getElementById('badge-step-1-2').className = 'step-state-badge state-done';
+      document.getElementById('card-act1-populate').classList.add('is-done');
+      document.getElementById('tl-node-1-2-1').classList.add('done');
+      document.getElementById('tl-node-1-2-2').classList.add('done');
+      document.getElementById('tl-node-1-2-3').classList.add('done');
+      updateAct1Summary();
+      updateTracker('ACT 1 COMPLETE', 'Day 1 Anchors Locked', 'Next: Switch to Act 2 (Ambient)', '2');
+    }
+
+    function updateAct1Summary() {
+      const count = (actState[1].step1 === 'done' ? 1 : 0) + (actState[1].step2 === 'done' ? 1 : 0);
+      document.getElementById('chip-act-1').textContent = `${count}/2`;
+      if (count === 2) {
+        document.getElementById('chip-act-1').classList.add('done');
+        document.getElementById('badge-act1-overall').textContent = 'Completed ✓';
+        document.getElementById('badge-act1-overall').className = 'step-state-badge state-done';
+        document.getElementById('sum-status-1').textContent = 'Done ✓';
+        document.getElementById('sum-status-1').className = 'step-state-badge state-done';
+      }
+    }
+
+    // Act 2 Handlers
+    function markAct2WorkerStarted() {
+      actState[2].worker = 'running';
+      document.getElementById('badge-step-2-1').textContent = 'Running...';
+      document.getElementById('badge-step-2-1').className = 'step-state-badge state-running';
+      document.getElementById('card-act2-worker').classList.add('is-active');
+      document.getElementById('prog-2-1').classList.add('visible');
+      document.getElementById('tl-node-2-1-0').classList.add('active');
+
+      document.getElementById('chip-act-2').textContent = '● 0/3';
+      document.getElementById('chip-act-2').classList.add('running');
+
+      updateTracker('ACT 2 RUNNING', 'Day 2 Worker Active', 'Tony & Wei Gang drafting Day 2 in background', '2');
+
+      // Local UI timer animation for 25s
+      let elapsed = 0;
+      const bar = document.getElementById('bar-2-1');
+      const timeLbl = document.getElementById('time-2-1');
+      const textLbl = document.getElementById('label-2-1');
+
+      const interval = setInterval(() => {
+        elapsed += 1;
+        const pct = Math.min(100, Math.round((elapsed / 25) * 100));
+        bar.style.width = pct + '%';
+        timeLbl.textContent = `${elapsed}s / 25s`;
+
+        if (elapsed >= 5 && elapsed < 15) {
+          textLbl.textContent = 'Tony added Entopia Butterfly Farm';
+          document.getElementById('tl-node-2-1-1').classList.add('done');
+          document.getElementById('chip-act-2').textContent = '● 1/3';
+        } else if (elapsed >= 15 && elapsed < 25) {
+          textLbl.textContent = 'Wei Gang added Escape Adventure Park';
+          document.getElementById('tl-node-2-1-2').classList.add('done');
+          document.getElementById('chip-act-2').textContent = '● 2/3';
+        } else if (elapsed >= 25) {
+          clearInterval(interval);
+          textLbl.textContent = 'Tony locked Sunset Drinks at Bora Bora ✓';
+          document.getElementById('tl-node-2-1-3').classList.add('done');
+          actState[2].worker = 'done';
+          actState[2].completed = true;
+          document.getElementById('badge-step-2-1').textContent = 'Done ✓';
+          document.getElementById('badge-step-2-1').className = 'step-state-badge state-done';
+          document.getElementById('chip-act-2').textContent = '3/3 ✓';
+          document.getElementById('chip-act-2').className = 'tab-status-chip done';
+          document.getElementById('badge-act2-overall').textContent = 'Completed ✓';
+          document.getElementById('badge-act2-overall').className = 'step-state-badge state-done';
+          document.getElementById('sum-status-2').textContent = 'Done ✓';
+          document.getElementById('sum-status-2').className = 'step-state-badge state-done';
+          updateTracker('ACT 2 COMPLETE', 'Day 2 Background Populated', 'Next: Advance to Act 3 (Chat)', '3');
+        }
+      }, 1000);
+    }
+
+    function handleDay2Activity(payload) {
+      if (!payload) return;
+      const step = payload.step || 1;
+      actState[2].stepCount = step;
+
+      if (step === 1) {
+        document.getElementById('tl-node-2-1-1').classList.add('done');
+        document.getElementById('chip-act-2').textContent = '● 1/3';
+        updateTracker('ACT 2 STEP 1', 'Tony added Entopia', 'Teluk Bahang morning walk booked', '2');
+      } else if (step === 2) {
+        document.getElementById('tl-node-2-1-2').classList.add('done');
+        document.getElementById('chip-act-2').textContent = '● 2/3';
+        updateTracker('ACT 2 STEP 2', 'Wei Gang added Escape Park', 'Gravityplay & tube slides added', '2');
+      } else if (step === 3 || payload.completed) {
+        document.getElementById('tl-node-2-1-3').classList.add('done');
+        document.getElementById('chip-act-2').textContent = '3/3 ✓';
+        document.getElementById('chip-act-2').className = 'tab-status-chip done';
+        actState[2].completed = true;
+        updateTracker('ACT 2 COMPLETE', 'Day 2 Synthesized (3 stops)', 'Next: Advance to Act 3 (Chat)', '3');
+      }
+    }
+
+    function markAct2EntopiaDone() {
+      actState[2].entopia = 'done';
+      document.getElementById('badge-step-2-2').textContent = 'Added ✓';
+      document.getElementById('badge-step-2-2').className = 'step-state-badge state-done';
+      document.getElementById('tl-node-2-2-1').classList.add('done');
+      document.getElementById('tl-node-2-1-1').classList.add('done');
+    }
+
+    // Act 3 Handlers
+    function markAct3BanterStarted() {
+      actState[3].banter = 'running';
+      document.getElementById('badge-step-3-1').textContent = 'Influx...';
+      document.getElementById('badge-step-3-1').className = 'step-state-badge state-running';
+      document.getElementById('card-act3-banter').classList.add('is-active');
+      document.getElementById('prog-3-1').classList.add('visible');
+      document.getElementById('tl-node-3-1-0').classList.add('active');
+
+      document.getElementById('chip-act-3').textContent = '● Banter';
+      document.getElementById('chip-act-3').classList.add('running');
+
+      updateTracker('ACT 3 BANTER', 'Team Chat Influx Active', 'Tony & Wei Gang chatting about food', '3');
+
+      // 5.5s progress
+      let elapsed = 0;
+      const bar = document.getElementById('bar-3-1');
+      const timeLbl = document.getElementById('time-3-1');
+      const textLbl = document.getElementById('label-3-1');
+
+      const interval = setInterval(() => {
+        elapsed += 0.5;
+        const pct = Math.min(100, Math.round((elapsed / 5.5) * 100));
+        bar.style.width = pct + '%';
+        timeLbl.textContent = `${elapsed.toFixed(1)}s / 5.5s`;
+
+        if (elapsed >= 1.5 && elapsed < 3.5) {
+          textLbl.textContent = 'Tony: "Guys, what are we eating after Chew Jetty?"';
+          document.getElementById('tl-node-3-1-1').classList.add('done');
+        } else if (elapsed >= 3.5 && elapsed < 5.5) {
+          textLbl.textContent = 'Wei Gang: "Lebuh Keng Kwee Famous Chendul..."';
+          document.getElementById('tl-node-3-1-2').classList.add('done');
+        } else if (elapsed >= 5.5) {
+          clearInterval(interval);
+          textLbl.textContent = '🤖 WanderBot AI Proposal Card displayed';
+          document.getElementById('tl-node-3-1-3').classList.add('done');
+          actState[3].banter = 'done';
+          document.getElementById('badge-step-3-1').textContent = 'Done ✓';
+          document.getElementById('badge-step-3-1').className = 'step-state-badge state-done';
+          updateTracker('ACT 3 PROPOSAL READY', 'WanderBot Proposal Displayed', 'Click Insert Proposal or confirm on main screen', '3');
+        }
+      }, 500);
+    }
+
+    function handleChatInflux(payload) {
+      if (!payload) return;
+      const step = payload.step;
+      if (step === 1) {
+        document.getElementById('tl-node-3-1-1').classList.add('done');
+      } else if (step === 2) {
+        document.getElementById('tl-node-3-1-2').classList.add('done');
+      } else if (step === 3 || payload.isProposal) {
+        document.getElementById('tl-node-3-1-3').classList.add('done');
+        document.getElementById('badge-step-3-1').textContent = 'Done ✓';
+        document.getElementById('badge-step-3-1').className = 'step-state-badge state-done';
+        updateTracker('ACT 3 PROPOSAL READY', 'Meal Gap Detected (12:30 PM)', 'Click Insert Chendul Proposal', '3');
+      }
+    }
+
+    function markAct3ProposalDone() {
+      actState[3].proposal = 'done';
+      actState[3].completed = true;
+      document.getElementById('badge-step-3-2').textContent = 'Proposed ✓';
+      document.getElementById('badge-step-3-2').className = 'step-state-badge state-done';
+      document.getElementById('card-act3-proposal').classList.add('is-done');
+      document.getElementById('tl-node-3-2-1').classList.add('done');
+      document.getElementById('tl-node-3-2-2').classList.add('done');
+
+      document.getElementById('chip-act-3').textContent = '2/2 ✓';
+      document.getElementById('chip-act-3').className = 'tab-status-chip done';
+      document.getElementById('badge-act3-overall').textContent = 'Completed ✓';
+      document.getElementById('badge-act3-overall').className = 'step-state-badge state-done';
+      document.getElementById('sum-status-3').textContent = 'Done ✓';
+      document.getElementById('sum-status-3').className = 'step-state-badge state-done';
+
+      updateTracker('ACT 3 COMPLETE', 'Chendul Ghost Card Inserted', 'Next: Advance to Act 4 (Consensus Vote)', '4');
+    }
+
+    // Act 4 Handlers
+    function markAct4VotingStarted() {
+      actState[4].vote = 'running';
+      document.getElementById('badge-step-4-1').textContent = 'Voting...';
+      document.getElementById('badge-step-4-1').className = 'step-state-badge state-running';
+      document.getElementById('card-act4-vote').classList.add('is-active');
+      document.getElementById('prog-4-1').classList.add('visible');
+      document.getElementById('tl-node-4-1-0').classList.add('active');
+
+      document.getElementById('chip-act-4').textContent = '● Voting';
+      document.getElementById('chip-act-4').classList.add('running');
+
+      updateTracker('ACT 4 VOTING', '2-Step Consensus Vote Active', 'Collecting team votes for Chendul', '4');
+
+      // 2.8s voting timer animation
+      let elapsed = 0;
+      const bar = document.getElementById('bar-4-1');
+      const timeLbl = document.getElementById('time-4-1');
+      const textLbl = document.getElementById('label-4-1');
+
+      const interval = setInterval(() => {
+        elapsed += 0.2;
+        if (elapsed >= 1.0 && elapsed < 2.2) {
+          bar.style.width = '50%';
+          timeLbl.textContent = '50% Consensus';
+          textLbl.textContent = 'Wei Gang voted: YES (1/2 votes)';
+          document.getElementById('tl-node-4-1-1').classList.add('done');
+        } else if (elapsed >= 2.2 && elapsed < 2.8) {
+          bar.style.width = '100%';
+          timeLbl.textContent = '100% Consensus';
+          textLbl.textContent = 'Tony voted: YES (2/2 votes · 100%!)';
+          document.getElementById('tl-node-4-1-2').classList.add('done');
+        } else if (elapsed >= 2.8) {
+          clearInterval(interval);
+          bar.style.width = '100%';
+          timeLbl.textContent = 'Confirmed Solid';
+          textLbl.textContent = 'Morphed to Solid Confirmed Card ✓';
+          document.getElementById('tl-node-4-1-3').classList.add('done');
+          handleVoteComplete();
+        }
+      }, 200);
+    }
+
+    function handleVoteProgress(payload) {
+      if (!payload) return;
+      const pct = payload.percent || 0;
+      actState[4].votePercent = pct;
+
+      const bar = document.getElementById('bar-4-1');
+      const timeLbl = document.getElementById('time-4-1');
+      const textLbl = document.getElementById('label-4-1');
+
+      if (pct === 50) {
+        bar.style.width = '50%';
+        timeLbl.textContent = '50% Consensus';
+        textLbl.textContent = `${payload.voter || 'Wei Gang'} voted YES (1/2)`;
+        document.getElementById('tl-node-4-1-1').classList.add('done');
+        updateTracker('ACT 4 VOTING 50%', 'Wei Gang Cast Vote', '1/2 votes · Waiting for Tony', '4');
+      } else if (pct === 100) {
+        bar.style.width = '100%';
+        timeLbl.textContent = '100% Consensus';
+        textLbl.textContent = 'Tony voted YES (2/2 · 100% Consensus!)';
+        document.getElementById('tl-node-4-1-2').classList.add('done');
+        updateTracker('ACT 4 100% CONSENSUS', 'Democratic Alignment Reached', 'Morphing draft to solid confirmed glass', '4');
+      }
+    }
+
+    function handleVoteComplete(payload) {
+      actState[4].vote = 'done';
+      document.getElementById('badge-step-4-1').textContent = 'Confirmed ✓';
+      document.getElementById('badge-step-4-1').className = 'step-state-badge state-done';
+      document.getElementById('card-act4-vote').classList.add('is-done');
+      document.getElementById('tl-node-4-1-3').classList.add('done');
+
+      document.getElementById('chip-act-4').textContent = '● Confirmed';
+      document.getElementById('chip-act-4').classList.add('done');
+
+      updateTracker('ACT 4 CONFIRMED', 'Chendul Confirmed Solid', 'Grab buffers calculated · Try Siam Road Advisory', '4');
+    }
+
+    function markAct4AdvisoryDone() {
+      actState[4].advisory = 'done';
+      actState[4].completed = true;
+      document.getElementById('badge-step-4-2').textContent = 'Advisory Active ✓';
+      document.getElementById('badge-step-4-2').className = 'step-state-badge state-done';
+      document.getElementById('tl-node-4-2-1').classList.add('done');
+      document.getElementById('tl-node-4-2-2').classList.add('done');
+
+      document.getElementById('chip-act-4').textContent = '2/2 ✓';
+      document.getElementById('chip-act-4').className = 'tab-status-chip done';
+      document.getElementById('badge-act4-overall').textContent = 'Completed ✓';
+      document.getElementById('badge-act4-overall').className = 'step-state-badge state-done';
+      document.getElementById('sum-status-4').textContent = 'Done ✓';
+      document.getElementById('sum-status-4').className = 'step-state-badge state-done';
+
+      updateTracker('ACT 4 COMPLETE', 'Siam Road Conflict Triggered', 'Next: Advance to Act 5 (Monsoon)', '5');
+    }
+
+    // Act 5 Handlers
+    function markAct5MonsoonActive() {
+      actState[5].monsoon = 'alert';
+      document.getElementById('badge-step-5-1').textContent = 'Alert Active ⛈️';
+      document.getElementById('badge-step-5-1').className = 'step-state-badge state-running';
+      document.getElementById('card-act5-monsoon').classList.add('is-active');
+      document.getElementById('tl-node-5-1-1').classList.add('done');
+      document.getElementById('tl-node-5-1-2').classList.add('done');
+
+      document.getElementById('chip-act-5').textContent = '⛈️ Alert';
+      document.getElementById('chip-act-5').classList.add('running');
+
+      updateTracker('ACT 5 DISRUPTION', 'Tropical Monsoon Warning Active', 'Choose 1 of 3 recovery options below', '5');
+    }
+
+    function handleMonsoonRain(payload) {
+      markAct5MonsoonActive();
+    }
+
+    function markAct5ContingencyDone(modeLabel) {
+      actState[5].contingency = modeLabel;
+      actState[5].completed = true;
+      document.getElementById('badge-step-5-2').textContent = 'Resolved ✓';
+      document.getElementById('badge-step-5-2').className = 'step-state-badge state-done';
+      document.getElementById('card-act5-contingencies').classList.add('is-done');
+
+      document.getElementById('chip-act-5').textContent = 'Resolved ✓';
+      document.getElementById('chip-act-5').className = 'tab-status-chip done';
+      document.getElementById('badge-act5-overall').textContent = 'Resolved ✓';
+      document.getElementById('badge-act5-overall').className = 'step-state-badge state-done';
+      document.getElementById('sum-status-5').textContent = 'Done ✓';
+      document.getElementById('sum-status-5').className = 'step-state-badge state-done';
+
+      updateTracker('ACT 5 RESOLVED', modeLabel, 'Full 5-Act Demonstration Complete', 'macro');
+    }
+
+    function handleContingencyResolved(payload) {
+      const mode = payload.mode || 'fallback';
+      let title = 'Indoor Fallback Applied';
+      if (mode === 'freetime') title = 'ChinaHouse Cafe Pocket Applied';
+      if (mode === 'reflow') title = 'Schedule Reflow Applied';
+      markAct5ContingencyDone(title);
+    }
+
+    // Full Reset Handler
+    function handleDemoReset() {
+      // Reset state store
+      for (const k in actState) {
+        if (actState[k].step1 !== undefined) actState[k].step1 = 'idle';
+        if (actState[k].step2 !== undefined) actState[k].step2 = 'idle';
+        if (actState[k].worker !== undefined) actState[k].worker = 'idle';
+        if (actState[k].entopia !== undefined) actState[k].entopia = 'idle';
+        if (actState[k].banter !== undefined) actState[k].banter = 'idle';
+        if (actState[k].proposal !== undefined) actState[k].proposal = 'idle';
+        if (actState[k].vote !== undefined) actState[k].vote = 'idle';
+        if (actState[k].advisory !== undefined) actState[k].advisory = 'idle';
+        if (actState[k].monsoon !== undefined) actState[k].monsoon = 'idle';
+        actState[k].completed = false;
+      }
+
+      // Reset all status chips
+      document.querySelectorAll('.tab-status-chip').forEach((c) => {
+        c.className = 'tab-status-chip';
+      });
+      document.getElementById('chip-act-1').textContent = '0/2';
+      document.getElementById('chip-act-2').textContent = '0/2';
+      document.getElementById('chip-act-3').textContent = '0/2';
+      document.getElementById('chip-act-4').textContent = '0/2';
+      document.getElementById('chip-act-5').textContent = '0/2';
+      document.getElementById('chip-act-macro').textContent = 'All';
+
+      // Reset badges
+      document.querySelectorAll('.step-state-badge').forEach((b) => {
+        b.className = 'step-state-badge';
+        b.textContent = 'Pending';
+      });
+      document.getElementById('badge-act1-overall').textContent = 'Ready';
+      document.getElementById('badge-act2-overall').textContent = 'Ready';
+      document.getElementById('badge-act3-overall').textContent = 'Ready';
+      document.getElementById('badge-act4-overall').textContent = 'Ready';
+      document.getElementById('badge-act5-overall').textContent = 'Ready';
+      document.getElementById('badge-macro-status').textContent = 'Ready';
+
+      // Reset timeline nodes
+      document.querySelectorAll('.timeline-node').forEach((n) => {
+        n.className = 'timeline-node';
+      });
+
+      // Reset progress bars
+      document.querySelectorAll('.step-progress-wrapper').forEach((w) => {
+        w.classList.remove('visible');
+      });
+      document.querySelectorAll('.step-progress-bar').forEach((b) => {
+        b.style.width = '0%';
+      });
+
+      // Reset contingency selection
+      document.querySelectorAll('.btn-contingency').forEach((b) => {
+        b.classList.remove('selected');
+      });
+
+      // Reset cards active/done styles
+      document.querySelectorAll('.action-step-card').forEach((c) => {
+        c.className = 'action-step-card';
+      });
+
+      // Reset summary status
+      for (let i = 1; i <= 5; i++) {
+        const sumBadge = document.getElementById(`sum-status-${i}`);
+        if (sumBadge) {
+          sumBadge.textContent = 'Ready';
+          sumBadge.className = 'step-state-badge';
+        }
+      }
+
+      updateTracker('GENESIS ZERO-STATE', 'All State Cleanly Restored', 'Ready to start Act 1', '1');
+      switchActTab('1');
+    }
+
+    // Live Tracker Updater Helper
+    function updateTracker(phase, title, desc, jumpAct = '1') {
+      trackerBadge.textContent = phase;
+      trackerTitle.textContent = title;
+      trackerDesc.textContent = desc;
+      trackerJumpBtn.setAttribute('data-target-act', jumpAct);
+
+      if (phase.includes('COMPLETE') || phase.includes('RESOLVED')) {
+        trackerBadge.className = 'tracker-badge';
+        trackerBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+        trackerBadge.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+        trackerBadge.style.color = '#6ee7b7';
+      } else {
+        trackerBadge.className = 'tracker-badge pulse';
+        trackerBadge.style.background = '';
+        trackerBadge.style.borderColor = '';
+        trackerBadge.style.color = '';
+      }
+    }
+
+    trackerJumpBtn.addEventListener('click', () => {
+      const target = trackerJumpBtn.getAttribute('data-target-act') || '1';
+      switchActTab(target);
+    });
+
+    // --- TAB SWITCHING LOGIC ---
+    function switchActTab(actId) {
+      activeTabId = String(actId);
+
+      // Tab Buttons
+      document.querySelectorAll('.act-tab-btn').forEach((btn) => {
+        if (btn.getAttribute('data-act') === activeTabId) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      // Panels
+      document.querySelectorAll('.act-panel').forEach((panel) => {
+        if (panel.id === `act-panel-${activeTabId}`) {
+          panel.classList.add('active');
+        } else {
+          panel.classList.remove('active');
+        }
+      });
+
+      // Progress text
+      if (activeTabId === 'macro') {
+        tabsProgress.textContent = 'Macros & Overview';
+      } else {
+        tabsProgress.textContent = `Act ${activeTabId} of 5`;
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Tab Button Click Listeners
+    document.querySelectorAll('.act-tab-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const act = btn.getAttribute('data-act');
+        switchActTab(act);
+      });
+    });
+
+    // Stepper Next / Prev Flow Buttons
+    document.querySelectorAll('[data-next-act]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const next = btn.getAttribute('data-next-act');
+        switchActTab(next);
+      });
+    });
+
+    document.querySelectorAll('[data-prev-act]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const prev = btn.getAttribute('data-prev-act');
+        switchActTab(prev);
+      });
+    });
+
+    document.querySelectorAll('[data-jump-act]').forEach((card) => {
+      card.addEventListener('click', () => {
+        const act = card.getAttribute('data-jump-act');
+        switchActTab(act);
+      });
+    });
+
+    // View Switcher (Trips, Ideas, Itinerary, Chat, HUD)
+    document.querySelectorAll('.view-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.view-btn').forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.getAttribute('data-tab');
+        send('SWITCH_TAB', { tab });
+      });
+    });
+
+    // --- BUTTON EVENT BINDINGS ---
+
+    // Act 1
+    document.getElementById('btn-act1-genesis').addEventListener('click', () => {
+      markAct1GenesisStarted();
+      send('START_REEL_GENESIS');
+    });
+
+    document.getElementById('btn-act1-populate').addEventListener('click', () => {
+      markAct1Populated();
+      send('POPULATE_DAY1_ANCHORS');
+    });
+
+    // Act 2
+    document.getElementById('btn-act2-worker').addEventListener('click', () => {
+      markAct2WorkerStarted();
+      send('TRIGGER_DAY2_WORKER');
+    });
+
+    document.getElementById('btn-act2-entopia').addEventListener('click', () => {
+      markAct2EntopiaDone();
+      send('ADD_ENTOPIA_DAY2');
+    });
+
+    // Act 3
+    document.getElementById('btn-act3-banter').addEventListener('click', () => {
+      markAct3BanterStarted();
+      send('TRIGGER_CHAT_BANTER');
+    });
+
+    document.getElementById('btn-act3-proposal').addEventListener('click', () => {
+      markAct3ProposalDone();
+      send('INSERT_PROPOSAL', {
+        blockId: 'd1-chendul',
+        day: 1,
+        time: '12:30 PM',
+        title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+        status: 'proposed'
+      });
+    });
+
+    // Act 4
+    document.getElementById('btn-act4-vote').addEventListener('click', () => {
+      markAct4VotingStarted();
+      send('VOTE_CONSENSUS', {
+        pollId: 'poll-chendul',
+        blockId: 'd1-chendul'
+      });
+    });
+
+    document.getElementById('btn-act4b-siam').addEventListener('click', () => {
+      markAct4AdvisoryDone();
+      send('TRIGGER_SIAM_ROAD_ADVISORY');
+    });
+
+    // Act 5
+    document.getElementById('btn-act5-monsoon').addEventListener('click', () => {
+      markAct5MonsoonActive();
+      send('TRIGGER_MONSOON');
+    });
+
+    document.getElementById('btn-contingency-1').addEventListener('click', () => {
+      document.querySelectorAll('.btn-contingency').forEach((b) => b.classList.remove('selected'));
+      document.getElementById('btn-contingency-1').classList.add('selected');
+      send('CONTINGENCY_1');
+      markAct5ContingencyDone('Indoor Fallback (The Top Komtar)');
+    });
+
+    document.getElementById('btn-contingency-2').addEventListener('click', () => {
+      document.querySelectorAll('.btn-contingency').forEach((b) => b.classList.remove('selected'));
+      document.getElementById('btn-contingency-2').classList.add('selected');
+      send('CONTINGENCY_2');
+      markAct5ContingencyDone('Free-Time Pocket (ChinaHouse Cafe)');
+    });
+
+    document.getElementById('btn-contingency-3').addEventListener('click', () => {
+      document.querySelectorAll('.btn-contingency').forEach((b) => b.classList.remove('selected'));
+      document.getElementById('btn-contingency-3').classList.add('selected');
+      send('CONTINGENCY_3');
+      markAct5ContingencyDone('Chronological Reflow Applied');
+    });
+
+    // Fast Forward Automation
+    document.getElementById('btn-fast-forward').addEventListener('click', () => {
+      log('MACRO', 'Beginning Fast Forward Automation Sequence...');
+      document.getElementById('badge-macro-status').textContent = 'Running...';
+      document.getElementById('badge-macro-status').className = 'step-state-badge state-running';
+      updateTracker('MACRO AUTOMATION', 'Fast Forwarding 5-Act Pitch', 'Executing timed sequence chain...', 'macro');
+
+      markAct1GenesisStarted();
+      setTimeout(() => {
+        markAct1Populated();
+        send('POPULATE_DAY1_ANCHORS');
+      }, 500);
+
+      setTimeout(() => {
+        markAct2WorkerStarted();
+        send('TRIGGER_DAY2_WORKER');
+      }, 1200);
+
+      setTimeout(() => {
+        markAct2EntopiaDone();
+        send('ADD_ENTOPIA_DAY2');
+      }, 1800);
+
+      setTimeout(() => {
+        markAct3BanterStarted();
+        send('TRIGGER_CHAT_BANTER');
+      }, 2500);
+
+      setTimeout(() => {
+        markAct3ProposalDone();
+        send('INSERT_PROPOSAL', { blockId: 'd1-chendul' });
+      }, 3600);
+
+      setTimeout(() => {
+        markAct4VotingStarted();
+        send('VOTE_CONSENSUS');
+      }, 4800);
+
+      setTimeout(() => {
+        document.getElementById('badge-macro-status').textContent = 'Completed ✓';
+        document.getElementById('badge-macro-status').className = 'step-state-badge state-done';
+      }, 7600);
+    });
+
+    // Reset All State
+    document.getElementById('btn-reset-all').addEventListener('click', () => {
+      log('MACRO', 'Resetting all demo simulation state to Genesis...');
+      send('RESET_ALL');
+      handleDemoReset();
+    });
+
+    // --- BROADCAST LOG DOCKED CONTROLS ---
+
+    // Toggle Heartbeat Filter (Hide / Show Pings)
+    btnTogglePing.addEventListener('click', () => {
+      hidePings = !hidePings;
+      updatePingFilterUI();
+
+      if (hidePings) {
+        // Hide all existing ping entries
+        document.querySelectorAll('.ping-type').forEach((el) => {
+          el.classList.add('hidden-ping');
+        });
+      } else {
+        // Show all existing ping entries
+        document.querySelectorAll('.ping-type').forEach((el) => {
+          el.classList.remove('hidden-ping');
+        });
+      }
+
+      logCountTag.textContent = `${logContainer.children.length} visible`;
+    });
+
+    // Expand / Shrink Log Window
+    btnToggleExpand.addEventListener('click', () => {
+      isLogExpanded = !isLogExpanded;
+      if (isLogExpanded) {
+        logContainer.classList.add('expanded');
+        btnToggleExpand.textContent = '⤡ Shrink';
+      } else {
+        logContainer.classList.remove('expanded');
+        btnToggleExpand.textContent = '⤢ Expand';
+      }
+    });
+
+    // Clear Log
+    document.getElementById('btn-clear-log').addEventListener('click', () => {
+      logContainer.innerHTML = '';
+      hiddenPingCount = 0;
+      updatePingFilterUI();
+      logCountTag.textContent = '0 visible';
+    });
+
+    // Initial setup
+    updatePingFilterUI();
+  </script>
+</body>
+</html>

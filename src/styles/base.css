@@ -42,8 +42,11 @@ a {
   transition: color var(--transition-fast);
 }
 
-button {
+button, input, textarea, select {
   font-family: inherit;
+}
+
+button {
   border: none;
   background: none;
   cursor: pointer;

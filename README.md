@@ -1,82 +1,167 @@
-# WanderSync — Mobile Travel Planner Prototype
+# WanderSync by WanderSync Team
 
-A mobile-only web application prototype built for the Travel Planner platform, strictly following the design system tokens defined in `.agents/skills/travel-planner-ui`.
-
----
-
-## 📱 Mobile Architecture & Layout
-
-- **Strictly Mobile-Only Layout**: Centered mobile viewport container (max `430px`), optimized for mobile devices (`375px`, `390px`, `430px` viewports) with safe area inset padding (`env(safe-area-inset-bottom)`).
-- **Sticky Top Bar**: Brand logo, trip subtitle, and notification badge.
-- **Fixed Bottom Tab Navigation**: Persistent 4-tab bottom navigation with active burnt orange (`#E8621A`) indicator.
-- **Dynamic View Switcher**: Instant switching between the 4 core feature tabs with hash synchronization (`#itinerary`, `#chat`, `#assistant`, `#dashboard`).
+**Team:** Clearence, Hoe Zhi Wan, Wei Gang  
+**Problem Statement:** Travel Planner  
+**Video Presentation:** [Youtube Link]  
+**Presentation Slides:** [Public Link](https://canva.link/5lfaaylakyr6e6s)
 
 ---
 
-## 🧭 Core Feature Navigation Tabs
+## 1. Project Overview
 
-### 1. 📅 Itinerary (Drag-and-Drop Itinerary)
-- Chronological time block cards categorized into **Activities**, **Meals**, **Transit**, and **Rest**.
-- **Slot Status Lifecycle**:
-  - 🟢 **Confirmed**: Booked or locked in.
-  - 🟡 **Proposed**: Awaiting consensus.
-  - 🟠 **Weather Permitting**: Contingent with fallback options.
-- **Transit Buffer Alerts**: Visual warnings when allocated transit time is unrealistic.
-- Per-slot requirement tags (e.g. passport check, dress codes).
+### The Problem
+Planning a group trip with friends is usually messy and frustrating. Recommendations and links get buried across WhatsApp chats, Instagram DMs, and separate notes apps. When the group finally puts a plan into a spreadsheet, it easily falls apart because nobody accounted for actual walking or train times between stops. And if bad weather hits or a spot is closed, manually updating every single time slot on your phone while walking around ruins the mood.
 
-### 2. 💬 Chat (Per-Activity Chat Threads)
-- **Topic-Focused Contextual Threading**: Dedicated discussion threads anchored directly to individual itinerary events.
-- **Native Mini-Polls**: Quick voting blocks (e.g., choice between lunch spots) with real-time percentage indicators.
-- Thread selector chips for switching between active event discussions.
+### Our Solution
+WanderSync is a mobile travel planner that makes group trips effortless. Friends can save places directly from Instagram Reels and TikTok into a shared wishlist, vote on activities right inside the schedule, and drag and drop stops to build the perfect day. The app automatically warns you if there isn't enough travel time between spots, and our AI assistant quickly suggests backup plans if plans change or it rains, keeping everyone relaxed and on track.
 
-### 3. ✨ Assistant (AI Schedule Assistant)
-- **AI Copilot Box**: Natural language input with hashtag (`#`) commands (`#poll`, `#optimize-buffers`, `#dietary-check`).
-- **Pace Optimizer**: Intensity selectors (Chill & Relaxed, Balanced Pace, Turbo Explorer).
-- **Reshuffle Proposal Card**: Auto-adjusts outdoor activities based on weather forecasts and pace.
-
-### 4. ⚡ Dashboard ("Now & Next" Live Dashboard)
-- **"NOW" Active Spot HUD**: Current location, remaining time countdown, and quick links to maps and QR ticket passes.
-- **"NEXT" Upcoming Card**: Next-up transit step with train line, route duration, and countdown.
-- **1-Tap Schedule Shift**: Delay entire schedule by `+30 Mins` or `+1 Hour` with automatic non-fixed activity adjustment.
-- **Daily Preparation Checklist**: Pre-departure essentials checklist (power bank, local cash, walking shoes).
+**Core Feature Set:**
+- **Smart Drag-and-Drop Schedule & Transit Buffer Warnings**
+- **Instagram Reels & TikTok Video Import**
+- **In-Schedule Group Chat & Mini-Polls**
+- **Smart Cancellation & Auto-Rescheduling**
+- **AI Schedule Optimizer**
 
 ---
 
-## 📁 File Structure
+## 2. Ideation & Process
 
-```
-travel-planner/
-├── index.html                 # Mobile-only HTML shell
-├── package.json               # Dev server configuration
-├── README.md                  # Prototype documentation
-└── src/
-    ├── app.js                 # Mobile shell controller & tab router
-    ├── config/
-    │   └── navigation.js      # Tab definitions & state management
-    ├── components/
-    │   ├── Header.js          # Mobile sticky top header
-    │   └── BottomNav.js       # Fixed 4-tab bottom navigation bar
-    ├── views/
-    │   ├── ItineraryView.js   # Drag-and-drop itinerary time blocks & buffer alert
-    │   ├── ChatView.js        # Per-activity chat threads & mini-polls
-    │   ├── AssistantView.js   # AI copilot & pace adjuster
-    │   └── DashboardView.js   # Now & Next live HUD & 1-tap schedule shift
-    └── styles/
-        ├── tokens.css         # Design tokens from travel-planner-ui
-        ├── base.css           # Global reset & accessibility
-        ├── layout.css         # Mobile-only container & fixed tab bar styles
-        └── components.css     # Timeline blocks, chat cards, and HUD styling
-```
+### 2.1 Ideas We Considered
+
+<img width="1134" height="506" alt="image" src="https://github.com/user-attachments/assets/6f500649-11cb-42d2-ab93-d24a00f4c4af" />
+
+| Idea | Why it was dropped / kept |
+| :--- | :--- |
+| **Interactive Drag-and-Drop Timeline with Buffer Warnings (Chosen)** | **Kept:** Solves the core failure of static spreadsheets by automatically checking whether walking or subway time between consecutive stops is physically realistic. |
+| **Social Reels / TikTok Import & Wishlist (Chosen)** | **Kept:** Captures where travelers actually get their inspiration today, removing the tedious chore of manual data entry. |
+| **Contextual Activity Discussion & Mini-Polls (Chosen)** | **Kept:** Eliminates endless WhatsApp debates by tying discussions directly to specific schedule slots and resolving ties via 1-tap voting. |
+| **Dedicated "Live Day HUD" Execution Mode** | **Dropped (Deferred):** Introducing a separate execution screen fragmented the user experience; 1-tap delay shifts (+30m/+1h) and transit cues were integrated directly into the core itinerary timeline instead. |
+| **Tinder-Style Group Attraction Swiping** | **Dropped (Deferred):** Fun concept, but created decision fatigue for groups with diverging tastes and added unnecessary UI complexity to the MVP. |
+| **Shared Multi-Currency Bill Splitter** | **Dropped (Deferred):** Excellent utility, but specialized expense tools (Splitwise) already dominate; focusing on schedule coordination delivered higher novel value. |
+| **Split-Group Branching Schedules** | **Dropped (Deferred):** Over-complicated the timeline UI for casual weekend group getaways. Kept schedule unified with flexible free-time slots. |
+
+### 2.2 Ideation Boards
+
+<img src="./docs/ideation-board.png" alt="Ideation Board - Problem Tree" />
+
+### 2.3 Mentor Consultation
+
+<img src="./docs/mentor-consultation.png" alt="Mentor Consultation Board" />
+
+**Design Evolution:**
+
+| 1st Generation | | 2nd Generation | | 3rd Generation | | 4th Generation (Current) |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| <img src="./docs/design-evolution/gen1.png" width="160" alt="1st Generation Design" /> | ➔ | <img src="./docs/design-evolution/gen2.png" width="160" alt="2nd Generation Design" /> | ➔ | <img src="./docs/design-evolution/gen3.png" width="160" alt="3rd Generation Design" /> | ➔ | <img src="./docs/design-evolution/gen4.png" width="160" alt="4th Generation Design" /> |
+| **Initial 5-Tab Layout**<br>Top app bar & busy full wallpaper | | **Integrated Header**<br>Merged top bar & timeline slots | | **Streamlined Navigation**<br>2 bottom tabs, central (+) & dynamic days | | **Liquid Glass Polish**<br>Clean high-contrast canvas & refined cards |
 
 ---
 
-## 🚀 Running the Prototype
+## 3. Design & Prototype
 
-### Option A: Static Web Browser (Zero Tooling)
-Open `index.html` with VS Code Live Server or any static HTTP server.
+**UI Prototype:** [Public Link](https://travel.hoezhiwan.my/)
 
-### Option B: Local Dev Server (Vite)
-```bash
-npm install
-npm run dev
-```
+*(Check that it opens in an incognito window.)*
+
+<table width="100%">
+  <thead>
+    <tr>
+      <th width="25%" align="center"><b>Screen 1</b><br>Dynamic Itinerary & Buffer Guard</th>
+      <th width="25%" align="center"><b>Screen 2</b><br>Social Reel Spotlight & Wishlist</th>
+      <th width="25%" align="center"><b>Screen 3</b><br>Contextual Discussion & Mini-Poll</th>
+      <th width="25%" align="center"><b>Screen 4</b><br>AI Schedule Copilot & Disruption Reflow</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen1.png" width="100%" alt="Screen 1: Dynamic Itinerary & Buffer Guard" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen2.png" width="100%" alt="Screen 2: Social Reel Spotlight & Wishlist" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen3.png" width="100%" alt="Screen 3: Contextual Discussion & Mini-Poll" />
+      </td>
+      <td width="25%" align="center" valign="top">
+        <img src="./docs/screens/screen4.png" width="100%" alt="Screen 4: AI Schedule Copilot & Disruption Reflow" />
+      </td>
+    </tr>
+    <tr>
+      <td width="25%" align="center" valign="top"><em>Chronological timeline with transit cushions and status indicators.</em></td>
+      <td width="25%" align="center" valign="top"><em>Extracted video content with visual source attribution.</em></td>
+      <td width="25%" align="center" valign="top"><em>Inline consensus voting resolving conflicting preferences.</em></td>
+      <td width="25%" align="center" valign="top"><em>Intelligent schedule reshuffling and prompt shortcuts for weather contingencies.</em></td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+## 4. What Makes It Different
+
+| Feature | WanderSync Twist | Existing Tools (TripIt / Wanderlog) |
+| :--- | :--- | :--- |
+| **Travel Time Warnings** | Warns you immediately if there isn't enough walking or train time between spots, helping you avoid rushed dashes and missed reservations. | Schedules ignore realistic travel cushions, making it easy to run late or miss bookings. |
+| **Import from Instagram & TikTok** | Pulls place names, addresses, and photos directly from shared Reels and TikTok links into your group's idea list. | Forces you to manually copy and paste names, links, and addresses from social apps one by one. |
+| **Vote Directly on Plans** | Friends vote right on activity cards, and the winning spot automatically slots straight into the day's timeline. | Group decisions get lost in long chat threads, requiring someone to manually copy the final choice into the plan. |
+| **1-Tap Delay & Schedule Shifts** | Running late? Tap `+30m` to smoothly push back later plans, or remove a stop and let the schedule adjust automatically. | If one activity is delayed, you have to manually edit the start and end times for every single remaining stop. |
+
+---
+
+## 5. Technical Architecture & Feasibility
+
+### 5.1 Production Tech Stack
+
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | Next.js 15, React 19, Tailwind CSS |
+| **Backend** | Next.js Server Actions & Supabase Edge Functions |
+| **Database** | PostgreSQL (Supabase Cloud) |
+| **Real-Time Sync** | Supabase Realtime |
+| **AI Engine** | Gemini Flash |
+| **APIs & Services** | Instagram/TikTok Scrapers, Google Places, OpenWeatherMap |
+| **Hosting** | Vercel Edge Network & Supabase (Asia Region) |
+
+---
+
+### 5.2 System Architecture Diagram
+
+<img width="1442" height="554" alt="architecture drawio" src="https://github.com/user-attachments/assets/7e292842-981f-45a6-a384-7cb50aebbab0" />
+
+*Figure 5.1: WanderSync Architecture Diagram*
+
+---
+
+### 5.3 Build Plan & Scope
+
+To make sure we build a high-quality, reliable app on time, we are focusing strictly on what matters most to travelers: **finding inspiration, planning together without arguments, and stress-free schedule adjustments during the trip**.
+
+<img src="./docs/Gantt Chart Whiteboard (6).png" alt="WanderSync 3-Week Development Plan" />
+
+#### What We Are Building (In-Scope)
+
+> **🏁 Week 1 Milestone – Core Itinerary** | **🏁 Week 2 Milestone – AI and Chat** | **🏁 Week 3 Milestone – Deployment & Polish**
+
+1. **Clarence – Itinerary & Interaction**
+   - Build an interactive visual timeline that displays all daily activities in chronological order.
+   - Implement drag reorder & recalculation so that moving a stop automatically updates all subsequent travel buffers.
+   - Add activity status & lifecycle indicators (planned, in-progress, done) to each timeline card.
+   - Create timeline-to-thread deep linking so tapping an activity jumps directly to its discussion thread.
+
+2. **Hoe Zhi Wan – AI Assistant and Chat**
+   - Design and implement the onboarding UI, covering sign-in, trip creation, and friend invites.
+   - Integrate the Gemini AI copilot for smart schedule suggestions and pacing adjustments (*Relaxed*, *Balanced*, *Fast-Paced*).
+   - Build 1-tap disruption reshuffling so a single tap cascades a delay or cancellation across all affected stops.
+   - Deliver Live HUD and final polish for the trip-day execution view with real-time countdowns.
+
+3. **Weigang – Live HUD & AI Hashtag**
+   - Build per-activity threads and polls so friends can discuss and vote directly on individual schedule cards.
+   - Implement AI hashtag command shortcuts (e.g. `#rain`, `#hungry`) that trigger instant contextual suggestions.
+   - Add departure and transit countdowns that surface the next required travel action at the right moment.
+
+#### What We Are Leaving Out for Now (Out-of-Scope)
+
+To keep the app simple, fast, and delivered on schedule, we are holding off on features that add clutter or already have great standalone tools:
+- **In-App Bill Splitting**: Popular apps like Splitwise already do this well. We focus our energy on smooth schedule planning.
+- **Split-Group Branching Paths**: Having different sub-schedules for different people creates confusion. Simple free-time blocks give friends flexibility without cluttering the plan.

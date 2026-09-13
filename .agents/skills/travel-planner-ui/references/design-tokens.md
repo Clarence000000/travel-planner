@@ -1,41 +1,61 @@
 # Design Tokens
 
-All design tokens are defined as CSS custom properties on `:root`. Every
-component must reference these variables — never hard-code raw values.
+All design tokens are defined as CSS custom properties on `:root` in [`src/styles/tokens.css`](file:///c:/Users/clare/Desktop/Project/travel-planner/src/styles/tokens.css). Every component must reference these variables — never hard-code raw values or flat opaque colors.
 
 ```css
 :root {
   /* ──────────────── Colors ──────────────── */
 
-  /* Primary (Burnt Orange) */
-  --color-primary:          #E8621A;
-  --color-primary-hover:    #D4580F;
-  --color-primary-light:    #FFF0E6;   /* tinted background for badges */
+  /* ──────────────── 60-30-10 Color Role Distribution ──────────────── */
+
+  /* 10% Primary Brand Accent (Terracotta) */
+  --color-primary:          #D85822;
+  --color-primary-hover:    #C24B19;
+  --color-primary-light:    #FDF1EB;   /* tinted background for badges */
   --color-primary-text:     #FFFFFF;   /* text on primary bg */
 
-  /* Secondary (Forest Green) */
-  --color-secondary:        #2D6A2E;
-  --color-secondary-light:  #E8F5E9;
+  /* Supporting Functional Accents */
+  --color-accent-honey:     #E9A33B;   /* Honey Gold: secondary status ("Proposed"), star ratings */
+  --color-status-proposed:  #E9A33B;
+  --color-accent-ochre:     #B57738;   /* Warm Ochre: secondary category chips ("Sightseeing") */
+  --color-category-sightseeing: #B57738;
 
-  /* Neutral */
-  --color-background:       #F5F0E8;   /* warm cream page bg */
-  --color-surface:          #FFFFFF;   /* card / modal bg */
-  --color-surface-alt:      #FDF6EE;   /* slightly tinted surface (detail hero bg) */
-  --color-border:           #E0DDD6;   /* subtle borders */
-  --color-border-strong:    #1A1A1A;   /* chip outlines */
-  --color-divider:          #F0ECE4;
+  /* 60% Base / Background (Soft Cream) & Surfaces */
+  --color-background:       #F5EFEB;   /* Soft cream backdrop & empty state fills */
+  --color-surface:          rgba(245, 239, 235, 0.76);   /* translucent frosted glass */
+  --color-surface-alt:      rgba(245, 239, 235, 0.58);   /* layered frosted glass */
 
-  /* Text */
-  --color-text-primary:     #1A1A1A;
-  --color-text-secondary:   #6B6B6B;
-  --color-text-tertiary:    #9E9E9E;
+  /* 30% Structure & Neutrals (Warm Taupe) */
+  --color-border:           #C8B39B;   /* Warm Taupe card borders & unselected chips */
+  --color-border-subtle:    rgba(200, 179, 155, 0.55);
+  --color-border-strong:    rgba(200, 179, 155, 0.85);
+  --color-divider:          rgba(200, 179, 155, 0.45);
+
+  /* Liquid Glass System Tokens */
+  --glass-blur-sm:          blur(12px) saturate(180%);
+  --glass-blur-md:          blur(22px) saturate(190%);
+  --glass-blur-lg:          blur(32px) saturate(200%);
+  --glass-bg-card:          linear-gradient(180deg, rgba(255, 255, 255, 0.78) 0%, rgba(245, 239, 235, 0.65) 100%);
+  --glass-bg-card-hover:    linear-gradient(180deg, rgba(255, 255, 255, 0.90) 0%, rgba(245, 239, 235, 0.80) 100%);
+  --glass-border-refractive:1px solid rgba(200, 179, 155, 0.45);
+  --glass-specular-top:     inset 0 1px 1.5px rgba(255, 255, 255, 0.98);
+  --glass-shadow:           0 8px 24px rgba(200, 179, 155, 0.20);
+  --glass-shadow-floating:  0 14px 38px rgba(38, 41, 46, 0.10);
+
+  /* 30% Typography & Inactive Neutrals */
+  --color-text-primary:     #26292E;   /* Charcoal: primary text, activity names, time headers */
+  --color-text-secondary:   #6D7C8A;   /* Slate / Blue-Grey: subtitles, "TBD", buffer duration */
+  --color-text-tertiary:    #6D7C8A;   /* Slate / Blue-Grey: inactive icons, muted labels */
   --color-text-inverse:     #FFFFFF;
+  --color-timeline-spine:   #6D7C8A;   /* Slate / Blue-Grey: vertical timeline connector line */
 
   /* Semantic */
-  --color-star:             #E8621A;   /* rating star */
+  --color-star:             #E9A33B;   /* Honey Gold rating star */
   --color-heart:            #E8621A;   /* favorite heart */
-  --color-success:          #2D6A2E;
-  --color-error:            #D32F2F;
+  --color-success:          #10B981;
+  --color-error:            #EF4444;
+  --color-badge-bg:         rgba(232, 98, 26, 0.15);
+  --color-badge-text:       #EA580C;
 
   /* ──────────────── Typography ──────────────── */
 
@@ -51,7 +71,8 @@ component must reference these variables — never hard-code raw values.
   --text-lg:                1.125rem;  /* 18px */
   --text-xl:                1.25rem;   /* 20px */
   --text-2xl:               1.5rem;    /* 24px */
-  --text-3xl:               2rem;      /* 32px — temperature display */
+  --text-3xl:               2rem;      /* 32px */
+  --text-4xl:               2.5rem;    /* 40px */
 
   /* Font weights */
   --font-regular:           400;
@@ -76,6 +97,7 @@ component must reference these variables — never hard-code raw values.
   --space-8:                32px;
   --space-10:               40px;
   --space-12:               48px;
+  --space-16:               64px;
 
   /* ──────────────── Border Radius ──────────────── */
 
@@ -88,73 +110,58 @@ component must reference these variables — never hard-code raw values.
 
   /* ──────────────── Shadows ──────────────── */
 
-  --shadow-card:            0 2px 12px rgba(0, 0, 0, 0.08);
-  --shadow-card-hover:      0 4px 20px rgba(0, 0, 0, 0.12);
-  --shadow-nav:             0 -2px 12px rgba(0, 0, 0, 0.06);
-  --shadow-button:          0 2px 8px rgba(232, 98, 26, 0.3);
+  --shadow-card:            0 2px 12px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover:      0 8px 24px rgba(0, 0, 0, 0.10);
+  --shadow-header:          0 2px 12px rgba(0, 0, 0, 0.04);
+  --shadow-drawer:          -4px 0 24px rgba(0, 0, 0, 0.15);
+  --shadow-button:          0 4px 14px rgba(232, 98, 26, 0.28);
+  --shadow-nav:             0 -4px 16px rgba(0, 0, 0, 0.06);
 
   /* ──────────────── Transitions ──────────────── */
 
-  --transition-fast:        150ms ease;
-  --transition-base:        250ms ease;
-  --transition-slow:        400ms ease;
+  --transition-fast:        150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base:        250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow:        400ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* ──────────────── Z-Index ──────────────── */
+  /* ──────────────── Z-Index Hierarchy ──────────────── */
 
   --z-base:                 0;
   --z-card:                 10;
+  /* Top Viewport Occlusion Guard sits at z-index: 39 */
+  /* Sticky Cat Banner Header sits at z-index: 40 */
+  /* Bottom Viewport Occlusion Guard sits at z-index: 90 */
   --z-header:               100;
   --z-nav:                  100;
-  --z-modal:                200;
-  --z-toast:                300;
+  --z-backdrop:             200;
+  --z-drawer:               210;
+  --z-modal:                300;
+  --z-toast:                400;
 
   /* ──────────────── Layout ──────────────── */
 
   --mobile-max-width:       430px;
+  --content-max-width:      1040px;
   --page-padding:           20px;
+  --header-height:          64px;
   --nav-height:             64px;
-  --header-height:          56px;
 }
 ```
 
 ---
 
-## Color Usage Guidelines
+## Color & Material Usage Guidelines
 
-| Context                     | Token                        |
-| :-------------------------- | :--------------------------- |
-| Page background             | `--color-background`         |
-| Card / sheet background     | `--color-surface`            |
-| Detail page hero background | `--color-surface-alt`        |
-| Primary button / CTA        | `--color-primary`            |
-| Primary button hover        | `--color-primary-hover`      |
-| Active chip fill            | `--color-primary`            |
-| Inactive chip border        | `--color-border-strong`      |
-| Active nav tab label/icon   | `--color-primary`            |
-| Inactive nav tab            | `--color-text-secondary`     |
-| Star rating icon            | `--color-star`               |
-| Heart / favorite icon       | `--color-heart`              |
-| Section headings            | `--color-text-primary`       |
-| Body / description text     | `--color-text-secondary`     |
-| Country / meta labels       | `--color-text-secondary`     |
-| Date range labels           | `--color-text-secondary`     |
-| "View all" link             | `--color-primary`            |
-
----
-
-## Typography Scale Usage
-
-| Element                    | Size          | Weight              | Color                    |
-| :------------------------- | :------------ | :------------------ | :----------------------- |
-| Page title ("Berlin")      | `--text-2xl`  | `--font-extrabold`  | `--color-text-primary`   |
-| Section title              | `--text-xl`   | `--font-bold`       | `--color-text-primary`   |
-| Card title (destination)   | `--text-lg`   | `--font-bold`       | `--color-text-primary`   |
-| Detail page title          | `--text-2xl`  | `--font-bold`       | `--color-text-primary`   |
-| Body text / description    | `--text-base` | `--font-regular`    | `--color-text-secondary` |
-| Chip label                 | `--text-sm`   | `--font-medium`     | varies                   |
-| Meta label (country, date) | `--text-sm`   | `--font-regular`    | `--color-text-secondary` |
-| "Location" small label     | `--text-xs`   | `--font-regular`    | `--color-text-secondary` |
-| Nav tab label              | `--text-xs`   | `--font-medium`     | varies                   |
-| Star rating number         | `--text-sm`   | `--font-semibold`   | `--color-text-inverse`   |
-| Temperature display        | `--text-3xl`  | `--font-bold`       | `--color-text-primary`   |
-| "View all" link            | `--text-sm`   | `--font-semibold`   | `--color-primary`        |
+| Context                     | Token / Value                                                 | Visual Effect                                     |
+| :-------------------------- | :------------------------------------------------------------ | :------------------------------------------------ |
+| App Shell Background        | `--color-background` (`#F5EFEB`) + `cat-bg.jpg`               | Soft cream backdrop with cat crowd pattern        |
+| Standard Card Background    | `--glass-bg-card`                                             | Frosted soft cream translucent glass panel        |
+| Hover Card Background       | `--glass-bg-card-hover`                                       | Luminously brightened frosted glass panel         |
+| Card Refractive Border      | `--color-border` (`#C8B39B` / `rgba(200, 179, 155, 0.45)`)    | 1px Warm Taupe border                             |
+| Top Specular Highlight      | `--glass-specular-top`                                        | Curved glass reflection along top edge            |
+| Selected Day Chip (Day 1)   | `--color-primary` (`#D85822`) + white text                    | Warm Terracotta active chip                       |
+| Unselected Day Chips        | Warm Taupe (`#C8B39B`) border + soft cream glass fill         | Subtly grounded secondary chips                   |
+| Primary Center FAB (+)      | `--color-primary` (`#D85822`) + specular highlight            | Solid Warm Terracotta floating action button      |
+| Timeline Vertical Spine     | `--color-timeline-spine` (`#6D7C8A`)                          | Slate / Blue-Grey continuous connector line       |
+| Active Timeline Dots        | White node + `--color-primary` (`#D85822`) border             | Terracotta focused timeline node                  |
+| Proposed Status Tag         | `--color-status-proposed` (`#E9A33B`)                         | Honey Gold secondary status pill                  |
+| Sightseeing Category Chip   | `--color-category-sightseeing` (`#B57738`)                    | Warm Ochre secondary category chip                |

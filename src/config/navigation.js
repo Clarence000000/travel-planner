@@ -1,19 +1,20 @@
 /**
  * Mobile Tab Navigation Configuration
- * Dedicated 4-feature navigation tabs for the Travel Planner mobile app:
- * 1. Itinerary (Drag-and-Drop Itinerary)
- * 2. Chat (Per-Activity Chat Threads)
- * 3. Assistant (AI Schedule Assistant)
- * 4. Dashboard ("Now & Next" Live Dashboard)
+ * Clean consolidated navigation with 2 primary tabs:
+ * 1. Itinerary (Interactive Schedule & Timeline)
+ * 2. Ideas (Trip Wishlist, Whiteboard & Social Reels)
+ * Secondary destinations (Live Day HUD, Chat Threads, Assistant Copilot)
+ * are accessible via the Sidebar, Header launchers, and contextual drawers.
  */
 
 export const navTabs = [
   {
     id: 'itinerary',
     label: 'Itinerary',
-    title: 'Drag-and-Drop Itinerary',
-    subtitle: 'Interactive schedule & time blocks',
+    title: 'Trip Itinerary',
+    subtitle: 'Interactive schedule & timeline',
     href: '#itinerary',
+    isPrimary: true,
     icon: `
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -25,37 +26,12 @@ export const navTabs = [
     active: true,
   },
   {
-    id: 'chat',
-    label: 'Chat',
-    title: 'Per-Activity Chat Threads',
-    subtitle: 'Contextual event discussions & wishlist',
-    href: '#chat',
-    icon: `
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-      </svg>
-    `,
-    active: false,
-  },
-  {
-    id: 'assistant',
-    label: 'Assistant',
-    title: 'AI Schedule Assistant',
-    subtitle: 'Dynamic itinerary adjustment & pace tuning',
-    href: '#assistant',
-    icon: `
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-      </svg>
-    `,
-    active: false,
-  },
-  {
     id: 'ideas',
     label: 'Ideas',
-    title: 'Trip Idea Wishlist & Board',
-    subtitle: 'Collaborative wishlist & interactive canvas',
+    title: 'Trip Ideas & Wishlist',
+    subtitle: 'Collaborative wishlist & reels',
     href: '#ideas',
+    isPrimary: true,
     icon: `
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 18h6"></path>
@@ -66,14 +42,29 @@ export const navTabs = [
     active: false,
   },
   {
-    id: 'dashboard',
-    label: 'Dashboard',
-    title: '"Now & Next" Live Dashboard',
-    subtitle: 'Day-of-trip real-time HUD & 1-tap shifts',
-    href: '#dashboard',
+    id: 'chat',
+    label: 'Discussions',
+    title: 'Activity Threads',
+    subtitle: 'Contextual group chats & mini-polls',
+    href: '#chat',
+    isPrimary: false,
     icon: `
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    `,
+    active: false,
+  },
+  {
+    id: 'assistant',
+    label: 'AI Copilot',
+    title: 'Trip Preferences & AI Copilot',
+    subtitle: 'Pacing tuning & weather reshuffle',
+    href: '#assistant',
+    isPrimary: false,
+    icon: `
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
       </svg>
     `,
     active: false,
@@ -85,6 +76,10 @@ const listeners = new Set();
 
 export function getNavTabs() {
   return [...currentTabs];
+}
+
+export function getBottomNavTabs() {
+  return currentTabs.filter((t) => t.isPrimary);
 }
 
 export function setActiveTab(idOrHref) {
@@ -101,8 +96,14 @@ export function setActiveTab(idOrHref) {
     currentTabs[0].active = true;
   }
 
-  notifyListeners();
-  return getActiveTab();
+  const activeTab = currentTabs.find((tab) => tab.active) || currentTabs[0];
+
+  // Sync hash in browser without jump
+  if (window.location.hash !== `#${activeTab.id}`) {
+    history.replaceState(null, '', `#${activeTab.id}`);
+  }
+
+  notifyListeners(currentTabs, activeTab);
 }
 
 export function getActiveTab() {
@@ -114,14 +115,12 @@ export function onTabChange(callback) {
   return () => listeners.delete(callback);
 }
 
-function notifyListeners() {
-  const tabs = getNavTabs();
-  const active = getActiveTab();
+function notifyListeners(tabs, activeTab) {
   listeners.forEach((fn) => {
     try {
-      fn(tabs, active);
+      fn(tabs, activeTab);
     } catch (e) {
-      console.error('[Navigation] Error in tab change listener:', e);
+      console.error('[Navigation] Tab listener callback error:', e);
     }
   });
 }
