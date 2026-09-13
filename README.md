@@ -140,44 +140,28 @@ graph TD
 
 To make sure we build a high-quality, reliable app on time, we are focusing strictly on what matters most to travelers: **finding inspiration, planning together without arguments, and stress-free schedule adjustments during the trip**.
 
-```mermaid
-gantt
-    title WanderSync 5-Week Build Plan
-    dateFormat  YYYY-MM-DD
-    section Sprint 1: Core Setup
-    Next.js Setup & Database Design          :2026-09-15, 7d
-    Live Drag-and-Drop Schedule              :2026-09-19, 7d
-    section Sprint 2: Group Planning
-    Instagram & TikTok Link Importer         :2026-09-24, 6d
-    Activity Chat & 1-Tap Group Voting       :2026-09-28, 6d
-    section Sprint 3: Smart Features
-    Gemini AI Schedule Assistant             :2026-10-02, 7d
-    Weather Alerts & Rain Alternatives       :2026-10-06, 6d
-    section Sprint 4: Polish & Launch
-    Final Testing & Speed Optimization       :2026-10-10, 5d
-    Security Checks & Live Deployment        :2026-10-13, 5d
-```
+<img src="./docs/Gantt Chart Whiteboard (2).png" alt="WanderSync 3-Week Development Plan" />
 
 #### What We Are Building (In-Scope)
 
-1. **Sprint 1: Live Schedule & Setup (Weeks 1–2)**
-   - Set up the Next.js and Supabase foundation with clean mobile styling.
-   - Build a secure database to store trips, daily activities, group members, and votes, ensuring only invited friends can view each trip.
-   - Create a smooth drag-and-drop timeline that updates instantly on everyone's phone whenever an activity is moved.
-   - Add automatic travel time alerts that warn users when there isn't enough walking or subway time between stops.
+> **🏁 Week 1 Milestone – Core Itinerary** | **🏁 Week 2 Milestone – AI and Chat**
 
-2. **Sprint 2: Social Media Imports & Group Voting (Week 3)**
-   - Build an easy link importer that grabs the name, location, and photos directly from pasted Instagram Reels and TikTok videos.
-   - Add comments and quick polls directly onto activity cards, so friends can vote and have the winning choice automatically drop into the itinerary.
+1. **Clarence – Itinerary & Interaction**
+   - Build an interactive visual timeline that displays all daily activities in chronological order.
+   - Implement drag reorder & recalculation so that moving a stop automatically updates all subsequent travel buffers.
+   - Add activity status & lifecycle indicators (planned, in-progress, done) to each timeline card.
+   - Create timeline-to-thread deep linking so tapping an activity jumps directly to its discussion thread.
 
-3. **Sprint 3: AI Assistant & Weather Adjustments (Week 4)**
-   - Connect Google Gemini to quickly adjust trip pacing (*Relaxed*, *Balanced*, or *Fast-Paced*) and suggest smart schedule reshuffles.
-   - Connect live weather forecasts to spot rainy days ahead of time and suggest indoor alternatives with a 1-tap swap button.
+2. **Tony – Itinerary & Interaction**
+   - Design and implement the onboarding UI, covering sign-in, trip creation, and friend invites.
+   - Integrate the Gemini AI copilot for smart schedule suggestions and pacing adjustments (*Relaxed*, *Balanced*, *Fast-Paced*).
+   - Build 1-tap disruption reshuffling so a single tap cascades a delay or cancellation across all affected stops.
+   - Deliver Live HUD and final polish for the trip-day execution view with real-time countdowns.
 
-4. **Sprint 4: Final Testing & Launch (Week 5)**
-   - Test group syncing and AI features thoroughly across different phones and screen sizes.
-   - Check database speeds, test security rules, and optimize images for fast loading.
-   - Launch the production app live on Vercel.
+3. **Weigang – Live HUD & AI Hashtag**
+   - Build per-activity threads and polls so friends can discuss and vote directly on individual schedule cards.
+   - Implement AI hashtag command shortcuts (e.g. `#rain`, `#hungry`) that trigger instant contextual suggestions.
+   - Add departure and transit countdowns that surface the next required travel action at the right moment.
 
 #### What We Are Leaving Out for Now (Out-of-Scope)
 
