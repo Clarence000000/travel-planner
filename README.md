@@ -111,23 +111,17 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 ## 5. Technical Architecture & Feasibility
 
-> [!NOTE]
-> **Prototype Validation vs. Production Build Phase:**  
-> The current repository implementation serves as our rapid client-side prototype (Vanilla JS / Vite / LocalStorage simulation) engineered for immediate 60fps tactile validation, offline resilience, and interactive pitch delivery. The architecture outlined below details the production-ready, scalable stack that our team will implement during the formal **Building Phase**.
-
----
-
 ### 5.1 Production Tech Stack
 
-| Layer | Technology | Why We Chose It | Constraints & How We Mitigate Them |
-| :--- | :--- | :--- | :--- |
-| **Frontend** | **Next.js 15, React 19, Tailwind CSS** | Fast mobile loading, auto-optimized images from Reels, and seamless link sharing. | **Risk:** Dragging cards may feel laggy.<br>**Fix:** Screen updates instantly (optimistic UI) and saves in the background. |
-| **Backend** | **Next.js Server Actions & Supabase Edge Functions** | Unified codebase, zero API boilerplate, and fast serverless execution. | **Risk:** AI responses timing out.<br>**Fix:** Streams responses word-by-word so users see ideas immediately. |
-| **Database** | **PostgreSQL (Supabase Cloud)** | Organizes trips, stops, and votes cleanly with built-in row-level security. | **Risk:** High group traffic overloading connections.<br>**Fix:** Uses Supabase connection pooling (Supavisor). |
-| **Real-Time Sync** | **Supabase Realtime** | Instantly syncs card moves and votes across all group members' screens without refreshing. | **Risk:** Flaky mobile network or travel Wi-Fi.<br>**Fix:** Immediate local UI updates with timestamp deduplication. |
-| **AI Engine** | **Google Gemini 2.0 Flash** | Fast sub-second responses, understands Reel screenshots, and outputs structured schedules. | **Risk:** API limits or slow connections.<br>**Fix:** Caches common spot recommendations with rule-based fallbacks. |
-| **APIs & Services** | **Instagram/TikTok Scrapers, Google Places, OpenWeatherMap** | Pulls place details from social links, provides real transit times, and checks rain forecasts. | **Risk:** Third-party API rate limits and costs.<br>**Fix:** Caches routes and Reel venue data for 48 hours. |
-| **Hosting** | **Vercel Edge Network & Supabase (Asia Region)** | Fast global delivery close to Asian destinations with zero server maintenance. | **Risk:** Bandwidth limits.<br>**Fix:** Caches pre-rendered itinerary previews. |
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | Next.js 15, React 19, Tailwind CSS |
+| **Backend** | Next.js Server Actions & Supabase Edge Functions |
+| **Database** | PostgreSQL (Supabase Cloud) |
+| **Real-Time Sync** | Supabase Realtime |
+| **AI Engine** | Gemini Flash |
+| **APIs & Services** | Instagram/TikTok Scrapers, Google Places, OpenWeatherMap |
+| **Hosting** | Vercel Edge Network & Supabase (Asia Region) |
 
 ---
 
