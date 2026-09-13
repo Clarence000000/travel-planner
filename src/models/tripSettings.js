@@ -10,6 +10,12 @@ const STORAGE_KEY = 'travel_planner_trip_settings_v1';
 
 export const PRESET_COVERS = [
   {
+    id: 'penang-bridge-sunset',
+    name: 'Penang Bridge Sunset',
+    url: 'https://image-tc.galaxy.tf/wijpeg-9j3ux7drhby0iny1evej1e38j/sunset-at-penang-bridge.jpg?width=1920',
+    thumb: 'https://image-tc.galaxy.tf/wijpeg-9j3ux7drhby0iny1evej1e38j/sunset-at-penang-bridge.jpg?width=1920',
+  },
+  {
     id: 'original-cats',
     name: 'Original Cats',
     url: './src/assets/bg-itinerary.png',
@@ -41,7 +47,7 @@ const DEFAULT_SETTINGS = {
   startDate: '2026-10-12',
   endDate: '2026-10-14',
   totalDays: 3,
-  coverImage: './src/assets/bg-itinerary.png',
+  coverImage: 'https://image-tc.galaxy.tf/wijpeg-9j3ux7drhby0iny1evej1e38j/sunset-at-penang-bridge.jpg?width=1920',
   pace: 'balanced', // 'chill' | 'balanced' | 'turbo'
   vibe: 'food', // 'food' | 'culture' | 'modern' | 'scenic'
 };
@@ -76,7 +82,10 @@ export function formatDateRange(startDateStr, endDateStr, totalDays) {
     const range = sMonth === eMonth
       ? `${sMonth} ${sDay} – ${eDay}, ${year}`
       : `${sMonth} ${sDay} – ${eMonth} ${eDay}, ${year}`;
-    return `${range} • ${totalDays} ${totalDays === 1 ? 'Day' : 'Days'}`;
+    const days = (totalDays !== undefined && totalDays !== null && !isNaN(totalDays))
+      ? totalDays
+      : calculateDaysBetween(startDateStr, endDateStr);
+    return `${range} • ${days} ${days === 1 ? 'Day' : 'Days'}`;
   } catch (err) {
     return `3 Days`;
   }
@@ -92,7 +101,9 @@ export function getTripSettings() {
       startDate: activeTrip.startDate || DEFAULT_SETTINGS.startDate,
       endDate: activeTrip.endDate || DEFAULT_SETTINGS.endDate,
       totalDays: activeTrip.totalDays || DEFAULT_SETTINGS.totalDays,
-      coverImage: activeTrip.coverImage || DEFAULT_SETTINGS.coverImage,
+      coverImage: (!activeTrip.coverImage || activeTrip.coverImage === './src/assets/hero-banner.jpg' || activeTrip.coverImage === './src/assets/bg-itinerary.png')
+        ? DEFAULT_SETTINGS.coverImage
+        : activeTrip.coverImage,
       pace: activeTrip.pace || DEFAULT_SETTINGS.pace,
       vibe: activeTrip.vibe || DEFAULT_SETTINGS.vibe,
     };
@@ -102,8 +113,8 @@ export function getTripSettings() {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       const parsed = { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
-      if (!parsed.coverImage || parsed.coverImage === './src/assets/hero-banner.jpg') {
-        parsed.coverImage = './src/assets/bg-itinerary.png';
+      if (!parsed.coverImage || parsed.coverImage === './src/assets/hero-banner.jpg' || parsed.coverImage === './src/assets/bg-itinerary.png') {
+        parsed.coverImage = DEFAULT_SETTINGS.coverImage;
       }
       return parsed;
     }

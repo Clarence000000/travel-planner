@@ -169,12 +169,20 @@ class RemoteSyncEngine {
     this.subscribers.get(eventType).add(callback);
 
     return () => {
-      const set = this.subscribers.get(eventType);
-      if (set) {
-        set.delete(callback);
-        if (set.size === 0) this.subscribers.delete(eventType);
-      }
+      this.off(eventType, callback);
     };
+  }
+
+  on(eventType, callback) {
+    return this.subscribe(eventType, callback);
+  }
+
+  off(eventType, callback) {
+    const set = this.subscribers.get(eventType);
+    if (set) {
+      set.delete(callback);
+      if (set.size === 0) this.subscribers.delete(eventType);
+    }
   }
 
   clearAll() {

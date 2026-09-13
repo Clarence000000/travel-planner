@@ -29,7 +29,8 @@
 
 /* ──────────────── Vertical Timeline Feed & Spine ──────────────── */
 
-.timeline-feed {
+.timeline-feed,
+.timeline-spine {
   display: flex;
   flex-direction: column;
   position: relative;
@@ -125,6 +126,10 @@
 /* ──────────────── Liquid Glass Timeline Card Structure ──────────────── */
 
 .timeline-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  box-sizing: border-box;
   background: linear-gradient(180deg,
       rgba(255, 255, 255, 0.76) 0%,
       rgba(255, 255, 255, 0.58) 100%);
@@ -907,28 +912,42 @@
   stroke: #DC2626;
 }
 
-.contingency-card__swap-btn {
+.contingency-card__swap-btn,
+.btn-swap-fallback {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   background: #FFFFFF;
-  border: 1px solid rgba(217, 119, 6, 0.35);
+  border: 1.5px solid #D97706;
   border-radius: 9999px;
-  padding: 2.5px 8px;
-  font-size: 10px;
+  padding: 3px 10px;
+  font-size: 11px;
   font-weight: 700;
   color: #B45309;
   cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(217, 119, 6, 0.15), inset 0 1px 0.5px #FFFFFF;
   transition: all 150ms ease;
-  line-height: 1;
+  line-height: 1.2;
 }
 
-.contingency-card__swap-btn:hover {
+.contingency-card__swap-btn svg,
+.btn-swap-fallback svg {
+  stroke: #B45309;
+  flex-shrink: 0;
+}
+
+.contingency-card__swap-btn:hover,
+.btn-swap-fallback:hover {
   background: #FEF3C7;
-  border-color: #D97706;
-  color: #92400E;
+  border-color: #B45309;
+  color: #78350F;
   transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.25);
+}
+
+.contingency-card__swap-btn:active,
+.btn-swap-fallback:active {
+  transform: scale(0.96);
 }
 
 .contingency-card__body {
@@ -2221,22 +2240,17 @@ textarea.form-input {
 
 .day-chip__dot {
   display: inline-block;
-  color: #D97706;
-  font-size: 10px;
-  margin-left: 4px;
-  animation: pulseAmberDot 1.6s infinite ease-in-out;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-primary, #E8621A);
+  margin-left: 5px;
+  flex-shrink: 0;
+  vertical-align: middle;
 }
 
-@keyframes pulseAmberDot {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 0.8;
-  }
-  50% {
-    transform: scale(1.4);
-    opacity: 1;
-    filter: drop-shadow(0 0 5px #F59E0B);
-  }
+.day-chip--active .day-chip__dot {
+  background-color: #FFFFFF;
 }
 
 /* ──────────────── Weather Alert Banner & Contingency Sheet ──────────────── */
@@ -2762,4 +2776,304 @@ textarea.form-input {
   font-size: 13.5px;
   font-weight: 700;
   border-radius: 12px;
+}
+
+/* ──────────────── Itinerary Header Bar & Add Stop FAB ──────────────── */
+
+.itinerary-header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin: 14px 0 10px;
+  padding: 0 2px;
+}
+
+.itinerary-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.itinerary-date-range {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-primary, #D95822);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.itinerary-main-heading {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0F172A;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.btn-propose-fab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  background: var(--color-primary, #D95822);
+  color: #FFFFFF;
+  border: none;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(217, 88, 34, 0.3);
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.btn-propose-fab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 16px rgba(217, 88, 34, 0.4);
+  filter: brightness(1.05);
+}
+
+.btn-propose-fab:active {
+  transform: translateY(0);
+}
+
+/* ──────────────── Timeline Card Expanded Details Grid & Metrics ──────────────── */
+
+.detail-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.detail-panel__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 9px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(200, 179, 155, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.detail-panel__metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748B;
+}
+
+.detail-panel__metric-value {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #0F172A;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.detail-panel__metric-value--transit {
+  color: var(--color-primary, #D95822);
+}
+
+/* ──────────────── Requirements & Pre-Trip Prep Checklist ──────────────── */
+
+.detail-panel__requirements {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(200, 179, 155, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.requirements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.requirements-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #475569;
+}
+
+.requirements-count {
+  font-size: 10px;
+  font-weight: 700;
+  color: #D97706;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+
+.requirements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  cursor: pointer;
+  transition: all 140ms ease;
+  user-select: none;
+  position: relative;
+}
+
+.requirement-item:hover {
+  background: #FFFFFF;
+  border-color: rgba(200, 179, 155, 0.5);
+}
+
+.requirement-checkbox {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+.requirement-custom-box {
+  width: 17px;
+  height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid #94A3B8;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.requirement-custom-box svg {
+  opacity: 0;
+  transform: scale(0.6);
+  transition: all 140ms cubic-bezier(0.16, 1, 0.3, 1);
+  color: #FFFFFF;
+}
+
+.requirement-checkbox:checked + .requirement-custom-box {
+  background: #10B981;
+  border-color: #10B981;
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.35);
+}
+
+.requirement-checkbox:checked + .requirement-custom-box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.requirement-item--done .requirement-text {
+  text-decoration: line-through;
+  color: #94A3B8;
+}
+
+.requirement-text {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1E293B;
+  line-height: 1.3;
+}
+
+/* ──────────────── Empty Day State Card ──────────────── */
+
+.empty-day-card {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 16px 0 24px 0;
+  padding: 36px 24px 32px 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.78) 100%);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06), inset 0 1px 1.5px #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.empty-day-card__icon-orb {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFF3EB 0%, #FEE2D5 100%);
+  border: 1.5px solid rgba(217, 88, 34, 0.25);
+  color: var(--color-primary, #D95822);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 18px rgba(217, 88, 34, 0.15), inset 0 1px 2px #FFFFFF;
+  margin-bottom: 14px;
+}
+
+.empty-day-card__icon-orb svg {
+  stroke: var(--color-primary, #D95822);
+}
+
+.empty-day-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  background: rgba(217, 88, 34, 0.09);
+  border: 1px solid rgba(217, 88, 34, 0.22);
+  color: var(--color-primary, #D95822);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.empty-day-card__title {
+  margin: 0 0 8px 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.01em;
+}
+
+.empty-day-card__desc {
+  margin: 0 0 20px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #64748B;
+  max-width: 290px;
+}
+
+.empty-day-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(217, 88, 34, 0.3);
+  transition: all 180ms ease;
+}
+
+.empty-day-card__btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(217, 88, 34, 0.38);
 }

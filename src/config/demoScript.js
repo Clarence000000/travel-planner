@@ -77,7 +77,13 @@ export function startDay2Simulation(options = {}) {
   simulationState.isDay2Running = true;
   simulationState.day2Step = 0;
 
-  const delays = options.delays || [1500, 4500, 8000];
+  window.dispatchEvent(new CustomEvent('wandersync:day2_worker_start'));
+  try {
+    const bc = new BroadcastChannel('wandersync_simulation');
+    bc.postMessage({ type: 'DAY2_WORKER_START' });
+  } catch (e) {}
+
+  const delays = options.delays || [5000, 15000, 25000];
 
   // Step 1: Entopia Butterfly Farm (T+4s)
   scheduleTimer(() => {

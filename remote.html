@@ -2,602 +2,396 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>WanderSync Presenter Remote · Penang Edition</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Travel Planner Remote Control</title>
   <style>
-    :root {
-      --bg-base: #090A0F;
-      --bg-gradient: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.15), transparent 70%),
-                           radial-gradient(circle at 100% 100%, rgba(232, 98, 26, 0.12), transparent 60%);
-      --glass-bg: rgba(255, 255, 255, 0.05);
-      --glass-border: rgba(255, 255, 255, 0.12);
-      --glass-highlight: rgba(255, 255, 255, 0.2);
-      --glass-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
-      --text-main: #F8FAFC;
-      --text-muted: #94A3B8;
-      --accent-orange: #E8621A;
-      --accent-indigo: #6366F1;
-      --accent-emerald: #10B981;
-      --accent-amber: #F59E0B;
-      --accent-rose: #F43F5E;
-      --accent-sky: #0EA5E9;
-      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, sans-serif;
-    }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      -webkit-tap-highlight-color: transparent;
     }
 
     body {
-      background-color: var(--bg-base);
-      background-image: var(--bg-gradient);
-      background-attachment: fixed;
-      font-family: var(--font-sans);
-      color: var(--text-main);
-      min-height: 100vh;
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      line-height: 1.4;
+      padding: 16px;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 24px 16px 48px;
+      justify-content: center;
     }
 
     .remote-container {
       width: 100%;
-      max-width: 640px;
+      max-width: 600px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 12px;
     }
 
-    /* Glass Panels */
-    .glass-card {
-      background: var(--glass-bg);
-      backdrop-filter: blur(28px) saturate(190%);
-      -webkit-backdrop-filter: blur(28px) saturate(190%);
-      border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: var(--glass-shadow);
-      position: relative;
-      overflow: hidden;
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
-    }
-
-    .glass-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+    /* Section Card */
+    .section-card {
+      background-color: #1a1a1a;
+      border: 1px solid #2d2d2d;
+      border-radius: 6px;
+      padding: 12px 14px;
     }
 
     /* Header */
-    .remote-header {
+    .header-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      flex-wrap: wrap;
     }
 
-    .brand-title {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .app-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.01em;
     }
 
-    .brand-logo {
-      width: 38px;
-      height: 38px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #E8621A, #F59E0B);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 14px rgba(232, 98, 26, 0.4);
-      font-size: 20px;
-    }
-
-    .brand-text h1 {
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #FFF, #CBD5E1);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .brand-text p {
+    .app-subtitle {
       font-size: 11px;
-      color: var(--text-muted);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      color: #888888;
     }
 
-    /* Connection Pill */
-    .connection-status-pill {
+    /* Status Pill */
+    .status-pill {
+      font-size: 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid #234d20;
+      background: #132412;
+      color: #4ade80;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 6px 14px;
-      border-radius: 30px;
-      background: rgba(16, 185, 129, 0.12);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      font-size: 12px;
-      font-weight: 600;
-      color: #34D399;
-      transition: all 0.3s ease;
-    }
-
-    .connection-status-pill.disconnected {
-      background: rgba(245, 158, 11, 0.12);
-      border-color: rgba(245, 158, 11, 0.3);
-      color: #FBBF24;
-    }
-
-    .status-pulse-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #10B981;
-      box-shadow: 0 0 10px #10B981;
-      animation: pulseGlow 1.8s infinite;
-    }
-
-    .connection-status-pill.disconnected .status-pulse-dot {
-      background: #F59E0B;
-      box-shadow: 0 0 10px #F59E0B;
-    }
-
-    @keyframes pulseGlow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
-
-    /* Quick Tab Switcher */
-    .tab-switcher-row {
-      display: flex;
       gap: 6px;
-      overflow-x: auto;
-      padding-bottom: 2px;
+      white-space: nowrap;
     }
 
-    .tab-nav-btn {
-      flex: 1;
-      min-width: 75px;
-      padding: 8px 10px;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
+    .status-pill.disconnected {
+      border-color: #5c4314;
+      background: #261d0d;
+      color: #fbbf24;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Titles & Descriptions */
+    .section-title {
       font-size: 12px;
       font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s ease;
-    }
-
-    .tab-nav-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: var(--text-main);
-      border-color: rgba(255, 255, 255, 0.18);
-    }
-
-    .tab-nav-btn:active {
-      transform: scale(0.96);
-    }
-
-    /* Act Cards */
-    .act-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
-    }
-
-    .act-tag {
-      font-size: 11px;
-      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: var(--accent-orange);
-      background: rgba(232, 98, 26, 0.12);
-      padding: 3px 8px;
-      border-radius: 6px;
-      border: 1px solid rgba(232, 98, 26, 0.25);
+      letter-spacing: 0.04em;
+      color: #bbbbbb;
+      margin-bottom: 2px;
     }
 
-    .act-title {
-      font-size: 15px;
-      font-weight: 700;
-      color: #FFF;
-      margin-top: 4px;
+    .section-desc {
+      font-size: 11px;
+      color: #777777;
+      margin-bottom: 8px;
     }
 
-    .act-subtext {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-      line-height: 1.4;
+    /* Button Grids */
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
     }
 
-    /* Action Buttons */
-    .action-grid {
+    .btn-grid-1 {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 8px;
-      margin-top: 14px;
+      gap: 6px;
     }
 
-    @media (min-width: 480px) {
-      .action-grid.action-grid--split {
-        grid-template-columns: 1fr 1fr;
+    .btn-tabs {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+    }
+
+    @media (max-width: 440px) {
+      .btn-grid {
+        grid-template-columns: 1fr;
+      }
+      .btn-tabs {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
 
-    .btn-liquid {
-      position: relative;
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      color: #FFF;
+    /* Buttons */
+    button {
+      background-color: #242424;
+      color: #e0e0e0;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      padding: 8px 10px;
       font-family: inherit;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 12px 14px;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
       text-align: center;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), 0 4px 12px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      user-select: none;
     }
 
-    .btn-liquid:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.25);
-      transform: translateY(-1px);
+    button:hover {
+      background-color: #2e2e2e;
+      border-color: #505050;
+      color: #ffffff;
     }
 
-    .btn-liquid:active {
-      transform: translateY(1px) scale(0.98);
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    button:active {
+      background-color: #1a1a1a;
+      border-color: #2a2a2a;
     }
 
-    .btn-liquid--primary {
-      background: linear-gradient(135deg, rgba(232, 98, 26, 0.8), rgba(245, 158, 11, 0.7));
-      border-color: rgba(245, 158, 11, 0.4);
-      box-shadow: 0 4px 16px rgba(232, 98, 26, 0.35);
+    .btn-primary {
+      background-color: #1e3a5f;
+      border-color: #2b5284;
+      color: #dbeafe;
     }
 
-    .btn-liquid--primary:hover {
-      background: linear-gradient(135deg, rgba(232, 98, 26, 0.95), rgba(245, 158, 11, 0.85));
+    .btn-primary:hover {
+      background-color: #264a78;
+      border-color: #3b6ba8;
+      color: #ffffff;
     }
 
-    .btn-liquid--emerald {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.8), rgba(5, 150, 105, 0.7));
-      border-color: rgba(16, 185, 129, 0.4);
-      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    .btn-danger {
+      background-color: #381a1a;
+      border-color: #542828;
+      color: #fca5a5;
     }
 
-    .btn-liquid--emerald:hover {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.85));
+    .btn-danger:hover {
+      background-color: #4a2222;
+      border-color: #703333;
+      color: #ffffff;
     }
 
-    .btn-liquid--amber {
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.8), rgba(217, 119, 6, 0.7));
-      border-color: rgba(245, 158, 11, 0.4);
-      box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
+    /* Sub-group inside a card */
+    .subgroup {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #282828;
     }
 
-    .btn-liquid--rose {
-      background: linear-gradient(135deg, rgba(244, 63, 94, 0.8), rgba(225, 29, 72, 0.7));
-      border-color: rgba(244, 63, 94, 0.4);
-      box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35);
+    .subgroup-label {
+      font-size: 11px;
+      color: #888888;
+      margin-bottom: 6px;
     }
 
-    .btn-liquid--indigo {
-      background: linear-gradient(135deg, rgba(99, 102, 241, 0.8), rgba(79, 70, 229, 0.7));
-      border-color: rgba(99, 102, 241, 0.4);
-      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
-    }
-
-    /* Live Activity Console */
-    .console-header {
+    /* Log Viewer */
+    .log-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
-    .console-title {
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .console-clear-btn {
+    .btn-clear {
       background: none;
       border: none;
-      color: var(--text-muted);
+      padding: 0;
       font-size: 11px;
-      cursor: pointer;
+      color: #888888;
       text-decoration: underline;
+      cursor: pointer;
     }
 
-    .console-log {
-      background: rgba(0, 0, 0, 0.35);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 12px;
-      padding: 12px;
+    .btn-clear:hover {
+      color: #cccccc;
+      background: none;
+      border: none;
+    }
+
+    .log-window {
+      background-color: #0d0d0d;
+      border: 1px solid #262626;
+      border-radius: 4px;
+      padding: 8px;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       font-size: 11px;
-      max-height: 180px;
+      height: 140px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 3px;
     }
 
-    .log-item {
+    .log-entry {
       display: flex;
-      gap: 8px;
-      color: #CBD5E1;
-      line-height: 1.4;
+      gap: 6px;
+      line-height: 1.35;
       word-break: break-all;
     }
 
     .log-time {
-      color: #64748B;
+      color: #555555;
       flex-shrink: 0;
     }
 
-    .log-type {
-      font-weight: 700;
-      color: var(--accent-orange);
+    .log-tag {
+      font-weight: 600;
+      color: #93c5fd;
       flex-shrink: 0;
     }
 
-    .log-type.incoming {
-      color: #34D399;
+    .log-tag.recv {
+      color: #86efac;
     }
 
-    /* Footer */
-    .remote-footer {
+    .log-content {
+      color: #cccccc;
+    }
+
+    .footer-note {
       text-align: center;
       font-size: 11px;
-      color: #64748B;
-      padding-top: 8px;
+      color: #555555;
+      padding-top: 4px;
     }
   </style>
 </head>
 <body>
 
-  <div class="remote-container">
+  <main class="remote-container">
 
-    <!-- Top Bar -->
-    <header class="glass-card remote-header">
-      <div class="brand-title">
-        <div class="brand-logo">🧭</div>
-        <div class="brand-text">
-          <h1>WanderSync Remote</h1>
-          <p>Presenter Surface · Penang 3-Day Live</p>
-        </div>
+    <!-- Header & Connection Status -->
+    <header class="section-card header-bar">
+      <div>
+        <h1 class="app-title">Travel Planner Remote</h1>
+        <p class="app-subtitle">Presenter Control Surface</p>
       </div>
-      <div class="connection-status-pill" id="connection-pill">
-        <span class="status-pulse-dot"></span>
-        <span id="connection-text">Channel Connected</span>
+      <div class="status-pill" id="connection-pill">
+        <span class="status-dot"></span>
+        <span id="connection-text">Connecting...</span>
       </div>
     </header>
 
-    <!-- Quick Navigation Bar -->
-    <section class="glass-card" style="padding: 12px;">
-      <div class="tab-switcher-row">
-        <button type="button" class="tab-nav-btn" data-tab="trips">
-          <span>🧳</span>
-          <span>Trips</span>
-        </button>
-        <button type="button" class="tab-nav-btn" data-tab="ideas">
-          <span>💡</span>
-          <span>Ideas / Reels</span>
-        </button>
-        <button type="button" class="tab-nav-btn" data-tab="itinerary">
-          <span>📅</span>
-          <span>Itinerary</span>
-        </button>
-        <button type="button" class="tab-nav-btn" data-tab="chat">
-          <span>💬</span>
-          <span>Chat Feed</span>
-        </button>
-        <button type="button" class="tab-nav-btn" data-tab="dashboard">
-          <span>⚡</span>
-          <span>Live HUD</span>
-        </button>
+    <!-- Navigation Switcher -->
+    <nav class="section-card">
+      <div class="section-title">Active View</div>
+      <div class="section-desc">Switch screen on main presentation tab</div>
+      <div class="btn-tabs">
+        <button type="button" class="tab-nav-btn" data-tab="trips">Trips</button>
+        <button type="button" class="tab-nav-btn" data-tab="ideas">Ideas</button>
+        <button type="button" class="tab-nav-btn" data-tab="itinerary">Itinerary</button>
+        <button type="button" class="tab-nav-btn" data-tab="chat">Chat</button>
+        <button type="button" class="tab-nav-btn" data-tab="dashboard">HUD</button>
       </div>
-    </section>
+    </nav>
 
     <!-- Act 1: Dynamic Genesis -->
-    <section class="glass-card">
-      <div class="act-header">
-        <span class="act-tag">Act 1</span>
-        <span style="font-size: 11px; color: var(--text-muted);">Social Ingestion</span>
-      </div>
-      <h2 class="act-title">Dynamic Genesis</h2>
-      <p class="act-subtext">Ingest TikTok/IG reel inspiration, trigger customizer, and populate sparse Day 1 anchor itinerary.</p>
-      <div class="action-grid action-grid--split">
-        <button type="button" class="btn-liquid btn-liquid--primary" id="btn-act1-genesis">
-          <span>✨</span>
-          <span>Launch Reel Genesis</span>
-        </button>
-        <button type="button" class="btn-liquid" id="btn-act1-populate">
-          <span>📍</span>
-          <span>Populate Day 1 Anchors</span>
-        </button>
+    <section class="section-card">
+      <div class="section-title">Act 1: Day 1 Genesis</div>
+      <div class="section-desc">Reel inspiration ingest and baseline Day 1 anchor schedule</div>
+      <div class="btn-grid">
+        <button type="button" class="btn-primary" id="btn-act1-genesis">Launch Reel Genesis</button>
+        <button type="button" id="btn-act1-populate">Populate Day 1 Anchors</button>
       </div>
     </section>
 
     <!-- Act 2: Ambient Background -->
-    <section class="glass-card">
-      <div class="act-header">
-        <span class="act-tag" style="color: var(--accent-indigo); background: rgba(99, 102, 241, 0.12); border-color: rgba(99, 102, 241, 0.25);">Act 2</span>
-        <span style="font-size: 11px; color: var(--text-muted);">Non-Blocking Worker</span>
-      </div>
-      <h2 class="act-title">Ambient Background Engine</h2>
-      <p class="act-subtext">Simulate background synthesis of Day 2 while Clarence explores without UI locking or spinners.</p>
-      <div class="action-grid action-grid--split">
-        <button type="button" class="btn-liquid btn-liquid--indigo" id="btn-act2-worker">
-          <span>⚙️</span>
-          <span>Trigger Day 2 Worker</span>
-        </button>
-        <button type="button" class="btn-liquid" id="btn-act2-entopia">
-          <span>🦋</span>
-          <span>Add Entopia Day 2</span>
-        </button>
+    <section class="section-card">
+      <div class="section-title">Act 2: Ambient Synthesis</div>
+      <div class="section-desc">Background Day 2 synthesis worker and Entopia addition</div>
+      <div class="btn-grid">
+        <button type="button" id="btn-act2-worker">Trigger Day 2 Worker</button>
+        <button type="button" id="btn-act2-entopia">Add Entopia Day 2</button>
       </div>
     </section>
 
     <!-- Act 3: Contextual Chat Banter -->
-    <section class="glass-card">
-      <div class="act-header">
-        <span class="act-tag" style="color: var(--accent-sky); background: rgba(14, 165, 233, 0.12); border-color: rgba(14, 165, 233, 0.25);">Act 3</span>
-        <span style="font-size: 11px; color: var(--text-muted);">Intelligence Influx</span>
-      </div>
-      <h2 class="act-title">Contextual Chat Banter</h2>
-      <p class="act-subtext">Tony & Wei Gang banter triggers WanderBot meal gap detection for Penang Road Teochew Chendul.</p>
-      <div class="action-grid action-grid--split">
-        <button type="button" class="btn-liquid btn-liquid--primary" id="btn-act3-banter">
-          <span>💬</span>
-          <span>Trigger Chat Banter</span>
-        </button>
-        <button type="button" class="btn-liquid" id="btn-act3-proposal">
-          <span>🤖</span>
-          <span>Insert Proposed Slot</span>
-        </button>
+    <section class="section-card">
+      <div class="section-title">Act 3: Chat Banter & Slot Proposal</div>
+      <div class="section-desc">Team banter simulation and AI meal gap proposal</div>
+      <div class="btn-grid">
+        <button type="button" id="btn-act3-banter">Trigger Chat Banter</button>
+        <button type="button" id="btn-act3-proposal">Insert Chendul Proposal</button>
       </div>
     </section>
 
     <!-- Act 4: Group Consensus Vote -->
-    <section class="glass-card">
-      <div class="act-header">
-        <span class="act-tag" style="color: var(--accent-emerald); background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.25);">Act 4</span>
-        <span style="font-size: 11px; color: var(--text-muted);">Instant Alignment</span>
-      </div>
-      <h2 class="act-title">Group Consensus Vote</h2>
-      <p class="act-subtext">Simulate 2-step voting (Wei Gang 50% -> Tony 100%) and morph proposed slot to solid confirmed state.</p>
-      <div class="action-grid">
-        <button type="button" class="btn-liquid btn-liquid--emerald" id="btn-act4-vote">
-          <span>🗳️</span>
-          <span>Trigger 2-Step Consensus Vote</span>
-        </button>
+    <section class="section-card">
+      <div class="section-title">Act 4: Group Consensus Vote</div>
+      <div class="section-desc">Resolve proposed item through team vote confirmation</div>
+      <div class="btn-grid-1">
+        <button type="button" id="btn-act4-vote">Trigger 2-Step Consensus Vote</button>
       </div>
     </section>
 
     <!-- Act 4b: Schedule Conflict Advisory -->
-    <section class="glass-card">
-      <div class="act-header">
-        <span class="act-tag" style="color: var(--accent-amber); background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.25);">Act 4b</span>
-        <span style="font-size: 11px; color: var(--text-muted);">Heuristic Guardian</span>
-      </div>
-      <h2 class="act-title">Schedule Conflict Advisory</h2>
-      <p class="act-subtext">Detects Monday closure rule for Siam Road Char Koay Teow and offers intelligent reschedule advice.</p>
-      <div class="action-grid">
-        <button type="button" class="btn-liquid btn-liquid--amber" id="btn-act4b-siam">
-          <span>⚠️</span>
-          <span>Trigger Siam Road Advisory</span>
-        </button>
+    <section class="section-card">
+      <div class="section-title">Act 4b: Conflict Advisory</div>
+      <div class="section-desc">Evaluate Monday closure rule for Siam Road Char Koay Teow</div>
+      <div class="btn-grid-1">
+        <button type="button" id="btn-act4b-siam">Trigger Siam Road Advisory</button>
       </div>
     </section>
 
-    <!-- Act 5: Tropical Monsoon Disruption & Contingency Engine -->
-    <section class="glass-card">
-      <div class="act-header">
-        <span class="act-tag" style="color: var(--accent-rose); background: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.25);">Act 5</span>
-        <span style="font-size: 11px; color: var(--text-muted);">Disruption Recovery</span>
+    <!-- Act 5: Monsoon Disruption & Recovery -->
+    <section class="section-card">
+      <div class="section-title">Act 5: Monsoon Disruption & Recovery</div>
+      <div class="section-desc">Weather disruption alert with contingency recovery pathways</div>
+      <div class="btn-grid-1">
+        <button type="button" class="btn-danger" id="btn-act5-monsoon">Broadcast Monsoon Alert</button>
       </div>
-      <h2 class="act-title">Tropical Monsoon Disruption</h2>
-      <p class="act-subtext">Penang thunderstorm alert with multi-option contingency recovery pathways.</p>
-      <div class="action-grid">
-        <button type="button" class="btn-liquid btn-liquid--rose" id="btn-act5-monsoon">
-          <span>⛈️</span>
-          <span>Broadcast Monsoon Alert</span>
-        </button>
-      </div>
-
-      <div style="margin-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
-        <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Recovery Contingencies:</span>
-        <div class="action-grid" style="margin-top: 8px;">
-          <button type="button" class="btn-liquid" id="btn-contingency-1">
-            <span>🏢</span>
-            <span>Contingency 1: Indoor Fallback (The Top Komtar)</span>
-          </button>
-          <button type="button" class="btn-liquid" id="btn-contingency-2">
-            <span>☕</span>
-            <span>Contingency 2: Free-Time Pocket (ChinaHouse)</span>
-          </button>
-          <button type="button" class="btn-liquid" id="btn-contingency-3">
-            <span>🔄</span>
-            <span>Contingency 3: Chronological Reflow</span>
-          </button>
+      <div class="subgroup">
+        <div class="subgroup-label">Recovery Contingencies:</div>
+        <div class="btn-grid-1">
+          <button type="button" id="btn-contingency-1">1: Indoor Fallback (The Top Komtar)</button>
+          <button type="button" id="btn-contingency-2">2: Free-Time Pocket (ChinaHouse)</button>
+          <button type="button" id="btn-contingency-3">3: Chronological Reflow</button>
         </div>
       </div>
     </section>
 
-    <!-- Global Fast Forward & Reset -->
-    <section class="glass-card">
-      <div class="action-grid action-grid--split">
-        <button type="button" class="btn-liquid btn-liquid--indigo" id="btn-fast-forward">
-          <span>⚡</span>
-          <span>Fast Forward Full Demo</span>
-        </button>
-        <button type="button" class="btn-liquid" id="btn-reset-all">
-          <span>↺</span>
-          <span>Reset All Demo State</span>
-        </button>
+    <!-- Automation & Reset -->
+    <section class="section-card">
+      <div class="section-title">Macro Controls</div>
+      <div class="section-desc">Automated demonstration sequence or complete state reset</div>
+      <div class="btn-grid">
+        <button type="button" class="btn-primary" id="btn-fast-forward">Fast Forward Full Demo</button>
+        <button type="button" class="btn-danger" id="btn-reset-all">Reset All State</button>
       </div>
     </section>
 
-    <!-- Live Event Console Log -->
-    <section class="glass-card">
-      <div class="console-header">
-        <div class="console-title">
-          <span>📡</span>
-          <span>BroadcastChannel Activity Log</span>
-        </div>
-        <button type="button" class="console-clear-btn" id="btn-clear-log">Clear</button>
+    <!-- Event Console Log -->
+    <section class="section-card">
+      <div class="log-header">
+        <span class="section-title" style="margin-bottom: 0;">Broadcast Log</span>
+        <button type="button" class="btn-clear" id="btn-clear-log">Clear</button>
       </div>
-      <div class="console-log" id="console-log">
-        <div class="log-item">
+      <div class="log-window" id="console-log">
+        <div class="log-entry">
           <span class="log-time">[Init]</span>
-          <span class="log-type">SYS</span>
-          <span>BroadcastChannel 'wandersync_simulation' initialized.</span>
+          <span class="log-tag">SYS</span>
+          <span class="log-content">Channel initialized</span>
         </div>
       </div>
     </section>
 
-    <footer class="remote-footer">
-      WanderSync Presentation Controller · Apple Liquid Glass Architecture · Channel: <code>wandersync_simulation</code>
+    <footer class="footer-note">
+      Channel: <code>wandersync_simulation</code>
     </footer>
 
-  </div>
+  </main>
 
   <script>
-    // ── BroadcastChannel Engine ──
     const CHANNEL_NAME = 'wandersync_simulation';
     const channel = new BroadcastChannel(CHANNEL_NAME);
 
@@ -605,18 +399,18 @@
     const connPill = document.getElementById('connection-pill');
     const connText = document.getElementById('connection-text');
 
-    function log(type, message, isIncoming = false) {
+    function log(tag, message, isIncoming = false) {
       const now = new Date();
       const timeStr = now.toTimeString().split(' ')[0] + '.' + String(now.getMilliseconds()).padStart(3, '0');
-      
-      const item = document.createElement('div');
-      item.className = 'log-item';
-      item.innerHTML = `
+
+      const entry = document.createElement('div');
+      entry.className = 'log-entry';
+      entry.innerHTML = `
         <span class="log-time">[${timeStr}]</span>
-        <span class="log-type ${isIncoming ? 'incoming' : ''}">${escapeHtml(type)}</span>
-        <span>${escapeHtml(typeof message === 'object' ? JSON.stringify(message) : message)}</span>
+        <span class="log-tag ${isIncoming ? 'recv' : ''}">${escapeHtml(tag)}</span>
+        <span class="log-content">${escapeHtml(typeof message === 'object' ? JSON.stringify(message) : message)}</span>
       `;
-      logContainer.appendChild(item);
+      logContainer.appendChild(entry);
       logContainer.scrollTop = logContainer.scrollHeight;
     }
 
@@ -640,8 +434,8 @@
       log('SENT: ' + type, payload, false);
     }
 
-    // Heartbeat PING
-    let lastPong = Date.now();
+    // Heartbeat PING / PONG
+    let lastPong = 0;
     function ping() {
       send('PING');
     }
@@ -662,23 +456,23 @@
       log('RECV: ' + msg.type, msg.payload || {}, true);
     };
 
-    // Check heartbeat timeout
+    // Heartbeat timeout check
     setInterval(() => {
       if (Date.now() - lastPong > 6000) {
         connPill.classList.add('disconnected');
-        connText.textContent = 'Seeking Main Tab...';
+        connText.textContent = 'Main App Offline';
       }
     }, 2000);
 
-    // ── Tab Quick Buttons ──
-    document.querySelectorAll('.tab-nav-btn').forEach(btn => {
+    // Tab Navigation
+    document.querySelectorAll('.tab-nav-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const tab = btn.getAttribute('data-tab');
         send('SWITCH_TAB', { tab });
       });
     });
 
-    // ── Act 1 ──
+    // Act 1
     document.getElementById('btn-act1-genesis').addEventListener('click', () => {
       send('START_REEL_GENESIS');
     });
@@ -687,7 +481,7 @@
       send('POPULATE_DAY1_ANCHORS');
     });
 
-    // ── Act 2 ──
+    // Act 2
     document.getElementById('btn-act2-worker').addEventListener('click', () => {
       send('TRIGGER_DAY2_WORKER');
     });
@@ -696,7 +490,7 @@
       send('ADD_ENTOPIA_DAY2');
     });
 
-    // ── Act 3 ──
+    // Act 3
     document.getElementById('btn-act3-banter').addEventListener('click', () => {
       send('TRIGGER_CHAT_BANTER');
     });
@@ -711,7 +505,7 @@
       });
     });
 
-    // ── Act 4 ──
+    // Act 4
     document.getElementById('btn-act4-vote').addEventListener('click', () => {
       send('VOTE_CONSENSUS', {
         pollId: 'poll-chendul',
@@ -719,12 +513,12 @@
       });
     });
 
-    // ── Act 4b ──
+    // Act 4b
     document.getElementById('btn-act4b-siam').addEventListener('click', () => {
       send('TRIGGER_SIAM_ROAD_ADVISORY');
     });
 
-    // ── Act 5 ──
+    // Act 5
     document.getElementById('btn-act5-monsoon').addEventListener('click', () => {
       send('TRIGGER_MONSOON');
     });
@@ -741,7 +535,7 @@
       send('CONTINGENCY_3');
     });
 
-    // ── Fast Forward ──
+    // Fast Forward
     document.getElementById('btn-fast-forward').addEventListener('click', () => {
       log('MACRO', 'Beginning Fast Forward Automation...');
       send('POPULATE_DAY1_ANCHORS');
@@ -752,12 +546,12 @@
       setTimeout(() => send('VOTE_CONSENSUS'), 4500);
     });
 
-    // ── Reset ──
+    // Reset
     document.getElementById('btn-reset-all').addEventListener('click', () => {
       send('RESET_ALL');
     });
 
-    // ── Clear Log ──
+    // Clear Log
     document.getElementById('btn-clear-log').addEventListener('click', () => {
       logContainer.innerHTML = '';
     });

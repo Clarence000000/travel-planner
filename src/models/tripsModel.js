@@ -21,14 +21,35 @@ function notifyListeners() {
 }
 
 /**
- * Get all trips. Defaults to an empty list on a clean slate.
+ * Get all trips. Automatically deduplicates records for identical destination & dates,
+ * and defaults to an empty list on a clean slate.
  */
 export function getTrips() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_TRIPS);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+
+    // Deduplicate any trips with identical destination and date range
+    const seen = new Set();
+    const uniqueTrips = [];
+    for (const trip of parsed) {
+      if (!trip || !trip.id) continue;
+      const destKey = (trip.destination || '').toLowerCase().trim();
+      const key = `${destKey}|${trip.startDate || ''}|${trip.endDate || ''}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueTrips.push(trip);
+      }
+    }
+
+    // If duplicate records were found and pruned, save the cleaned array back
+    if (uniqueTrips.length !== parsed.length) {
+      localStorage.setItem(STORAGE_KEY_TRIPS, JSON.stringify(uniqueTrips));
+    }
+
+    return uniqueTrips;
   } catch (err) {
     console.error('[tripsModel] Failed to load trips:', err);
     return [];
@@ -86,6 +107,8 @@ export function setActiveTripId(tripId) {
 
 /**
  * Create a new trip and set it active.
+ * Guards against duplicate trip creation: if a trip with the same destination and date range already exists,
+ * updates and activates it rather than creating a duplicate entry.
  */
 export function createTrip({
   title = 'Penang Food & Heritage Exploration',
@@ -97,6 +120,28 @@ export function createTrip({
   members = ['You'],
 } = {}) {
   const trips = getTrips();
+
+  // Deduplication guard: if an identical trip destination & date range exists, update and activate it
+  const destKey = (destination || '').toLowerCase().trim();
+  const existingIndex = trips.findIndex(
+    (t) =>
+      (t.destination || '').toLowerCase().trim() === destKey &&
+      t.startDate === startDate &&
+      t.endDate === endDate
+  );
+  if (existingIndex >= 0) {
+    trips[existingIndex] = {
+      ...trips[existingIndex],
+      title: title || trips[existingIndex].title,
+      totalDays: Number(totalDays) || trips[existingIndex].totalDays || 3,
+      coverImage: coverImage || trips[existingIndex].coverImage,
+      members: members && members.length ? members : trips[existingIndex].members,
+    };
+    saveTrips(trips);
+    setActiveTripId(trips[existingIndex].id);
+    return trips[existingIndex];
+  }
+
   const id = `trip-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
   
   const newTrip = {

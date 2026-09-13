@@ -41,7 +41,7 @@ export function createBottomNav() {
           </div>
           <div class="action-menu-text">
             <strong>Propose Schedule Activity</strong>
-            <span>Add confirmed or tentative stop to timeline</span>
+            <span>Jump to itinerary schedule timeline</span>
           </div>
         </button>
 
@@ -55,7 +55,7 @@ export function createBottomNav() {
           </div>
           <div class="action-menu-text">
             <strong>Import from Social Reel</strong>
-            <span>Parse Instagram / TikTok link into spots</span>
+            <span>Propose Instagram / TikTok recommendation</span>
           </div>
         </button>
 
@@ -170,35 +170,27 @@ export function createBottomNav() {
       return;
     }
 
-    // Action menu items
+    // Action menu items:
+    // 1. Propose schedule activity: just take us to itinerary page without popping up modal
     if (e.target.closest('#action-propose-activity')) {
       toggleActionMenu(false);
       const active = getActiveTab();
       if (!active || active.id !== 'itinerary') {
         setActiveTab('itinerary');
       }
-      setTimeout(() => {
-        if (window.TravelApp && typeof window.TravelApp.openProposeActivity === 'function') {
-          window.TravelApp.openProposeActivity();
-        } else {
-          window.dispatchEvent(new CustomEvent('open-propose-activity'));
-          const proposeBtn = document.getElementById('btn-timeline-propose') || document.getElementById('btn-empty-propose-slot');
-          if (proposeBtn) proposeBtn.click();
-        }
-      }, 60);
       return;
     }
 
+    // 2. Import from Social Reel: opens reel importer to propose an activity (does NOT create another trip!)
     if (e.target.closest('#action-import-reel')) {
       toggleActionMenu(false);
       if (window.TravelApp && typeof window.TravelApp.openReelImporter === 'function') {
         window.TravelApp.openReelImporter();
-      } else if (window.TravelApp && typeof window.TravelApp.openOnboarding === 'function') {
-        window.TravelApp.openOnboarding();
       }
       return;
     }
 
+    // 3. Add to Wishlist: navigate to Ideas tab and open add idea modal
     if (e.target.closest('#action-add-wishlist')) {
       toggleActionMenu(false);
       const active = getActiveTab();
@@ -206,20 +198,14 @@ export function createBottomNav() {
         setActiveTab('ideas');
       }
       setTimeout(() => {
-        if (window.TravelApp && typeof window.TravelApp.openAddWishlistModal === 'function') {
-          window.TravelApp.openAddWishlistModal();
-        } else {
-          window.dispatchEvent(new CustomEvent('open-add-wishlist'));
-          const addIdeaBtn = document.getElementById('btn-open-add-wishlist') || document.getElementById('btn-add-idea');
-          if (addIdeaBtn) addIdeaBtn.click();
-        }
-      }, 60);
+        const addIdeaBtn = document.getElementById('btn-open-add-wishlist');
+        if (addIdeaBtn) addIdeaBtn.click();
+      }, 80);
       return;
     }
   });
 
   navWrapper.appendChild(nav);
-
   return {
     element: navWrapper,
   };

@@ -211,7 +211,7 @@ export function createIdeasView() {
             (item) => `
             <div class="wishlist-card ${item.source === 'reel' ? 'wishlist-card--has-reel' : ''}" data-id="${item.id}">
               <div class="wishlist-card__image-wrap">
-                <img src="${item.imageUrl || './src/assets/card-temple.png'}" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
+                <img src="${item.imageUrl || './src/assets/bg-ideas.jpg'}" onerror="this.onerror=null; this.src='./src/assets/hero-banner.jpg';" alt="${item.title}" class="wishlist-card__image" loading="lazy" />
                 <div class="wishlist-card__badge-row">
                   <span class="card-origin-badge card-origin-badge--category">
                     ${item.category ? item.category.charAt(0).toUpperCase() + item.category.slice(1) : 'Activity'}
