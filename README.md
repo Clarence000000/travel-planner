@@ -2,7 +2,7 @@
 
 **Team:** Clearence, Hoe Zhi Wan, Wei Gang  
 **Problem Statement:** Travel Planner  
-**Video Presentation:** [Youtube Link]  
+**Video Presentation:** (https://www.youtube.com/watch?v=IpRDh97kZvs)  
 **Presentation Slides:** [Public Link](https://canva.link/5lfaaylakyr6e6s)
 
 ---
