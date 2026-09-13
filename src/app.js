@@ -1,3 +1,12 @@
+// Design Tokens & Styles
+import "./styles/tokens.css";
+import "./styles/base.css";
+import "./styles/layout.css";
+import "./styles/components.css";
+import "./styles/itinerary.css";
+import "./styles/ideas.css";
+import "./styles/zero-state.css";
+
 /**
  * Mobile Travel Planner App
  * Features atmospheric sticky cat photo banner, clean slide-out sidebar,
