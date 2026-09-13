@@ -79,6 +79,8 @@ graph TD
 | **11/09/2026** | Varsha Selvakumar | Suggested using live weather data to reschedule rainy activities, asked how group budgets and delays are handled, and advised opening the pitch video with a clear problem and user persona alongside a full system architecture diagram. | Added AI weather reshuffling for rainy days, added 1-tap delay buttons on schedule cards, clearly framed the pitch around friend groups, and included a complete system architecture diagram in Section 5.1. |
 | **12/09/2026** | Janelle Tan | Conducted a pitch practice run and provided final feedback on mobile screen usability and touch target sizes. | Rehearsed the live demo to keep it under 4 minutes, and polished button sizes for easy tapping on mobile phones. |
 
+<img src="./docs/mentor-consultation.png" alt="Mentor Consultation Board" />
+
 **Design Evolution:**
 
 | 1st Generation | | 2nd Generation | | 3rd Generation | | 4th Generation (Current) |
