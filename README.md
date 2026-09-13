@@ -137,7 +137,7 @@ WanderSync is a mobile travel planner that makes group trips effortless. Friends
 
 To make sure we build a high-quality, reliable app on time, we are focusing strictly on what matters most to travelers: **finding inspiration, planning together without arguments, and stress-free schedule adjustments during the trip**.
 
-<img src="./docs/Gantt Chart Whiteboard (3).png" alt="WanderSync 3-Week Development Plan" />
+<img src="./docs/Gantt Chart Whiteboard (6).png" alt="WanderSync 3-Week Development Plan" />
 
 #### What We Are Building (In-Scope)
 
