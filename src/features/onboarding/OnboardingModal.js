@@ -8,7 +8,7 @@ import {
   initPenangSparseDay1,
   SAMPLE_ITINERARY,
 } from '../../models/itineraryData.js';
-import { startBackgroundTripBanter } from '../../models/chatData.js';
+import { startBackgroundTripBanter, resetChatToGenesis } from '../../models/chatData.js';
 import { addWishlistItem } from '../../models/wishlistData.js';
 import { setActiveTab } from '../../config/navigation.js';
 import {
@@ -683,6 +683,9 @@ export function createOnboardingModal(options = {}) {
       localStorage.setItem('travel_planner_itinerary_v3', JSON.stringify(tripBlocks));
     } catch (e) {}
 
+    // Reset and seed chat threads cleanly for the trip
+    resetChatToGenesis();
+
     if (isTokyo) {
       addWishlistItem({
         title: 'Tsukiji Outer Market Fresh Uni & Wagyu Skewers',
@@ -802,9 +805,13 @@ export function createOnboardingModal(options = {}) {
   }
 
   function openModal(step = 'menu', options = {}) {
+    if (typeof step === 'object' && step !== null) {
+      options = step;
+      step = options.step || 'menu';
+    }
     isNewTripFlow = Boolean(options.newTrip);
-    currentStep = step;
-    previousStep = step;
+    currentStep = typeof step === 'string' ? step : 'menu';
+    previousStep = currentStep;
     processingStep = 0;
     overlay.style.display = 'flex';
     render();

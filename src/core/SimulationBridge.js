@@ -157,7 +157,7 @@ export function initSimulationBridge({ onRefreshActiveView, showToast }) {
         sender: 'Tony',
         avatar: 'TN',
         isCurrentUser: false,
-        text: 'Added Entopia by Penang Butterfly Farm to Day 2 for 10:00 AM! 🦋',
+        text: 'I was looking at [Entopia Butterfly Farm](https://www.entopia.com) 🦋 — massive living sanctuary with 15,000 free-flying butterflies in Teluk Bahang. Looks incredible for our morning walk!',
       });
     } catch (e) {}
 

@@ -120,7 +120,7 @@ export function getThreadDay(thread) {
     if (!isNaN(d) && d > 0) return d;
   }
   if (typeof thread.blockId === 'string') {
-    const m = thread.blockId.match(/(?:^|[-_])(?:d|day-?)(\d+)(?:[-_]|$)/i);
+    const m = thread.blockId.match(/(?:^|[-_])(?:d|day-?)(\\d+)(?:[-_]|$)/i);
     if (m) return parseInt(m[1], 10);
   }
   try {
@@ -192,7 +192,7 @@ export function getInitialThreadsForTrip(activeTrip) {
             id: 'msg-gen-5',
             sender: 'Tony',
             avatar: 'TN',
-            text: 'Don\x27t forget to pack light rain gear or an umbrella just in case, afternoon rain showers are common in October.',
+            text: "Don't forget to pack light rain gear or an umbrella just in case, afternoon rain showers are common in October.",
             date: 'Today',
             time: 'Today, 10:05 AM',
             isCurrentUser: false,
@@ -210,11 +210,11 @@ export function getInitialThreadsForTrip(activeTrip) {
             id: 'msg-gen-7',
             sender: 'Wei Gang',
             avatar: 'WG',
-            text: 'Awesome planning Clarence! Let\x27s drop any extra cafe and dessert recommendations into our wishlist tab.',
+            text: "Awesome planning Clarence! Let's drop any extra cafe and dessert recommendations into our wishlist tab.",
             date: 'Today',
             time: 'Today, 10:30 AM',
             isCurrentUser: false,
-          }
+          },
         ],
       },
       {
@@ -239,6 +239,78 @@ export function getInitialThreadsForTrip(activeTrip) {
         ],
       },
       {
+        blockId: 'd1-chendul',
+        day: 1,
+        title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+        eventTitle: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+        category: 'food',
+        location: '492, Lebuh Keng Kwee, George Town',
+        participantCount: 3,
+        poll: {
+          id: 'poll-chendul',
+          targetBlockId: 'd1-chendul',
+          day: 1,
+          question: 'Lock in Penang Road Famous Teochew Chendul into schedule?',
+          status: 'active',
+          userVote: null,
+          totalEligible: 3,
+          requiredVotes: 3,
+          options: [
+            {
+              id: 'opt-confirm',
+              label: 'Yes, lock into schedule',
+              votes: 2,
+              voterNames: ['Tony', 'Wei Gang'],
+            },
+            {
+              id: 'opt-alt',
+              label: 'Explore alternative spots',
+              votes: 0,
+              voterNames: [],
+            },
+          ],
+        },
+        messages: [
+          {
+            id: 'msg-chendul-1',
+            sender: 'Tony',
+            avatar: 'TN',
+            isCurrentUser: false,
+            text: 'Guys, between Chew Jetty and Penang Hill we definitely need a solid lunch & dessert stop! Anyone craving Chendul or Asam Laksa?',
+            date: 'Today',
+            time: 'Today, 11:45 AM',
+          },
+          {
+            id: 'msg-chendul-2',
+            sender: 'Wei Gang',
+            avatar: 'WG',
+            isCurrentUser: false,
+            text: '100% yes! Penang Road Famous Teochew Chendul on Lebuh Keng Kwee is legendary — Michelin Bib Gourmand, fresh coconut milk and gula melaka shaved ice. I just voted Yes in the poll! 👍',
+            date: 'Today',
+            time: 'Today, 11:50 AM',
+          },
+          {
+            id: 'msg-chendul-3',
+            sender: 'Tony',
+            avatar: 'TN',
+            isCurrentUser: false,
+            text: 'Voted Yes too! That spicy-sour asam laksa broth is unbeatable. Clarence, we just need your final vote so that it is confirmed!',
+            date: 'Today',
+            time: 'Today, 11:52 AM',
+          },
+          {
+            id: 'msg-chendul-4',
+            sender: 'WanderBot AI',
+            avatar: 'WB',
+            isCurrentUser: false,
+            isAi: true,
+            text: '💡 **Consensus Poll Active**: 2 of 3 team votes recorded in favor (Tony, Wei Gang). Waiting for Clarence\'s confirmation to finalize the schedule slot (12:30 PM – 1:30 PM).',
+            date: 'Today',
+            time: 'Today, 11:53 AM',
+          },
+        ],
+      },
+      {
         blockId: 'day-2-penang',
         day: 2,
         title: 'Day 2: Entopia & Batu Ferringhi',
@@ -252,9 +324,9 @@ export function getInitialThreadsForTrip(activeTrip) {
             id: 'msg-d2-intro',
             sender: 'Tony',
             avatar: 'TN',
-            text: 'Morning nature day out at Entopia Butterfly Sanctuary and Escape Park, then sunset drinks along Batu Ferringhi beach!',
+            text: "Morning squad! Day 2 is wide open after breakfast. Any spots we shouldn't miss up north?",
+            time: 'Today, 09:00 AM',
             date: 'Today',
-            time: 'Today, 10:00 AM',
             isCurrentUser: false,
           },
         ],
@@ -372,6 +444,15 @@ export function getChatThreads() {
           if (gen) normalized.unshift(gen);
         }
 
+        // Ensure Penang chendul consensus thread is present for Penang trips
+        const dest = (activeTrip?.destination || 'Penang, Malaysia').toLowerCase();
+        if (dest.includes('penang')) {
+          if (!normalized.some((t) => t.blockId === 'd1-chendul' || (t.blockId && t.blockId.includes('chendul')))) {
+            const chThread = initial.find((x) => x.blockId === 'd1-chendul');
+            if (chThread) normalized.push(chThread);
+          }
+        }
+
         return normalized;
       }
     }
@@ -394,19 +475,23 @@ export function saveChatThreads(threads) {
 }
 
 export function getThreadById(blockId) {
+  if (!blockId) return null;
   const threads = getChatThreads();
-  const thread = threads.find((t) => t.blockId === blockId);
+  let thread = threads.find((t) => t.blockId === blockId);
+  if (!thread && typeof blockId === 'string' && blockId.includes('chendul')) {
+    thread = threads.find((t) => t.blockId && t.blockId.includes('chendul'));
+  }
   if (thread) return thread;
 
   // Resolve metadata directly from itinerary schedule blocks if available
   try {
     const allBlocks = getItineraryData();
-    const itineraryBlock = allBlocks.find((b) => b.id === blockId);
+    const itineraryBlock = allBlocks.find((b) => b.id === blockId || (blockId.includes('chendul') && b.id.includes('chendul')));
     if (itineraryBlock) {
       const activeTrip = getActiveTrip();
       const tripCity = activeTrip?.destination?.split(',')[0]?.trim() || 'Trip Wide';
       return {
-        blockId,
+        blockId: itineraryBlock.id || blockId,
         day: itineraryBlock.day || null,
         title: itineraryBlock.title,
         eventTitle: itineraryBlock.title,
@@ -426,7 +511,7 @@ export function getThreadById(blockId) {
 
 export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
   const threads = getChatThreads();
-  let thread = threads.find((t) => t.blockId === blockId);
+  let thread = threads.find((t) => t.blockId === blockId || (blockId && blockId.includes('chendul') && t.blockId && t.blockId.includes('chendul')));
 
   let rawText = '';
   let senderName = 'Clarence (You)';
@@ -438,14 +523,14 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
 
   if (typeof textOrMsg === 'string') {
     rawText = textOrMsg;
-    if (typeof metadata === 'string') {
-      senderName = metadata;
-      metadata = { sender: metadata };
-    }
+    if (metadata.isCurrentUser !== undefined) isCurrentUser = metadata.isCurrentUser;
+    if (metadata.isAi !== undefined) isAi = metadata.isAi;
+    if (metadata.type !== undefined) type = metadata.type;
+    if (metadata.proposal) proposal = metadata.proposal;
   } else if (textOrMsg && typeof textOrMsg === 'object') {
     rawText = textOrMsg.text || '';
-    if (textOrMsg.sender) senderName = textOrMsg.sender;
-    if (textOrMsg.avatar) avatar = textOrMsg.avatar;
+    senderName = textOrMsg.sender || senderName;
+    avatar = textOrMsg.avatar || avatar;
     if (textOrMsg.isCurrentUser !== undefined) isCurrentUser = textOrMsg.isCurrentUser;
     if (textOrMsg.isAi !== undefined) isAi = textOrMsg.isAi;
     if (textOrMsg.type !== undefined) type = textOrMsg.type;
@@ -530,6 +615,19 @@ export function addMessageToThread(blockId, textOrMsg, metadata = {}) {
     thread.messages = [];
   }
 
+  const trimmed = String(rawText).trim();
+  // Prevent repeating identical or duplicate recommendations from the same sender in the thread
+  const existingDup = thread.messages.find(
+    (m) =>
+      m.sender === senderName &&
+      (m.text.trim() === trimmed ||
+        (trimmed.includes('Entopia') && m.text.includes('Entopia')) ||
+        (trimmed.includes('Bora Bora') && m.text.includes('Bora Bora') && m.type === type && Boolean(m.proposal) === Boolean(proposal)))
+  );
+  if (existingDup) {
+    return existingDup;
+  }
+
   thread.messages.push(newMessage);
   saveChatThreads(threads);
   return newMessage;
@@ -582,14 +680,18 @@ export function createChatThread(threadData) {
 
 export function attachPollToThread(blockId, pollData) {
   const threads = getChatThreads();
-  const thread = threads.find((t) => t.blockId === blockId);
+  const thread = threads.find((t) => t.blockId === blockId || (blockId && blockId.includes('chendul') && t.blockId && t.blockId.includes('chendul')));
   if (!thread) return null;
 
   thread.poll = {
     id: pollData.id || 'poll-' + Date.now(),
+    targetBlockId: pollData.targetBlockId || blockId,
+    day: pollData.day || thread.day || 1,
     question: pollData.question || 'Group Decision Poll',
     status: pollData.status || 'active',
     userVote: pollData.userVote || null,
+    totalEligible: pollData.totalEligible || 3,
+    requiredVotes: pollData.requiredVotes || 3,
     options: pollData.options || [
       { id: 'opt-yes', label: 'Yes', votes: 0 },
       { id: 'opt-no', label: 'No', votes: 0 },
@@ -602,7 +704,7 @@ export function attachPollToThread(blockId, pollData) {
 
 export function removePollFromThread(blockId) {
   const threads = getChatThreads();
-  const thread = threads.find((t) => t.blockId === blockId);
+  const thread = threads.find((t) => t.blockId === blockId || (blockId && blockId.includes('chendul') && t.blockId && t.blockId.includes('chendul')));
   if (!thread) return null;
 
   thread.poll = null;
@@ -612,18 +714,223 @@ export function removePollFromThread(blockId) {
 
 export function voteInPoll(blockId, optionId) {
   const threads = getChatThreads();
-  const thread = threads.find((t) => t.blockId === blockId);
+  const thread = threads.find((t) => t.blockId === blockId || (blockId && blockId.includes('chendul') && t.blockId && t.blockId.includes('chendul')));
   if (!thread || !thread.poll) return null;
 
   const prevVote = thread.poll.userVote;
   thread.poll.options = thread.poll.options.map((opt) => {
     let votes = opt.votes;
-    if (opt.id === prevVote) votes = Math.max(0, votes - 1);
-    if (opt.id === optionId) votes += 1;
-    return { ...opt, votes };
+    let voterNames = Array.isArray(opt.voterNames) ? [...opt.voterNames] : [];
+
+    if (opt.id === prevVote) {
+      votes = Math.max(0, votes - 1);
+      voterNames = voterNames.filter((name) => !name.includes('Clarence') && !name.includes('You'));
+    }
+    if (opt.id === optionId) {
+      votes += 1;
+      if (!voterNames.some((name) => name.includes('Clarence') || name.includes('You'))) {
+        voterNames.push('Clarence (You)');
+      }
+    }
+    return { ...opt, votes, voterNames };
   });
 
   thread.poll.userVote = optionId;
+
+  const selectedOpt = thread.poll.options.find((o) => o.id === optionId);
+  const totalEligible = thread.poll.totalEligible || 3;
+  const isConfirm =
+    optionId === "opt-confirm" ||
+    optionId === "opt-yes" ||
+    optionId === "opt-chendul" ||
+    (selectedOpt && (selectedOpt.label.toLowerCase().includes("yes") || selectedOpt.label.toLowerCase().includes("lock")));
+
+  if (isConfirm && selectedOpt && selectedOpt.votes >= totalEligible) {
+    thread.poll.status = "closed";
+    thread.poll.consensusReached = true;
+    thread.poll.winnerId = optionId;
+  }
+
+  saveChatThreads(threads);
+  return thread;
+}
+
+/**
+ * Prepares and ensures a thread exists for a proposed block,
+ * complete with consensus poll (2/3 pre-voted in favor) and squad discussion.
+ */
+export function prepareConsensusVoteThread(block) {
+  if (!block) return null;
+  const threads = getChatThreads();
+  const threadId = block.id || 'd1-chendul';
+  const isChendul = (block.id && block.id.includes('chendul')) || (block.title && block.title.toLowerCase().includes('chendul'));
+  const isBoraBora = (block.id && block.id.includes('borabora')) || (block.title && block.title.toLowerCase().includes('bora bora'));
+
+  let thread = threads.find((t) => t.blockId === threadId);
+  if (!thread && isChendul) {
+    thread = threads.find((t) => t.blockId && t.blockId.includes('chendul'));
+  }
+
+  const defaultPoll = {
+    id: `poll-${threadId}`,
+    targetBlockId: block.id,
+    day: block.day || 1,
+    question: `Lock in ${block.title}?`,
+    status: 'active',
+    userVote: null,
+    totalEligible: 3,
+    requiredVotes: 3,
+    options: [
+      {
+        id: 'opt-confirm',
+        label: 'Yes, lock into schedule',
+        votes: 2,
+        voterNames: ['Tony', 'Wei Gang'],
+      },
+      {
+        id: 'opt-alt',
+        label: 'Explore alternative spots',
+        votes: 0,
+        voterNames: [],
+      },
+    ],
+  };
+
+  let initialMessages = [];
+  if (isChendul) {
+    initialMessages = [
+      {
+        id: 'msg-chendul-1',
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: 'Guys, between Chew Jetty and Penang Hill we definitely need a solid lunch & dessert stop! Anyone craving Chendul or Asam Laksa?',
+        date: 'Today',
+        time: 'Today, 11:45 AM',
+      },
+      {
+        id: 'msg-chendul-2',
+        sender: 'Wei Gang',
+        avatar: 'WG',
+        isCurrentUser: false,
+        text: '100% yes! Penang Road Famous Teochew Chendul on Lebuh Keng Kwee is legendary — Michelin Bib Gourmand, fresh coconut milk and gula melaka shaved ice. I just voted Yes in the poll! 👍',
+        date: 'Today',
+        time: 'Today, 11:50 AM',
+      },
+      {
+        id: 'msg-chendul-3',
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: 'Voted Yes too! That spicy-sour asam laksa broth is unbeatable. Clarence, we just need your final vote so that it is confirmed!',
+        date: 'Today',
+        time: 'Today, 11:52 AM',
+      },
+      {
+        id: 'msg-chendul-4',
+        sender: 'WanderBot AI',
+        avatar: 'WB',
+        isCurrentUser: false,
+        isAi: true,
+        text: '💡 **Consensus Poll Active**: 2 of 3 team votes recorded in favor (Tony, Wei Gang). Waiting for Clarence\'s confirmation to finalize the schedule slot (12:30 PM – 1:30 PM).',
+        date: 'Today',
+        time: 'Today, 11:53 AM',
+      },
+    ];
+  } else if (isBoraBora) {
+    initialMessages = [
+      {
+        id: 'msg-bora-1',
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: 'To wrap up Day 2, check out Bora Bora Batu Ferringhi! Right on the beach with sunset drinks.',
+        date: 'Today',
+        time: 'Today, 04:30 PM',
+      },
+      {
+        id: 'msg-bora-2',
+        sender: 'Wei Gang',
+        avatar: 'WG',
+        isCurrentUser: false,
+        text: 'Looks incredible for sunset cocktails after Escape Park. I voted Yes in the poll! 👍',
+        date: 'Today',
+        time: 'Today, 04:35 PM',
+      },
+      {
+        id: 'msg-bora-3',
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: 'Voted Yes too! Clarence, just waiting on your vote to confirm it.',
+        date: 'Today',
+        time: 'Today, 04:38 PM',
+      },
+    ];
+  } else {
+    initialMessages = [
+      {
+        id: `msg-${threadId}-1`,
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: `Proposed stop: "${block.title}". What do you guys think?`,
+        date: 'Today',
+        time: 'Today, 10:00 AM',
+      },
+      {
+        id: `msg-${threadId}-2`,
+        sender: 'Wei Gang',
+        avatar: 'WG',
+        isCurrentUser: false,
+        text: `Looks great to me! I just cast my vote in the poll to add it to our schedule. 👍`,
+        date: 'Today',
+        time: 'Today, 10:05 AM',
+      },
+      {
+        id: `msg-${threadId}-3`,
+        sender: 'Tony',
+        avatar: 'TN',
+        isCurrentUser: false,
+        text: `Voted Yes as well! Clarence, waiting for your final vote so that it is confirmed.`,
+        date: 'Today',
+        time: 'Today, 10:08 AM',
+      },
+      {
+        id: `msg-${threadId}-4`,
+        sender: 'WanderBot AI',
+        avatar: 'WB',
+        isCurrentUser: false,
+        isAi: true,
+        text: `💡 **Consensus Poll Active**: 2 of 3 team votes recorded in favor (Tony, Wei Gang). Waiting for Clarence's final vote to confirm slot.`,
+        date: 'Today',
+        time: 'Today, 10:10 AM',
+      },
+    ];
+  }
+
+  if (!thread) {
+    thread = {
+      blockId: threadId,
+      day: block.day || 1,
+      title: block.title,
+      eventTitle: block.title,
+      category: normalizeCategory(block.category),
+      location: block.location || 'George Town, Penang',
+      participantCount: 3,
+      poll: defaultPoll,
+      messages: initialMessages,
+    };
+    threads.unshift(thread);
+  } else {
+    if (!thread.poll) {
+      thread.poll = defaultPoll;
+    }
+    if (!Array.isArray(thread.messages) || thread.messages.length === 0) {
+      thread.messages = initialMessages;
+    }
+  }
+
   saveChatThreads(threads);
   return thread;
 }
@@ -635,6 +942,8 @@ export function resetChatToGenesis() {
   const activeTrip = getActiveTrip();
   const initial = getInitialThreadsForTrip(activeTrip);
   saveChatThreads(initial);
+  window.dispatchEvent(new CustomEvent('wandersync:chat_reset', { detail: { threads: initial } }));
+  window.dispatchEvent(new CustomEvent('wandersync:chat_update', { detail: { threadId: null } }));
   return initial;
 }
 

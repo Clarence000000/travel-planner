@@ -84,17 +84,22 @@ export function createImportReelModal() {
     modal.innerHTML = `
       <div class="modal-card import-reel-card">
         <div class="modal-card__header">
-          <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="modal-card__header-left">
             <div class="card-origin-badge card-origin-badge--reel" style="padding: 4px 8px; font-size: 11px;">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
               <span>Social Reel Import</span>
             </div>
-            <h2 class="modal-card__title" style="font-size: 16px; margin: 0;">Propose Activity from Reel</h2>
+            <h2 class="modal-card__title">Propose Activity from Reel</h2>
           </div>
-          <button type="button" class="modal-card__close" id="btn-close-reel-modal" aria-label="Close modal">&times;</button>
+          <button type="button" class="modal-card__close" id="btn-close-reel-modal" aria-label="Close modal">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
         </div>
 
-        <p class="modal-card__desc" style="font-size: 11.5px; color: var(--color-text-secondary); margin: 4px 0 12px;">
+        <p class="modal-card__desc" style="font-size: 11.5px; color: var(--color-text-secondary); margin: 4px 0 12px; line-height: 1.45;">
           Import viral travel recommendations directly into your current trip as a <strong>Proposed Activity</strong> for group voting.
         </p>
 
@@ -128,10 +133,9 @@ export function createImportReelModal() {
           <input 
             type="url" 
             id="reel-import-url" 
-            class="input form-input" 
+            class="form-input reel-modal-input" 
             value="${selectedPreset ? selectedPreset.reelUrl : ''}" 
             placeholder="https://www.instagram.com/reel/..." 
-            style="width: 100%; font-size: 12px; padding: 8px 10px; border-radius: 8px;"
           />
         </div>
 
@@ -143,10 +147,9 @@ export function createImportReelModal() {
           <input 
             type="text" 
             id="reel-import-title" 
-            class="input form-input" 
+            class="form-input reel-modal-input" 
             value="${selectedPreset ? selectedPreset.title : ''}" 
             placeholder="e.g. Siam Road Charcoal Char Koay Teow" 
-            style="width: 100%; font-size: 12px; padding: 8px 10px; border-radius: 8px;"
           />
         </div>
 
@@ -156,7 +159,7 @@ export function createImportReelModal() {
             <label class="form-label" for="reel-import-day" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 4px; display: block;">
               Schedule Day
             </label>
-            <select id="reel-import-day" class="input form-input" style="width: 100%; font-size: 12px; padding: 8px 10px; border-radius: 8px;">
+            <select id="reel-import-day" class="form-input reel-modal-select">
               ${Array.from({ length: totalDays }, (_, i) => i + 1).map((d) => `
                 <option value="${d}">Day ${d}</option>
               `).join('')}
@@ -167,7 +170,7 @@ export function createImportReelModal() {
             <label class="form-label" for="reel-import-category" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 4px; display: block;">
               Category
             </label>
-            <select id="reel-import-category" class="input form-input" style="width: 100%; font-size: 12px; padding: 8px 10px; border-radius: 8px;">
+            <select id="reel-import-category" class="form-input reel-modal-select">
               <option value="activity" ${selectedPreset?.category === 'activity' ? 'selected' : ''}>Sightseeing</option>
               <option value="meal" ${selectedPreset?.category === 'meal' ? 'selected' : ''}>Dining</option>
               <option value="transit" ${selectedPreset?.category === 'transit' ? 'selected' : ''}>Transit</option>
@@ -182,13 +185,13 @@ export function createImportReelModal() {
             <label class="form-label" for="reel-import-start" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 4px; display: block;">
               Proposed Start
             </label>
-            <input type="time" id="reel-import-start" class="input form-input" value="14:30" style="width: 100%; font-size: 12px; padding: 8px 10px; border-radius: 8px;" />
+            <input type="time" id="reel-import-start" class="form-input reel-modal-input" value="14:30" />
           </div>
           <div class="form-group">
             <label class="form-label" for="reel-import-end" style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-text-secondary); margin-bottom: 4px; display: block;">
               Proposed End
             </label>
-            <input type="time" id="reel-import-end" class="input form-input" value="16:00" style="width: 100%; font-size: 12px; padding: 8px 10px; border-radius: 8px;" />
+            <input type="time" id="reel-import-end" class="form-input reel-modal-input" value="16:00" />
           </div>
         </div>
 

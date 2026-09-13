@@ -522,7 +522,8 @@ export function confirmProposedBlock(blockId) {
     (b) =>
       b.id === blockId ||
       (blockId.includes('chendul') && b.id.includes('chendul')) ||
-      (blockId === 'd1-gap-meal' && b.id.includes('chendul'))
+      (blockId === 'd1-gap-meal' && b.id.includes('chendul')) ||
+      (blockId.includes('borabora') && b.id.includes('borabora'))
   );
   if (index === -1) return list;
 

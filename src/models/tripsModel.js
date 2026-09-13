@@ -100,6 +100,7 @@ export function setActiveTripId(tripId) {
       localStorage.removeItem(STORAGE_KEY_ACTIVE_TRIP);
     }
     notifyListeners();
+    window.dispatchEvent(new CustomEvent('trip:selected', { detail: { tripId } }));
   } catch (err) {
     console.error('[tripsModel] Failed to set active trip ID:', err);
   }
@@ -156,9 +157,20 @@ export function createTrip({
     createdAt: new Date().toISOString(),
   };
 
+  // Clean any old chat or itinerary keys for this new ID
+  try {
+    localStorage.removeItem(`travel_planner_chat_${id}`);
+    localStorage.removeItem(`travel_planner_itinerary_${id}`);
+    localStorage.removeItem(`travel_planner_settings_${id}`);
+    localStorage.removeItem(`travel_planner_wishlist_${id}`);
+    localStorage.removeItem('travel_planner_chat_v6');
+  } catch (e) {}
+
   trips.unshift(newTrip);
   saveTrips(trips);
   setActiveTripId(id);
+
+  window.dispatchEvent(new CustomEvent('trip:created', { detail: { trip: newTrip, tripId: id } }));
   return newTrip;
 }
 
@@ -187,11 +199,22 @@ export function deleteTrip(tripId) {
     localStorage.removeItem(`travel_planner_chat_${tripId}`);
     localStorage.removeItem(`travel_planner_itinerary_${tripId}`);
     localStorage.removeItem(`travel_planner_settings_${tripId}`);
+    localStorage.removeItem(`travel_planner_wishlist_${tripId}`);
+    localStorage.removeItem(`travel_planner_notifications_${tripId}`);
   } catch (e) {}
 
   if (getActiveTripId() === tripId) {
-    setActiveTripId(trips.length > 0 ? trips[0].id : null);
+    const nextTripId = trips.length > 0 ? trips[0].id : null;
+    setActiveTripId(nextTripId);
+    if (!nextTripId) {
+      try {
+        localStorage.removeItem('travel_planner_chat_v6');
+        localStorage.removeItem('travel_planner_itinerary_v3');
+      } catch (e) {}
+    }
   }
+
+  window.dispatchEvent(new CustomEvent('trip:deleted', { detail: { tripId } }));
 }
 
 /**
@@ -204,11 +227,15 @@ export function clearAllTrips() {
       localStorage.removeItem(`travel_planner_chat_${t.id}`);
       localStorage.removeItem(`travel_planner_itinerary_${t.id}`);
       localStorage.removeItem(`travel_planner_settings_${t.id}`);
+      localStorage.removeItem(`travel_planner_wishlist_${t.id}`);
+      localStorage.removeItem(`travel_planner_notifications_${t.id}`);
     });
-    localStorage.removeItem("travel_planner_chat_v6");
+    localStorage.removeItem('travel_planner_chat_v6');
+    localStorage.removeItem('travel_planner_itinerary_v3');
     localStorage.removeItem(STORAGE_KEY_TRIPS);
     localStorage.removeItem(STORAGE_KEY_ACTIVE_TRIP);
     notifyListeners();
+    window.dispatchEvent(new CustomEvent('trip:deleted', { detail: { all: true } }));
   } catch (err) {
     console.error('[tripsModel] Failed to clear trips:', err);
   }

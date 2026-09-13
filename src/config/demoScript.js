@@ -85,7 +85,7 @@ export function startDay2Simulation(options = {}) {
 
   const delays = options.delays || [5000, 15000, 25000];
 
-  // Step 1: Entopia Butterfly Farm (T+4s)
+  // Step 1: Tony recommends Entopia Butterfly Farm (with link)
   scheduleTimer(() => {
     const entopia = PENANG_DAY2_BLOCKS[0];
     addOrUpdateBlock(entopia);
@@ -104,15 +104,15 @@ export function startDay2Simulation(options = {}) {
         sender: 'Tony',
         avatar: 'TN',
         isCurrentUser: false,
-        text: 'Added Entopia by Penang Butterfly Farm to Day 2 for 09:30 AM! 🦋',
+        text: 'I was looking at [Entopia Butterfly Farm](https://www.entopia.com) 🦋 — massive living sanctuary with 15,000 free-flying butterflies in Teluk Bahang. Looks incredible for our morning walk!',
       });
     } catch (e) {
       console.warn('[DemoScript] Could not update Day 2 chat:', e);
     }
 
     addNotification({
-      title: 'Tony added Entopia Butterfly Farm',
-      text: 'Day 2 morning nature walk in Teluk Bahang booked for 09:30 AM.',
+      title: 'Tony shared Entopia Butterfly Farm',
+      text: 'Check out the morning living sanctuary in Teluk Bahang.',
       type: 'info',
     });
 
@@ -121,7 +121,7 @@ export function startDay2Simulation(options = {}) {
       step: 1,
       total: 3,
       user: 'Tony',
-      title: 'Tony added Entopia by Penang Butterfly Farm to Day 2',
+      title: 'Tony shared Entopia Butterfly Farm recommendation',
       unreadCount: 1,
     });
     window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: { step: 1, block: entopia } }));
@@ -129,7 +129,7 @@ export function startDay2Simulation(options = {}) {
     options.onStep?.(1, entopia);
   }, delays[0]);
 
-  // Step 2: Escape Adventure Park (T+8s)
+  // Step 2: Wei Gang recommends Escape Adventure Park (with link)
   scheduleTimer(() => {
     const escapePark = PENANG_DAY2_BLOCKS[1];
     addOrUpdateBlock(escapePark);
@@ -148,7 +148,7 @@ export function startDay2Simulation(options = {}) {
         sender: 'Wei Gang',
         avatar: 'WG',
         isCurrentUser: false,
-        text: 'Just added Escape Adventure Park & Gravityplay right after Entopia! Ready for the gravity slides. 🧗',
+        text: 'Woah Entopia looks gorgeous! And [Escape Adventure Park](https://www.escape.my) 🧗 is literally right next door. We should definitely hit the gravity slides and the world-record tube slide right after!',
       });
     } catch (e) {
       console.warn('[DemoScript] Could not update Day 2 chat:', e);
@@ -173,12 +173,11 @@ export function startDay2Simulation(options = {}) {
     options.onStep?.(2, escapePark);
   }, delays[1]);
 
-  // Step 3: Bora Bora Batu Ferringhi (T+12s)
+  // Step 3: Tony suggests Bora Bora with link -> WanderBot proposes -> Wei Gang agrees -> Confirmed!
   scheduleTimer(() => {
-    const borabora = PENANG_DAY2_BLOCKS[2];
+    const borabora = { ...PENANG_DAY2_BLOCKS[2], status: 'proposed' };
     addOrUpdateBlock(borabora);
     simulationState.day2Step = 3;
-    simulationState.isDay2Running = false;
 
     try {
       createChatThread({
@@ -189,35 +188,89 @@ export function startDay2Simulation(options = {}) {
         location: borabora.location,
         initialMessage: 'Sunset drinks and beachfront dining along Batu Ferringhi.',
       });
+
+      // 3a. Tony suggests with link
       addMessageToThread('day-2-penang', {
         sender: 'Tony',
         avatar: 'TN',
         isCurrentUser: false,
-        text: 'Proposed Sunset Drinks at Bora Bora Batu Ferringhi for 6:30 PM! Great beach vibes to wrap up Day 2. 🍹',
+        text: 'Oh yes!! And to wrap up Day 2, I think we can go here: [Bora Bora Batu Ferringhi](https://maps.google.com/?q=Bora+Bora+Batu+Ferringhi) 🍹 — right on the beach, cold beers and cocktails on the sand with sunset acoustic vibes! What do you guys think?',
       });
+
+      // 3b. WanderBot AI shows up at T+1.2s and proposes slot
+      scheduleTimer(() => {
+        addMessageToThread('day-2-penang', {
+          sender: 'WanderBot',
+          avatar: 'WB',
+          isCurrentUser: false,
+          isAi: true,
+          type: 'ai_proposal',
+          proposal: {
+            slotId: 'penang-d2-borabora',
+            day: 2,
+            title: 'Sunset Drinks at Bora Bora Batu Ferringhi',
+            tag: 'Beachfront Sunset & Cocktails · 4.6★',
+            distance: '25 min Grab from Escape Park · Batu Ferringhi Beach',
+            price: 'RM 45 / pax · Casual Beachwear',
+            status: 'proposed',
+          },
+          text: '💡 Spotted venue link: **Bora Bora Batu Ferringhi**! I can add this to your Day 2 itinerary as a **Proposed** sunset drinks slot (6:30 PM – 9:00 PM).',
+        });
+
+        addNotification({
+          title: 'WanderBot Proposed Sunset Drinks',
+          text: 'Bora Bora Batu Ferringhi proposed for Day 2 at 6:30 PM.',
+          type: 'info',
+        });
+      }, 1200);
+
+      // 3c. Wei Gang agrees at T+2.6s
+      scheduleTimer(() => {
+        addMessageToThread('day-2-penang', {
+          sender: 'Wei Gang',
+          avatar: 'WG',
+          isCurrentUser: false,
+          text: '100% agree! Cocktails on the beach at sunset after a whole day at Escape is perfection. Count me in! 👍',
+        });
+      }, 2600);
+
+      // 3d. WanderBot locks in and confirms at T+3.8s
+      scheduleTimer(() => {
+        confirmProposedBlock('penang-d2-borabora');
+        simulationState.isDay2Running = false;
+
+        addMessageToThread('day-2-penang', {
+          sender: 'WanderBot',
+          avatar: 'WB',
+          isCurrentUser: false,
+          isAi: true,
+          text: '✅ Consensus reached (2/2 squad agreed)! **Bora Bora Batu Ferringhi** has been confirmed and locked into Day 2 schedule.',
+        });
+
+        addNotification({
+          title: 'Sunset Drinks Confirmed!',
+          text: 'Bora Bora Batu Ferringhi confirmed on Day 2 schedule.',
+          type: 'success',
+        });
+
+        sendRemoteEvent(REMOTE_EVENT_TYPES.DAY2_ACTIVITY, {
+          block: { ...borabora, status: 'confirmed' },
+          step: 3,
+          total: 3,
+          user: 'Squad',
+          title: 'Bora Bora Batu Ferringhi confirmed on Day 2',
+          unreadCount: 3,
+          completed: true,
+        });
+        window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: { step: 3, block: borabora } }));
+
+        options.onStep?.(3, borabora);
+        options.onComplete?.();
+      }, 3800);
+
     } catch (e) {
       console.warn('[DemoScript] Could not update Day 2 chat:', e);
     }
-
-    addNotification({
-      title: 'Sunset Drinks Proposed',
-      text: 'Tony proposed beachfront drinks at Bora Bora Batu Ferringhi.',
-      type: 'info',
-    });
-
-    sendRemoteEvent(REMOTE_EVENT_TYPES.DAY2_ACTIVITY, {
-      block: borabora,
-      step: 3,
-      total: 3,
-      user: 'Tony',
-      title: 'Tony proposed Sunset Drinks at Bora Bora Batu Ferringhi',
-      unreadCount: 3,
-      completed: true,
-    });
-    window.dispatchEvent(new CustomEvent('wandersync:day2_activity', { detail: { step: 3, block: borabora } }));
-
-    options.onStep?.(3, borabora);
-    options.onComplete?.();
   }, delays[2]);
 
   console.log('[DemoScript] Started Day 2 ambient generation loop.');

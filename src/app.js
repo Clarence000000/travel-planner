@@ -24,6 +24,7 @@ import { createIdeasView } from './views/IdeasView.js';
 import { createTripsView } from './views/TripsView.js';
 import { getActiveTrip, setActiveTripId, createTrip } from './models/tripsModel.js';
 import { saveTripSettings } from './models/tripSettings.js';
+import { resetChatToGenesis } from './models/chatData.js';
 import { onTabChange, setActiveTab, getActiveTab, getNavTabs } from './config/navigation.js';
 import { initSimulationBridge } from './core/SimulationBridge.js';
 
@@ -63,6 +64,7 @@ export function initApp() {
           totalDays: newTrip.totalDays,
           coverImage: newTrip.coverImage,
         });
+        resetChatToGenesis();
       }
       window.location.hash = '#itinerary';
       setActiveTab('itinerary');
@@ -78,7 +80,7 @@ export function initApp() {
   // 3. Clean Side Menu / Sidebar Drawer Component
   const sidebarComponent = createSidebar({
     onOpenOnboarding: () => {
-      onboardingModal.open();
+      onboardingModal.open('menu', { newTrip: true });
     },
     onSelectTab: (tabId) => {
       setActiveTab(tabId);
@@ -174,7 +176,7 @@ export function initApp() {
           setActiveTab('itinerary');
         },
         onOpenOnboarding: () => {
-          onboardingModal.open();
+          onboardingModal.open('menu', { newTrip: true });
         },
       });
       viewContainer.appendChild(tripsView.element);
@@ -245,6 +247,7 @@ export function initApp() {
 
   // Expose clean helper API for testing and remote simulation
   window.TravelApp = {
+    ...(window.TravelApp || {}),
     setActiveTab,
     getActiveTab,
     getNavTabs,
@@ -257,7 +260,7 @@ export function initApp() {
       window.location.hash = '#itinerary';
       setActiveTab('itinerary');
     },
-    openOnboarding: () => onboardingModal.open(),
+    openOnboarding: () => onboardingModal.open('menu', { newTrip: true }),
     openReelImporter: () => importReelModal.open(),
     openSidebar: () => sidebarComponent.open(),
     closeSidebar: () => sidebarComponent.close(),

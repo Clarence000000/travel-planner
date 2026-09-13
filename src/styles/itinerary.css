@@ -30,13 +30,18 @@
 /* ──────────────── Vertical Timeline Feed & Spine ──────────────── */
 
 .timeline-feed,
-.timeline-spine {
+.timeline-spine,
+.timeline-container {
   display: flex;
   flex-direction: column;
   position: relative;
   user-select: none;
   padding-left: 48px;
   margin-top: var(--space-2);
+}
+
+.timeline-container:has(.empty-day-card) {
+  padding-left: 0;
 }
 
 .timeline-feed::before {

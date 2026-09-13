@@ -5,6 +5,7 @@
 import {
   THREAD_CATEGORIES,
   getChatThreads,
+  saveChatThreads,
   getThreadById,
   addMessageToThread,
   voteInPoll,
@@ -21,6 +22,7 @@ import {
 import { getTripSettings } from '../../models/tripSettings.js';
 import { getActiveTrip } from '../../models/tripsModel.js';
 import { setActiveTab } from '../../config/navigation.js';
+import { PENANG_DAY2_BORABORA } from '../../models/penangSeedData.js';
 import { remoteSync } from '../../utils/remoteSync.js';
 
 import { escapeHtml, showDashToast } from './ToastNotice.js';
@@ -33,11 +35,18 @@ import { enableDragScroll } from '../../utils/dragScroll.js';
 
 export { showDashToast };
 
+let targetActiveThreadId = null;
+
+export function setTargetChatThread(threadId) {
+  targetActiveThreadId = threadId;
+}
+
 export function createChatView() {
   const container = document.createElement('div');
   container.className = 'feature-view chat-view';
 
-  let activeThreadId = null;
+  let activeThreadId = targetActiveThreadId || null;
+  targetActiveThreadId = null;
   let currentCategoryFilter = 'all';
   let hubDayFilter = 'all';
 
@@ -336,21 +345,34 @@ export function createChatView() {
       });
     }
 
-    // Insert Proposal Button
-    const insertBtn = convElem.querySelector('#btn-insert-proposal');
-    if (insertBtn) {
-      insertBtn.addEventListener('click', () => {
-        handleInsertProposal();
+    // Insert Proposal Buttons (supports Chendul, Bora Bora, and dynamic slots)
+    convElem.querySelectorAll('.btn-insert-proposal-action, #btn-insert-proposal').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const slotId = btn.getAttribute('data-slot-id') || 'd1-chendul';
+        const day = Number(btn.getAttribute('data-day')) || 1;
+        handleInsertProposal(slotId, day);
       });
-    }
+    });
 
-    // Jump to Itinerary Button
-    const jumpBtn = convElem.querySelector('#btn-jump-itinerary');
-    if (jumpBtn) {
-      jumpBtn.addEventListener('click', () => {
+    // Jump to Itinerary Buttons (from poll confirmed banner or header)
+    convElem.querySelectorAll('.btn-jump-itinerary, #btn-jump-itinerary, .btn-poll-jump-itinerary').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const day = Number(btn.getAttribute('data-day')) || 1;
+        if (day === 2) {
+          const items = getItineraryData();
+          if (!items.some((b) => b.id && b.id.includes('borabora'))) {
+            addItineraryBlock({
+              ...PENANG_DAY2_BORABORA,
+              status: 'confirmed',
+            });
+          }
+        }
+        window.dispatchEvent(new CustomEvent('itinerary:set_day', { detail: { day } }));
         setActiveTab('itinerary');
       });
-    }
+    });
 
     // Poll Dismiss Button
     const dismissBtn = convElem.querySelector('[data-dismiss-poll]');
@@ -366,14 +388,69 @@ export function createChatView() {
     convElem.querySelectorAll('.poll-option-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const optionId = btn.getAttribute('data-option-id');
-        const updatedPoll = voteInPoll(blockId, optionId);
-        if (updatedPoll) {
-          const selectedOption = updatedPoll.options.find((o) => o.id === optionId);
+        const updatedThread = voteInPoll(blockId, optionId);
+        if (updatedThread && updatedThread.poll) {
+          const poll = updatedThread.poll;
+          const selectedOption = poll.options.find((o) => o.id === optionId);
           showDashToast(`Voted for "${selectedOption ? selectedOption.label : 'Option'}"!`);
 
-          if (optionId === 'opt-chendul' || (selectedOption && selectedOption.votes >= 2)) {
-            confirmProposedBlock('d1-chendul');
+          const isConfirmOption =
+            optionId === 'opt-confirm' ||
+            optionId === 'opt-yes' ||
+            optionId === 'opt-chendul' ||
+            (selectedOption && (selectedOption.label.toLowerCase().includes('yes') || selectedOption.label.toLowerCase().includes('lock')));
+          const targetBlockId = poll.targetBlockId || blockId;
+
+          if (isConfirmOption || selectedOption.votes >= (poll.totalEligible || 3)) {
+            // Confirm the proposed block in itinerary!
+            confirmProposedBlock(targetBlockId);
+
+            // Mark poll as closed and consensus reached
+            poll.status = 'closed';
+            poll.consensusReached = true;
+            poll.winnerId = optionId;
+
+            const allThreads = getChatThreads();
+            const currentTh = allThreads.find(
+              (t) => t.blockId === blockId || (blockId && blockId.includes('chendul') && t.blockId && t.blockId.includes('chendul'))
+            );
+            if (currentTh && currentTh.poll) {
+              currentTh.poll.status = 'closed';
+              currentTh.poll.consensusReached = true;
+              currentTh.poll.winnerId = optionId;
+              currentTh.poll.userVote = optionId;
+            }
+            saveChatThreads(allThreads);
+
+            // Post WanderBot celebration message into feed
+            addMessageToThread(blockId, {
+              sender: 'WanderBot AI',
+              avatar: 'WB',
+              isCurrentUser: false,
+              isAi: true,
+              text: `🎉 **Consensus Reached! (3/3 unanimous votes)**\n\n**${updatedThread.eventTitle || updatedThread.title}** has been confirmed and locked into the Day ${updatedThread.day || 1} schedule.`,
+            });
+
+            // Dispatch events for real-time reactivity across all features
+            window.dispatchEvent(
+              new CustomEvent('wandersync:vote_consensus', {
+                detail: { blockId: targetBlockId, threadId: blockId },
+              })
+            );
+            window.dispatchEvent(
+              new CustomEvent('itinerary:confirmed', {
+                detail: { blockId: targetBlockId },
+              })
+            );
+            window.dispatchEvent(
+              new CustomEvent('wandersync:chat_update', {
+                detail: { threadId: blockId },
+              })
+            );
+
+            showDashToast(`Consensus reached! ${updatedThread.title} confirmed into schedule.`);
           }
+
           render();
         }
       });
@@ -533,36 +610,71 @@ export function createChatView() {
       sender: 'You (Clarence)',
     });
     render();
+
+    // Contextual AI & Squad response if message contains links or venue suggestions
+    const lower = text.toLowerCase();
+    const hasLink = /https?:\/|www\./.test(lower) || /\[.+\]\(.+\)/.test(text);
+    if (hasLink || lower.includes('go here') || lower.includes('what about') || lower.includes('how about')) {
+      setTimeout(() => {
+        addMessageToThread(blockId, {
+          sender: 'WanderBot',
+          avatar: 'WB',
+          isCurrentUser: false,
+          isAi: true,
+          text: '💡 Great recommendation! I detected a shared venue link. Would you like me to propose adding this to the schedule?',
+        });
+        render();
+
+        setTimeout(() => {
+          addMessageToThread(blockId, {
+            sender: 'Wei Gang',
+            avatar: 'WG',
+            isCurrentUser: false,
+            text: "Love this idea! Looks great, I'm down to add it 👍",
+          });
+          render();
+        }, 1200);
+      }, 700);
+    }
   }
 
-  function handleInsertProposal() {
+  function handleInsertProposal(slotId = 'd1-chendul', targetDay = 1) {
     const items = getItineraryData();
-    if (!items.some((b) => b.id === 'd1-chendul')) {
-      addItineraryBlock({
-        id: 'd1-chendul',
-        day: 1,
-        startTime: '12:30',
-        endTime: '13:30',
-        title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
-        location: '492, Lebuh Keng Kwee, George Town',
-        category: 'meal',
-        cost: 'RM 12 / pax',
-        status: 'proposed',
-        notes: 'Iconic shaved ice dessert with pandan jelly, coconut milk, and gula melaka.',
-        grabTime: '8 min Grab from Chew Jetty',
-        transitToNextMinutes: 25,
-        transitMode: 'Transit (25 min) to Penang Hill',
-        requirements: ['Bring small RM cash', 'Peak lunchtime queue'],
-      });
+    if (slotId && slotId.includes('borabora')) {
+      if (!items.some((b) => b.id.includes('borabora'))) {
+        addItineraryBlock({
+          ...PENANG_DAY2_BORABORA,
+          status: 'proposed',
+        });
+      }
+      showDashToast('Bora Bora Batu Ferringhi added as Proposed Slot on Day 2!');
+    } else {
+      if (!items.some((b) => b.id === 'd1-chendul' || b.id === 'penang-chendul-gap')) {
+        addItineraryBlock({
+          id: 'd1-chendul',
+          day: 1,
+          startTime: '12:30',
+          endTime: '13:30',
+          title: 'Penang Road Famous Teochew Chendul & Asam Laksa',
+          location: '492, Lebuh Keng Kwee, George Town',
+          category: 'meal',
+          cost: 'RM 12 / pax',
+          status: 'proposed',
+          notes: 'Iconic shaved ice dessert with pandan jelly, coconut milk, and gula melaka.',
+          grabTime: '8 min Grab from Chew Jetty',
+          transitToNextMinutes: 25,
+          transitMode: 'Transit (25 min) to Penang Hill',
+          requirements: ['Bring small RM cash', 'Peak lunchtime queue'],
+        });
+      }
+      showDashToast('Teochew Chendul added as Proposed Slot on Day 1!');
     }
-
-    showDashToast('Teochew Chendul added as Proposed Slot on Day 1!');
     render();
   }
 
   // Simulation & Event Listeners
   const handleProposalInserted = (e) => {
-    activeThreadId = 'day-1-penang';
+    activeThreadId = (e && e.detail && e.detail.blockId) ? e.detail.blockId : 'day-1-penang';
     render();
     if (e && e.detail && e.detail.autoOpenPoll) {
       setTimeout(() => {
@@ -574,8 +686,10 @@ export function createChatView() {
   window.addEventListener('wandersync:proposal_inserted', handleProposalInserted);
 
   const handleVoteConsensus = (e) => {
-    voteInPoll('day-1-penang', 'opt-chendul');
-    confirmProposedBlock('d1-chendul');
+    const threadId = e?.detail?.threadId || 'd1-chendul';
+    const blockId = e?.detail?.blockId || 'd1-chendul';
+    voteInPoll(threadId, 'opt-confirm');
+    confirmProposedBlock(blockId);
     showDashToast('Consensus reached! Teochew Chendul locked in.');
     render();
   };
@@ -594,6 +708,24 @@ export function createChatView() {
   };
   remoteSync.on('INSERT_PROPOSAL', handleRemoteInsertProposal);
 
+  const handleChatUpdate = (e) => {
+    const threadId = e?.detail?.threadId;
+    if (!threadId || threadId === activeThreadId || !activeThreadId) {
+      render();
+    }
+  };
+  window.addEventListener('wandersync:chat_update', handleChatUpdate);
+  window.addEventListener('wandersync:day2_activity', handleChatUpdate);
+
+  const handleTripOrChatReset = () => {
+    activeThreadId = null;
+    render();
+  };
+  window.addEventListener('wandersync:chat_reset', handleTripOrChatReset);
+  window.addEventListener('trip:created', handleTripOrChatReset);
+  window.addEventListener('trip:deleted', handleTripOrChatReset);
+  window.addEventListener('trip:selected', handleTripOrChatReset);
+
   render();
 
   return {
@@ -602,6 +734,12 @@ export function createChatView() {
       window.removeEventListener('wandersync:proposal_inserted', handleProposalInserted);
       window.removeEventListener('wandersync:vote_consensus', handleVoteConsensus);
       window.removeEventListener('chat:open_thread', handleOpenThread);
+      window.removeEventListener('wandersync:chat_update', handleChatUpdate);
+      window.removeEventListener('wandersync:day2_activity', handleChatUpdate);
+      window.removeEventListener('wandersync:chat_reset', handleTripOrChatReset);
+      window.removeEventListener('trip:created', handleTripOrChatReset);
+      window.removeEventListener('trip:deleted', handleTripOrChatReset);
+      window.removeEventListener('trip:selected', handleTripOrChatReset);
       remoteSync.off('INSERT_PROPOSAL', handleRemoteInsertProposal);
       if (container.parentElement) container.remove();
     },

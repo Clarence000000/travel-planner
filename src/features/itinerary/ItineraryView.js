@@ -25,9 +25,10 @@ import {
 import { getTripSettings, formatDateRange } from '../../models/tripSettings.js';
 import { createStatusModal } from '../../components/itinerary/StatusModal.js';
 import { createAddBlockModal } from '../../components/itinerary/AddBlockModal.js';
-import { getThreadById, addMessageToThread } from '../../models/chatData.js';
+import { getThreadById, addMessageToThread, prepareConsensusVoteThread } from '../../models/chatData.js';
 import { setActiveTab } from '../../config/navigation.js';
 import { enableDragScroll } from '../../utils/dragScroll.js';
+import { setTargetChatThread } from '../chat/ChatView.js';
 
 import { getVenueThumbnail } from './venueIcons.js';
 import { renderDaySelector } from './DaySelector.js';
@@ -40,94 +41,85 @@ import { createDragScrollController } from './dragScrollController.js';
 let persistentWeatherAlertActive = false;
 let persistentDay2HasActivity = false;
 let persistentDay2SimulationState = { active: false, step: 0, count: 0, text: '' };
+let persistentCurrentDay = 1;
+
+window.addEventListener("itinerary:set_day", (e) => {
+  if (e && e.detail && e.detail.day) {
+    persistentCurrentDay = Number(e.detail.day);
+  }
+});
+
+function showScheduleToast(message) {
+  let toast = document.getElementById('schedule-toast-notice');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'schedule-toast-notice';
+    toast.className = 'schedule-toast-notice';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add('schedule-toast-notice--visible');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
+    toast.classList.remove('schedule-toast-notice--visible');
+  }, 2600);
+}
 
 export function createItineraryView() {
   const container = document.createElement('div');
   container.className = 'feature-view itinerary-view';
 
+  let currentDay = persistentCurrentDay || 1;
   let itineraryList = getItineraryData();
-  let currentDay = 1;
-  let expandedCardIds = new Set(['d1-2']);
-  const checkedRequirements = new Set();
-
+  let expandedCardIds = new Set();
+  let checkedRequirements = new Set();
+  let weatherAlertActive = persistentWeatherAlertActive;
   let day2HasActivity = persistentDay2HasActivity;
   let day2SimulationState = persistentDay2SimulationState;
-  let weatherAlertActive = persistentWeatherAlertActive;
 
-  let statusModal;
-  let addBlockModal;
-  const dragScroller = createDragScrollController();
+  let statusModal = null;
+  let addBlockModal = null;
 
-  function showScheduleToast(message) {
-    let toast = document.querySelector('.schedule-toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.className = 'schedule-toast';
-      document.body.appendChild(toast);
-    }
-    toast.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: #4ADE80;"><polyline points="20 6 9 17 4 12"/></svg>
-      <span>${message}</span>
-    `;
-    toast.classList.add('is-visible');
-    clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => {
-      toast.classList.remove('is-visible');
-    }, 2500);
-  }
+  const dragScroller = createDragScrollController(container);
 
   function initModals() {
-    document.querySelectorAll('.itinerary-modal-backdrop').forEach((el) => el.remove());
-
     statusModal = createStatusModal({
-      onSave: (blockId, newStatus, newFallback, cancelMode) => {
+      onUpdateStatus: (blockId, newStatus) => {
         if (newStatus === 'cancelled') {
-          itineraryList = cancelItineraryBlock(blockId, cancelMode);
-          showScheduleToast(
-            cancelMode === 'free-time'
-              ? 'Event cancelled • Window held as free time'
-              : 'Event cancelled • Schedule reflowed forward'
-          );
+          itineraryList = cancelItineraryBlock(blockId);
         } else {
-          itineraryList = itineraryList.map((b) => {
-            if (b.id === blockId) {
-              return {
-                ...b,
-                status: newStatus,
-                fallback: newFallback !== undefined ? newFallback : b.fallback,
-              };
-            }
-            return b;
-          });
-          saveItineraryData(itineraryList);
-          showScheduleToast(`Status updated to ${newStatus}`);
+          itineraryList = updateItineraryBlock(blockId, { status: newStatus });
         }
+        showScheduleToast(`Block marked as ${newStatus}`);
         render();
       },
-      onResolveContingency: (blockId, optionType) => {
+      onContingencyAction: (blockId, optionType) => {
         resolveContingencyOption(blockId, optionType);
       },
     });
 
     addBlockModal = createAddBlockModal({
-      onAdd: (newBlock) => {
+      onSave: (blockData, isEditMode) => {
+        if (isEditMode) {
+          itineraryList = updateItineraryBlock(blockData.id, blockData);
+          showScheduleToast('Activity block updated');
+        } else {
+          itineraryList.push(blockData);
+          saveItineraryData(itineraryList);
+          showScheduleToast('New stop added to itinerary');
+        }
         const dayBlocks = getDayBlocks();
-        dayBlocks.push(newBlock);
         const recomputed = recalculateDaySchedule(dayBlocks);
         setDayBlocks(recomputed);
-        showScheduleToast(`Added "${newBlock.title}" to Day ${currentDay}`);
         render();
       },
     });
-
-    document.body.appendChild(statusModal.element);
-    document.body.appendChild(addBlockModal.element);
   }
 
   function getDayBlocks() {
-    itineraryList = getItineraryData();
-    const blocks = itineraryList.filter((item) => (item.day || 1) === currentDay);
-    return blocks.sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+    return itineraryList
+      .filter((item) => (item.day || 1) === currentDay)
+      .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
   }
 
   function setDayBlocks(updatedBlocks) {
@@ -138,7 +130,11 @@ export function createItineraryView() {
 
   function confirmProposedBlock(blockId) {
     itineraryList = itineraryList.map((b) => {
-      if (b.id === blockId) {
+      if (
+        b.id === blockId ||
+        (blockId && blockId.includes('chendul') && b.id.includes('chendul')) ||
+        (blockId && blockId.includes('borabora') && b.id.includes('borabora'))
+      ) {
         return { ...b, status: 'confirmed' };
       }
       return b;
@@ -149,7 +145,7 @@ export function createItineraryView() {
   }
 
   function triggerConsensusVote(blockId, cardEl) {
-    const block = itineraryList.find((b) => b.id === blockId);
+    const block = itineraryList.find((b) => b.id === blockId) || getItineraryData().find((b) => b.id === blockId);
     const title = block ? block.title : 'Activity';
 
     if (cardEl) {
@@ -158,21 +154,33 @@ export function createItineraryView() {
         voteBtn.disabled = true;
         voteBtn.innerHTML = `
           <svg class="spin-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12"/></svg>
-          <span>Voting Active...</span>
+          <span>Opening Poll...</span>
         `;
       }
     }
 
-    showScheduleToast(`Launched consensus poll for "${title}"`);
+    showScheduleToast(`Opening consensus poll for "${title}"`);
+
+    // Prepare thread and active poll (2/3 pre-voted in favor)
+    const thread = prepareConsensusVoteThread(block);
+    const targetThreadId = thread ? thread.blockId : blockId;
+
+    // Set target thread in ChatView so mounting directly opens the discussion
+    setTargetChatThread(targetThreadId);
 
     setTimeout(() => {
       window.dispatchEvent(
         new CustomEvent('wandersync:proposal_inserted', {
-          detail: { blockId, autoOpenPoll: true },
+          detail: { blockId: targetThreadId, autoOpenPoll: true },
+        })
+      );
+      window.dispatchEvent(
+        new CustomEvent('chat:open_thread', {
+          detail: { threadId: targetThreadId },
         })
       );
       setActiveTab('chat');
-    }, 700);
+    }, 400);
   }
 
   function shiftBlockToDay3(blockId) {
@@ -188,7 +196,8 @@ export function createItineraryView() {
             ...b,
             day: 3,
             startTime: '12:30',
-            endTime: '13:30',
+            endTime: '13:45',
+            advisory: null,
             advisoryDismissed: true,
           };
         }
@@ -414,7 +423,7 @@ export function createItineraryView() {
 
       <div id="day-selector-slot"></div>
 
-      <div class="timeline-container" id="timeline-container">
+      <div class="timeline-container timeline-feed" id="timeline-container">
         ${
           blocksWithBuffers.length === 0
             ? `
@@ -431,18 +440,14 @@ export function createItineraryView() {
             </div>
             <span class="empty-day-card__badge">Day ${currentDay} Schedule</span>
             <h3 class="empty-day-card__title">No activities planned yet</h3>
-            <p class="empty-day-card__desc">Your Day ${currentDay} schedule is completely open. Propose your first stop or drop in favorites from your team wishlist.</p>
-            <button type="button" class="btn btn--primary empty-day-card__btn" id="btn-empty-add-activity">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              <span>Add First Stop</span>
+            <p class="empty-day-card__desc">Propose a spot or ask WanderBot AI in chat to build an optimized itinerary slot.</p>
+            <button type="button" class="btn-add-stop-empty" id="btn-empty-add-activity">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>Propose First Stop</span>
             </button>
           </div>
         `
-            : `
-          <div class="timeline-feed timeline-spine" id="timeline-spine">
-            ${renderTimelineItems(blocksWithBuffers)}
-          </div>
-        `
+            : renderTimelineItems(blocksWithBuffers)
         }
       </div>
     `;
@@ -457,6 +462,7 @@ export function createItineraryView() {
         day2SimulationState,
         onSelectDay: (day) => {
           currentDay = day;
+          persistentCurrentDay = day;
           if (day === 2) {
             day2HasActivity = false;
             persistentDay2HasActivity = false;
@@ -467,27 +473,37 @@ export function createItineraryView() {
           addItineraryDay();
           const list = getItineraryDayList();
           currentDay = list[list.length - 1];
+          persistentCurrentDay = currentDay;
+          showScheduleToast(`Day ${currentDay} added to itinerary`);
           render();
         },
         onRemoveDay: (day) => {
+          if (dayList.length <= 1) {
+            showScheduleToast('Trip must have at least 1 day');
+            return;
+          }
           removeItineraryDay(day);
           const list = getItineraryDayList();
           currentDay = list[0] || 1;
+          persistentCurrentDay = currentDay;
+          showScheduleToast(`Day ${day} removed`);
           render();
         },
       });
       slot.appendChild(daySelectorEl);
     }
 
-    attachEvents(rawBlocks);
+    attachEventListeners();
   }
 
-  function attachEvents(rawBlocks) {
+  function attachEventListeners() {
     const openSidebarBtn = container.querySelector('#btn-open-sidebar');
     if (openSidebarBtn) {
       openSidebarBtn.addEventListener('click', () => {
-        if (window.TravelApp && window.TravelApp.sidebar) {
+        if (window.TravelApp?.sidebar?.open) {
           window.TravelApp.sidebar.open();
+        } else if (window.TravelApp?.openSidebar) {
+          window.TravelApp.openSidebar();
         }
       });
     }
@@ -761,6 +777,13 @@ export function createItineraryView() {
   };
   window.addEventListener('wandersync:proposal_inserted', handleProposalInserted);
 
+  const handleProposalConfirmed = () => {
+    itineraryList = getItineraryData();
+    render();
+  };
+  window.addEventListener('itinerary:confirmed', handleProposalConfirmed);
+  window.addEventListener('wandersync:vote_consensus', handleProposalConfirmed);
+
   const handleMonsoonAlert = () => {
     weatherAlertActive = true;
     persistentWeatherAlertActive = true;
@@ -802,6 +825,20 @@ export function createItineraryView() {
     render();
   };
   window.addEventListener('wandersync:reset_all', handleResetAll);
+  const handleSetDay = (e) => {
+    if (e && e.detail && e.detail.day) {
+      currentDay = Number(e.detail.day);
+      persistentCurrentDay = currentDay;
+      render();
+    }
+  };
+  window.addEventListener("itinerary:set_day", handleSetDay);
+
+  const handleOpenAddModal = (e) => {
+    const day = (e && e.detail && e.detail.day) ? e.detail.day : currentDay;
+    addBlockModal?.open(day);
+  };
+  window.addEventListener('itinerary:open-add-modal', handleOpenAddModal);
 
   // Global window helpers for headless controller compatibility
   if (!window.TravelApp) window.TravelApp = {};
@@ -809,6 +846,9 @@ export function createItineraryView() {
   window.TravelApp.insertSiamRoadSlot = insertSiamRoadSlot;
   window.TravelApp.confirmProposedBlock = confirmProposedBlock;
   window.TravelApp.shiftBlockToDay3 = shiftBlockToDay3;
+  window.TravelApp.openAddBlockModal = (day) => {
+    addBlockModal?.open(day || currentDay);
+  };
 
   initModals();
   render();
@@ -817,7 +857,10 @@ export function createItineraryView() {
     element: container,
     destroy() {
       dragScroller.destroy();
+      window.removeEventListener('itinerary:open-add-modal', handleOpenAddModal);
       window.removeEventListener('wandersync:proposal_inserted', handleProposalInserted);
+      window.removeEventListener('itinerary:confirmed', handleProposalConfirmed);
+      window.removeEventListener('wandersync:vote_consensus', handleProposalConfirmed);
       window.removeEventListener('wandersync:monsoon_alert', handleMonsoonAlert);
       window.removeEventListener('wandersync:day2_activity', handleDay2Activity);
       window.removeEventListener('wandersync:siam_road_advisory', handleSiamRoadAdvisory);
@@ -825,6 +868,7 @@ export function createItineraryView() {
       window.removeEventListener('wandersync:contingency_2', handleContingency2);
       window.removeEventListener('wandersync:contingency_3', handleContingency3);
       window.removeEventListener('wandersync:reset_all', handleResetAll);
+      window.removeEventListener("itinerary:set_day", handleSetDay);
       if (statusModal?.element?.parentElement) statusModal.element.remove();
       if (addBlockModal?.element?.parentElement) addBlockModal.element.remove();
       if (container.parentElement) container.remove();

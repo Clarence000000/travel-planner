@@ -10,4 +10,9 @@ export default defineConfig({
       },
     },
   },
+  server: {
+    allowedHosts: [
+      'travel.hoezhiwan.my'
+    ]
+  },
 });

@@ -4,6 +4,7 @@
  */
 
 import { createTrip } from '../models/tripsModel.js';
+import { resetChatToGenesis } from '../models/chatData.js';
 import { PRESET_COVERS, calculateDaysBetween } from '../models/tripSettings.js';
 
 export function createCreateTripModal(options = {}) {
@@ -165,6 +166,8 @@ export function createCreateTripModal(options = {}) {
           totalDays: total,
           coverImage: selectedCover,
         });
+
+        resetChatToGenesis();
 
         overlay.style.display = 'none';
         if (typeof onCreated === 'function') {

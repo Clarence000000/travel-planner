@@ -171,13 +171,22 @@ export function createBottomNav() {
     }
 
     // Action menu items:
-    // 1. Propose schedule activity: just take us to itinerary page without popping up modal
+    // 1. Propose schedule activity: switch to itinerary and pop up the add block modal (just like + Add Stop does)
     if (e.target.closest('#action-propose-activity')) {
       toggleActionMenu(false);
       const active = getActiveTab();
       if (!active || active.id !== 'itinerary') {
         setActiveTab('itinerary');
       }
+      setTimeout(() => {
+        if (window.TravelApp && typeof window.TravelApp.openAddBlockModal === 'function') {
+          window.TravelApp.openAddBlockModal();
+        } else {
+          window.dispatchEvent(new CustomEvent('itinerary:open-add-modal'));
+          const addBtn = document.getElementById('btn-add-activity');
+          if (addBtn) addBtn.click();
+        }
+      }, 50);
       return;
     }
 
@@ -190,7 +199,7 @@ export function createBottomNav() {
       return;
     }
 
-    // 3. Add to Wishlist: navigate to Ideas tab and open add idea modal
+    // 3. Add to Group Wishlist: switch to Ideas tab and pop up modal for adding ideas
     if (e.target.closest('#action-add-wishlist')) {
       toggleActionMenu(false);
       const active = getActiveTab();
@@ -198,9 +207,14 @@ export function createBottomNav() {
         setActiveTab('ideas');
       }
       setTimeout(() => {
-        const addIdeaBtn = document.getElementById('btn-open-add-wishlist');
-        if (addIdeaBtn) addIdeaBtn.click();
-      }, 80);
+        if (window.TravelApp && typeof window.TravelApp.openAddWishlistModal === 'function') {
+          window.TravelApp.openAddWishlistModal();
+        } else {
+          window.dispatchEvent(new CustomEvent('open-add-wishlist'));
+          const addIdeaBtn = document.getElementById('btn-open-add-wishlist');
+          if (addIdeaBtn) addIdeaBtn.click();
+        }
+      }, 50);
       return;
     }
   });
