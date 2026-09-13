@@ -140,7 +140,7 @@ graph TD
 
 To make sure we build a high-quality, reliable app on time, we are focusing strictly on what matters most to travelers: **finding inspiration, planning together without arguments, and stress-free schedule adjustments during the trip**.
 
-<img src="./docs/Gantt Chart Whiteboard (2).png" alt="WanderSync 3-Week Development Plan" />
+<img src="./docs/Gantt Chart Whiteboard (3).png" alt="WanderSync 3-Week Development Plan" />
 
 #### What We Are Building (In-Scope)
 
@@ -152,7 +152,7 @@ To make sure we build a high-quality, reliable app on time, we are focusing stri
    - Add activity status & lifecycle indicators (planned, in-progress, done) to each timeline card.
    - Create timeline-to-thread deep linking so tapping an activity jumps directly to its discussion thread.
 
-2. **Tony – Itinerary & Interaction**
+2. **Tony – AI Assistant and Chat**
    - Design and implement the onboarding UI, covering sign-in, trip creation, and friend invites.
    - Integrate the Gemini AI copilot for smart schedule suggestions and pacing adjustments (*Relaxed*, *Balanced*, *Fast-Paced*).
    - Build 1-tap disruption reshuffling so a single tap cascades a delay or cancellation across all affected stops.
